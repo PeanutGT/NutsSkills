@@ -1,0 +1,36 @@
+/* ===== Theme: textbook — 教科書風 (serif, numbered, restrained colour) ===== */
+:root {
+  --font-body: "Charter", "Bitstream Charter", "Latin Modern Roman", "Noto Serif CJK TC", "Noto Serif TC", "Songti TC", serif;
+  --font-head: "Noto Serif CJK TC", "Noto Serif TC", var(--font-body);
+  --accent: #8b1e1e; --accent-soft: #f7efe9;
+  --def: #1d3a6e; --def-bg: transparent; --thm: #8b1e1e; --thm-bg: transparent;
+  --formula: #1d3a6e; --formula-bg: #f6f6f2; --example: #2f5d3a; --example-bg: transparent;
+  --hot: #a0430a; --hot-bg: #fbf3ea; --warn: #9b1c1c; --warn-bg: #fbf0ef;
+  --tip: #1d3a6e; --tip-bg: transparent; --summary: #1d3a6e; --summary-bg: #f6f6f2;
+  --radius: 2px; --base-size: 10.8pt; --lh: 1.78;
+}
+body { counter-reset: h2; }
+.banner { text-align: center; padding: 1.4em 0 1.1em; border-top: 2.5px solid var(--ink); border-bottom: 1px solid var(--ink); }
+.banner-kind { color: var(--ink-soft); font-variant: small-caps; letter-spacing: .2em; }
+.banner-title { font-weight: 700; font-size: 2.1em; }
+.banner-meta { justify-content: center; }
+.meta-chip { background: none; border: 1px solid var(--rule); color: var(--ink-soft); border-radius: 2px; }
+
+h2 { counter-increment: h2; counter-reset: h3; font-weight: 700; border-bottom: 1px solid var(--ink); padding-bottom: .2em; }
+h2::before { content: counter(h2) "　"; color: var(--accent); }
+h3 { counter-increment: h3; font-weight: 700; }
+h3::before { content: counter(h2) "." counter(h3) "　"; color: var(--accent); }
+
+.callout { border-left: 0; border-top: 1.5px solid var(--c); border-bottom: 1px solid var(--rule); border-radius: 0; padding: .55em .3em .6em; }
+.callout .c-head { font-variant: small-caps; }
+.callout.formula, .callout.summary { border: 1px solid var(--rule); border-top: 1.5px solid var(--c); padding: .55em .9em; }
+.callout.extra { border-top: 1px dashed var(--extra); }
+.callout.thm .c-body, .callout.def .c-body { font-style: normal; }
+
+.qcard { border: 0; border-top: 1px solid var(--rule); border-radius: 0; padding: .7em 0 .5em; }
+.q-num { color: var(--accent); }
+.q-num::after { content: "."; }
+.badge { border-radius: 2px; }
+.toc { border-radius: 0; border-left: 0; border-right: 0; }
+th { border-bottom: 1.5px solid var(--ink); }
+table { border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }

@@ -1,0 +1,27 @@
+/* ===== Theme: cheatsheet — 精簡小抄風 (two columns, dense, compact) ===== */
+:root { --base-size: 8.4pt; --lh: 1.45; --accent: #1c7ed6; --accent-soft: #e7f5ff; --radius: 4px; }
+body { text-align: left; }
+main.content { columns: 2; column-gap: 1.2em; column-rule: 1px solid var(--rule); }
+.banner { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3em .8em; margin-bottom: .7em; padding: .35em .7em;
+  background: var(--ink); color: #fff; border-radius: 4px; }
+.banner-kind { color: #a5d8ff; font-size: .9em; }
+.banner-title { font-size: 1.35em; margin: 0; color: #fff; }
+.banner-sub { color: #dee2e6; font-size: .9em; }
+.banner-meta { margin: 0 0 0 auto; }
+.meta-chip { background: rgba(255,255,255,.15); color: #fff; }
+
+h2 { font-size: 1.12em; margin: .7em 0 .3em; padding: .12em .45em; background: var(--accent); color: #fff; border-radius: 3px; break-after: avoid; }
+main.content > h2:first-child { margin-top: 0; }
+h3 { font-size: 1em; margin: .55em 0 .15em; color: var(--accent); }
+h4 { font-size: .95em; margin: .4em 0 .1em; }
+p { margin: .25em 0; }
+ul, ol { margin: .2em 0; padding-left: 1.15em; }
+li { margin: .05em 0; }
+.callout { margin: .4em 0; padding: .3em .55em .35em; border-left-width: 3px; }
+.callout .c-head { margin-bottom: .05em; font-size: .92em; }
+.math-display { margin: .3em 0; }
+.katex { font-size: 1em; }
+table { font-size: .92em; margin: .4em 0; }
+th, td { padding: .2em .4em; }
+.qcard { padding: .35em .55em; margin: .45em 0; }
+.cols { columns: 1; }

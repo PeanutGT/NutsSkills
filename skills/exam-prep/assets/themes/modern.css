@@ -1,0 +1,23 @@
+/* ===== Theme: modern — 現代筆記風 (soft colour, sans-serif, generous whitespace) ===== */
+:root { --accent: #4c6ef5; --accent-soft: #edf2ff; --radius: 10px; }
+
+.banner { padding: 1.3em 1.5em 1.2em; border-radius: 14px;
+  background: linear-gradient(135deg, #edf2ff 0%, #f3f0ff 55%, #fff4e6 100%); }
+.banner.kind-practice { background: linear-gradient(135deg, #e7f5ff 0%, #ebfbee 100%); }
+.banner.kind-answers  { background: linear-gradient(135deg, #ebfbee 0%, #f8f9fa 100%); }
+.banner.kind-answers .banner-kind { color: var(--example); }
+.banner-title { font-weight: 800; letter-spacing: -.01em; }
+.meta-chip { background: rgba(255,255,255,.75); }
+
+h2 { font-weight: 800; padding-bottom: .25em; border-bottom: 2px solid var(--accent-soft); }
+h2::before { content: ""; display: inline-block; width: .32em; height: .95em; margin-right: .45em;
+  background: var(--accent); border-radius: 3px; vertical-align: -.1em; }
+h3 { font-weight: 700; color: #2f3a5f; }
+
+.callout { border-left-width: 0; box-shadow: inset 4px 0 0 var(--c); }
+.callout.extra { box-shadow: none; border: 1.5px dashed #ced4da; }
+
+.qcard { background: #fcfcfd; box-shadow: 0 1px 0 rgba(20,30,60,.04); }
+.q-num { display: inline-flex; align-items: center; justify-content: center; min-width: 1.9em; height: 1.9em;
+  padding: 0 .4em; border-radius: 99px; background: var(--accent); color: #fff; font-size: .85em; }
+.acard .q-num { background: var(--example); color: #fff; }
