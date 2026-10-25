@@ -9,12 +9,12 @@
 title: 線性代數 期中考 重點整理
 subtitle: Ch1–Ch4 · 線性系統、矩陣、行列式、向量空間
 course: 線性代數 CE2005
-kind: notes            # notes | practice | answers | cheatsheet
+kind: notes            # handout | notes | patterns | cornell | layered | practice | answers | cheatsheet
 exam_date: 2026-11-05  # 可省略；有填會顯示「距考試 N 天」
 ---
 ```
 
-`kind` 決定頁首橫幅的標籤與配色。`notes` 有 4 個以上 `##` 章節時自動產生目錄。
+`kind` 決定頁首橫幅的標籤與配色。整理類文件（handout、notes、patterns、cornell、layered）有 4 個以上 `##` 章節時自動產生目錄；`toc: true`／`toc: false` 可強制開關。
 
 ## 標題層級
 
@@ -125,3 +125,23 @@ $$\det\begin{pmatrix}2-\lambda&1\\1&2-\lambda\end{pmatrix}=(2-\lambda)^2-1=0 \Ri
 - 雙欄區塊：`:::cols` … `:::`（適合短清單並排）
 - 程式碼題：用 ```` ```c ```` 等 fenced code block
 - 練習題文件建議依題型分 `##` 區段（例：`## 選擇題`、`## 計算題`），解答文件用同樣的區段
+
+## 整理方式專用容器
+
+各容器的寫法與用途詳見 `organize-styles.md`，這裡只列語法。
+
+| 容器 | 用途 |
+|---|---|
+| `:::map 標題` | 概念地圖外框（自動加圖例），內放 ```` ```mermaid ```` 區塊與一句閱讀提示 |
+| `:::fig 圖說` | 圖片或 Mermaid 圖，自動編號「圖 N」 |
+| `:::pattern 題型名 \| 考古題 3/4 年 \| 必考 \| ★★☆` | 題型解題卡；內部用 `####` 分段（辨識、SOP、範例、變形） |
+| `:::cornell 主題` | Cornell 表格外框，內含多個 `:::cue` 與一個 `:::recap` |
+| `:::cue 提示問題` | Cornell 的一列：標頭是左欄問題，內容是右欄答案 |
+| `:::recap` | Cornell 底部的一句話總結 |
+| `:::layer 1｜2｜3 [\| 說明]` | 分層講義的層級區塊（1 = 30 秒、2 = 5 分鐘、3 = 完整） |
+
+**徽章補充**：`{{前置: 秩、零空間}}`（灰色虛線，標出需要先懂的概念）、`{{⏱ 5 分鐘}}`（時間標籤）。
+
+**Mermaid**：在任何地方用 ```` ```mermaid ```` 都會被渲染成圖。`flowchart`／`graph` 會自動帶入節點類別 `def` `thm` `formula` `method` `hot` `pre`（寫法 `A["文字"]:::def`）。節點文字不能用 LaTeX，請用 Unicode 符號（λ、⁻¹、ᵏ、σ²、x̄、≤）。
+
+**圖片**：`![](figs/xxx.svg)` 的相對路徑以 Markdown 檔所在資料夾為準。圖表產生方式見 `figures.md`。

@@ -9,7 +9,7 @@
 //   title: 線性代數 期中考 重點整理
 //   subtitle: Ch1–Ch4 · 矩陣、行列式、向量空間
 //   course: 線性代數 CE2005
-//   kind: notes | practice | answers | cheatsheet
+//   kind: handout | notes | patterns | cornell | layered | practice | answers | cheatsheet
 //   exam_date: 2026-11-05
 //   ---
 //
@@ -66,6 +66,20 @@ const katexCss = (() => {
   return path.join(dir, "katex.min.css");
 })();
 
+function findMermaid() {
+  const bases = [HERE, DEPS_DIR, ...(process.env.NODE_PATH || "").split(path.delimiter).filter(Boolean)];
+  const cands = [];
+  for (const b of bases) cands.push(path.join(b, "mermaid/dist/mermaid.min.js"), path.join(b, "node_modules/mermaid/dist/mermaid.min.js"));
+  let hit = cands.find((c) => fs.existsSync(c));
+  if (!hit) {
+    console.error(`[exam-prep] installing mermaid into ${DEPS_DIR} ...`);
+    fs.mkdirSync(DEPS_DIR, { recursive: true });
+    execSync(`npm install --silent --prefix "${DEPS_DIR}" mermaid`, { stdio: "inherit" });
+    hit = path.join(DEPS_DIR, "node_modules/mermaid/dist/mermaid.min.js");
+  }
+  return hit;
+}
+
 // ---------- args ----------
 const args = process.argv.slice(2);
 if (args.length < 2) {
@@ -107,10 +121,31 @@ function renderMath(tex, display) {
   }
 }
 
+// node classes for concept maps: A:::def, B:::thm, C:::method, D:::formula, E:::hot, F:::pre
+let usesMermaid = false;
+const MERMAID_CLASSES = [
+  "classDef def fill:#eef2ff,stroke:#3b5bdb,stroke-width:1.5px,color:#1f2430",
+  "classDef thm fill:#f3f0ff,stroke:#7048e8,stroke-width:1.5px,color:#1f2430",
+  "classDef method fill:#ebfbee,stroke:#2b8a3e,stroke-width:1.5px,color:#1f2430",
+  "classDef formula fill:#e7f6f8,stroke:#0b7285,stroke-width:1.5px,color:#1f2430",
+  "classDef hot fill:#fff4e6,stroke:#e8590c,stroke-width:2.5px,color:#1f2430",
+  "classDef pre fill:#f6f7f9,stroke:#868e96,stroke-width:1px,stroke-dasharray:4 3,color:#4b5262",
+];
+function withClassDefs(code) {
+  const first = code.trimStart().split("\n")[0];
+  if (!/^(graph|flowchart)\b/.test(first)) return code;
+  const lines = code.split("\n");
+  const i = lines.findIndex((l) => /^\s*(graph|flowchart)\b/.test(l));
+  lines.splice(i + 1, 0, ...MERMAID_CLASSES.map((c) => "  " + c));
+  return lines.join("\n");
+}
+
 function protect(text) {
   // fenced code
-  text = text.replace(/^```(\w*)\n([\s\S]*?)\n```$/gm, (_, lang, code) =>
-    "\n\n" + keepBlock(`<pre class="code"><code class="lang-${lang}">${esc(code)}</code></pre>`) + "\n\n");
+  text = text.replace(/^```(\w*)\n([\s\S]*?)\n```$/gm, (_, lang, code) => {
+    if (lang === "mermaid") { usesMermaid = true; return "\n\n" + keepBlock(`<div class="mermaid-wrap"><pre class="mermaid">${esc(withClassDefs(code))}</pre></div>`) + "\n\n"; }
+    return "\n\n" + keepBlock(`<pre class="code"><code class="lang-${lang}">${esc(code)}</code></pre>`) + "\n\n";
+  });
   // inline code
   text = text.replace(/`([^`\n]+)`/g, (_, c) => keep(`<code>${esc(c)}</code>`));
   // display math $$...$$ and \[...\]
@@ -131,9 +166,11 @@ const BADGE_CLASS = {
   "無法程式驗算": "manual", "易錯": "warn", "考古題": "past",
 };
 function badges(text) {
-  return text.replace(/\{\{([^{}\n]{1,30})\}\}/g, (_, raw) => {
+  return text.replace(/\{\{([^{}\n]{1,40})\}\}/g, (_, raw) => {
     const label = raw.trim();
     if (/^難度\s*[:：]/.test(label)) return keep(`<span class="badge diff">${esc(label)}</span>`);
+    if (/^前置\s*[:：]/.test(label)) return keep(`<span class="badge pre">${esc(label.replace(/\s*[:：]\s*/, "："))}</span>`);
+    if (/^⏱/.test(label)) return keep(`<span class="badge time">${esc(label)}</span>`);
     const cls = BADGE_CLASS[label] || "neutral";
     const shown = cls === "ok" ? "✓ 已驗算" : label;
     return keep(`<span class="badge ${cls}">${esc(shown)}</span>`);
@@ -154,7 +191,7 @@ const CALLOUT = {
   past: { cls: "past", label: "考古題分析", icon: "⌕" },
 };
 
-let qCounter = 0;
+let qCounter = 0, figCounter = 0, patCounter = 0;
 function md(text) { return marked.parse(text, { gfm: true, breaks: false }); }
 
 function containers(text) {
@@ -167,6 +204,34 @@ function containers(text) {
       const inner = md(body);
       if (type === "q" || type === "a") return "\n\n" + keepBlock(questionCard(type, header, inner)) + "\n\n";
       if (type === "cols") return "\n\n" + keepBlock(`<div class="cols">${inner}</div>`) + "\n\n";
+      const inl = (h) => md(h).replace(/^<p>|<\/p>\s*$/g, "");
+      const chips = (parts) => parts.map((p) => {
+        let cls = "neutral";
+        if (/必考|常考/.test(p)) cls = "hot"; else if (/考古/.test(p)) cls = "past"; else if (/^[★☆]+$/.test(p)) cls = "diff"; else if (/補充/.test(p)) cls = "extra";
+        return `<span class="badge ${cls}">${inl(p)}</span>`;
+      }).join("");
+      if (type === "fig") {
+        figCounter++;
+        return "\n\n" + keepBlock(`<figure class="fig">${inner}<figcaption><span class="fig-no">圖 ${figCounter}</span>${header ? inl(header) : ""}</figcaption></figure>`) + "\n\n";
+      }
+      if (type === "map") {
+        return "\n\n" + keepBlock(`<section class="cmap"><div class="cmap-head"><span class="cmap-title">${header ? inl(header) : "概念地圖"}</span><span class="cmap-legend"><i class="lg def"></i>定義<i class="lg thm"></i>定理<i class="lg method"></i>方法<i class="lg formula"></i>公式<i class="lg hot"></i>常考<i class="lg pre"></i>前置</span></div>${inner}</section>`) + "\n\n";
+      }
+      if (type === "pattern") {
+        const parts = header.split("|").map((x) => x.trim()).filter(Boolean);
+        const name = parts.shift() || "";
+        patCounter++;
+        return "\n\n" + keepBlock(`<section class="pattern"><div class="pat-head"><span class="pat-no">題型 ${patCounter}</span><span class="pat-name">${inl(name)}</span><span class="pat-chips">${chips(parts)}</span></div><div class="pat-body">${inner}</div></section>`) + "\n\n";
+      }
+      if (type === "cue") return "\n\n" + keepBlock(`<div class="cn-row"><div class="cn-cue">${inl(header)}</div><div class="cn-ans">${inner}</div></div>`) + "\n\n";
+      if (type === "recap") return "\n\n" + keepBlock(`<div class="cn-recap"><span class="cn-recap-label">一句話總結</span>${inner}</div>`) + "\n\n";
+      if (type === "cornell") return "\n\n" + keepBlock(`<section class="cornell"><div class="cn-title">${header ? inl(header) : ""}</div><div class="cn-colhead"><span>提示（遮住右欄自測）</span><span>內容</span></div>${inner}</section>`) + "\n\n";
+      if (type === "layer") {
+        const [lv, ...rest] = header.split("|").map((x) => x.trim());
+        const LV = { "1": ["⏱ 30 秒", "一句話掌握每個概念"], "2": ["⏱ 5 分鐘", "考前必看的重點與公式"], "3": ["📖 完整", "從頭學懂：推導、例題、陷阱"] }[lv] || [lv, ""];
+        const desc = rest.join(" ") || LV[1];
+        return "\n\n" + keepBlock(`<section class="layer layer-${esc(lv)}"><div class="layer-head"><span class="layer-chip">第 ${esc(lv)} 層 · ${LV[0]}</span><span class="layer-desc">${inl(desc)}</span></div>${inner}</section>`) + "\n\n";
+      }
       const c = CALLOUT[type] || { cls: "note", label: type, icon: "•" };
       const title = header ? `<span class="c-title">${md(header).replace(/^<p>|<\/p>\s*$/g, "")}</span>` : "";
       return "\n\n" + keepBlock(
@@ -213,6 +278,11 @@ let html = md(body);
 const unwrapP = (s) => s.replace(/<p>\s*(\u0001\d+\u0001)\s*<\/p>/g, "$1");
 for (let i = 0; i < 6 && /[\u0000\u0001]/.test(html); i++) html = unwrapP(html).replace(/[\u0000\u0001](\d+)[\u0000\u0001]/g, (_, n) => stash[+n]);
 
+// images: resolve relative src against the markdown file's folder
+const MD_DIR = path.dirname(path.resolve(inPath));
+html = html.replace(/<img([^>]*?)src="([^"]+)"/g, (m, pre, src) =>
+  /^(https?:|data:|file:)/.test(src) ? m : `<img${pre}src="${pathToFileURL(path.resolve(MD_DIR, src)).href}"`);
+
 // TOC from h2 (for notes with enough sections)
 const h2s = [];
 html = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (_, inner) => {
@@ -220,12 +290,13 @@ html = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (_, inner) => {
   h2s.push({ id, text: inner.replace(/<[^>]+>/g, "") });
   return `<h2 id="${id}">${inner}</h2>`;
 });
-const wantToc = (kind === "notes" && h2s.length >= 4 && theme !== "cheatsheet") || meta.toc === "true";
+const TOC_KINDS = ["notes", "handout", "patterns", "cornell", "layered"];
+const wantToc = meta.toc === "false" ? false : (TOC_KINDS.includes(kind) && h2s.length >= 4 && theme !== "cheatsheet") || meta.toc === "true";
 const toc = wantToc
   ? `<nav class="toc"><div class="toc-title">目錄</div><ol>${h2s.map((h) => `<li><a href="#${h.id}">${esc(h.text)}</a></li>`).join("")}</ol></nav>`
   : "";
 
-const KIND_LABEL = { notes: "重點整理", practice: "練習題", answers: "解答本", cheatsheet: "公式小抄" };
+const KIND_LABEL = { handout: "學習講義", notes: "重點整理", patterns: "題型解題卡", cornell: "Cornell 回憶筆記", layered: "分層講義", practice: "練習題", answers: "解答本", cheatsheet: "公式小抄" };
 const today = new Date().toISOString().slice(0, 10);
 let countdown = "";
 if (meta.exam_date && /^\d{4}-\d{2}-\d{2}$/.test(meta.exam_date)) {
@@ -246,7 +317,8 @@ const css = readCss("base.css") + "\n" + readCss(`${theme}.css`);
 const doc = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
 <title>${esc(meta.title || "exam-prep")}</title>
 <link rel="stylesheet" href="${pathToFileURL(katexCss).href}">
-<style>${css}</style></head>
+<style>${css}</style>
+${usesMermaid ? `<script src="${pathToFileURL(findMermaid()).href}"></script>` : ""}</head>
 <body class="theme-${theme} kind-${kind}">${banner}${toc}<main class="content">${html}</main></body></html>`;
 
 const tmpHtml = htmlOut || path.join(os.tmpdir(), `exam-prep-${process.pid}.html`);
@@ -258,6 +330,22 @@ const browser = await pw.chromium.launch();
 const page = await browser.newPage();
 await page.goto(pathToFileURL(path.resolve(tmpHtml)).href, { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
+if (usesMermaid) {
+  const errs = await page.evaluate(async () => {
+    const font = getComputedStyle(document.body).fontFamily;
+    mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+      flowchart: { htmlLabels: true, curve: "basis", padding: 10, useMaxWidth: true },
+      themeVariables: { fontFamily: font, fontSize: "13px", primaryColor: "#f8f9fb", primaryBorderColor: "#adb5bd",
+        primaryTextColor: "#1f2430", lineColor: "#868e96", secondaryColor: "#f3f0ff", tertiaryColor: "#fff",
+        edgeLabelBackground: "#ffffff", clusterBkg: "#fafbfc", clusterBorder: "#dee2e6" } });
+    const out = [];
+    for (const el of document.querySelectorAll("pre.mermaid")) {
+      try { await mermaid.run({ nodes: [el] }); } catch (e) { out.push(String(e.message || e).slice(0, 200)); el.classList.add("mermaid-error"); }
+    }
+    return out;
+  });
+  for (const e of errs) console.error(`[exam-prep] mermaid error: ${e}`);
+}
 // keep every heading on the same page as the block that follows it
 await page.evaluate(() => {
   for (const h of document.querySelectorAll("main.content h2, main.content h3, main.content h4")) {

@@ -21,7 +21,7 @@
 * { box-sizing: border-box; }
 html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--font-body);
-  font-size: var(--base-size); line-height: var(--lh); text-align: justify; text-justify: inter-character; }
+  font-size: var(--base-size); line-height: var(--lh); text-align: justify; }
 main.content > *:first-child { margin-top: 0; }
 
 h1, h2, h3, h4 { font-family: var(--font-head); line-height: 1.35; text-align: left; break-after: avoid; }
@@ -122,3 +122,72 @@ main.content > .keep-with-next:first-child > :first-child { margin-top: 0; }
 /* ---- two-column helper ---- */
 .cols { columns: 2; column-gap: 1.6em; }
 .cols > * { break-inside: avoid; }
+
+/* ===== figures, concept maps ===== */
+.fig { margin: 1em auto; text-align: center; break-inside: avoid; }
+.fig img { max-width: 100%; max-height: 105mm; display: block; margin: 0 auto; }
+.fig > p { margin: 0; }
+.fig figcaption { margin-top: .35em; font-size: .86em; color: var(--ink-soft); text-align: center; }
+.fig-no { font-weight: 700; color: var(--accent); margin-right: .5em; }
+
+.mermaid-wrap { margin: .6em 0; text-align: center; break-inside: avoid; }
+.mermaid-wrap svg { max-width: 100% !important; height: auto; max-height: 120mm; }
+pre.mermaid { background: none; border: 0; margin: 0; font-family: var(--font-body); white-space: pre; }
+pre.mermaid-error { color: var(--warn); font-size: .8em; text-align: left; white-space: pre-wrap; border: 1px dashed var(--warn); padding: .5em; }
+
+.cmap { margin: 1em 0 1.2em; padding: .6em .9em .7em; border: 1px solid var(--rule); border-radius: var(--radius); background: #fcfcfd; break-inside: avoid; }
+.cmap-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .3em 1em; margin-bottom: .2em; text-align: left; }
+.cmap-title { font-weight: 800; color: var(--ink); }
+.cmap-title::before { content: "◎ "; color: var(--accent); }
+.cmap-legend { font-size: .72em; color: var(--ink-soft); display: inline-flex; align-items: center; gap: .25em; flex-wrap: wrap; }
+.cmap-legend .lg { display: inline-block; width: .95em; height: .7em; border-radius: 3px; margin-left: .55em; border: 1.5px solid; }
+.lg.def { background: #eef2ff; border-color: #3b5bdb; } .lg.thm { background: #f3f0ff; border-color: #7048e8; }
+.lg.method { background: #ebfbee; border-color: #2b8a3e; } .lg.formula { background: #e7f6f8; border-color: #0b7285; }
+.lg.hot { background: #fff4e6; border-color: #e8590c; border-width: 2.5px; } .lg.pre { background: #f6f7f9; border: 1px dashed #868e96; }
+.cmap > p:last-child { margin-bottom: 0; font-size: .9em; color: var(--ink-soft); }
+
+.badge.pre { background: #f1f3f5; color: var(--ink-soft); border: 1px dashed #adb5bd; }
+.badge.time { background: var(--accent-soft); color: var(--accent); }
+
+/* ===== patterns: 題型解題卡 ===== */
+.pattern { margin: 1.1em 0; border: 1.5px solid var(--rule); border-radius: calc(var(--radius) + 2px); }
+.pat-head { break-after: avoid; border-radius: calc(var(--radius) + 1px) calc(var(--radius) + 1px) 0 0; }
+.pat-body h4 { break-after: avoid; }
+.pat-head { display: flex; align-items: center; gap: .55em; flex-wrap: wrap; padding: .55em .95em; background: var(--accent-soft); border-bottom: 1px solid var(--rule); text-align: left; }
+.pat-no { font-size: .74em; font-weight: 800; letter-spacing: .06em; color: #fff; background: var(--accent); padding: .1em .6em; border-radius: 99px; }
+.pat-name { font-weight: 800; font-size: 1.08em; color: var(--ink); }
+.pat-chips { margin-left: auto; }
+.pat-body { padding: .45em 1em .7em; }
+.pat-body h4 { margin: .75em 0 .2em; font-size: .86em; letter-spacing: .04em; color: var(--accent); text-transform: none; }
+.pat-body h4:first-child { margin-top: .2em; }
+.pat-body > .callout { margin: .5em 0; }
+.pat-body ol { padding-left: 1.5em; }
+
+/* ===== cornell ===== */
+.cornell { margin: 1em 0 1.4em; border: 1.5px solid var(--ink-soft); border-radius: var(--radius); overflow: hidden; }
+.cn-title { padding: .45em .9em; font-weight: 800; border-bottom: 1.5px solid var(--ink-soft); text-align: left; }
+.cn-title:empty { display: none; }
+.cn-colhead { display: grid; grid-template-columns: 31% 1fr; font-size: .72em; color: var(--muted); letter-spacing: .05em; border-bottom: 1px solid var(--rule); }
+.cn-colhead span { padding: .2em .9em; }
+.cn-colhead span:first-child { background: #f6f7f9; border-right: 2px solid var(--warn); }
+.cn-row { display: grid; grid-template-columns: 31% 1fr; border-bottom: 1px solid var(--rule); break-inside: avoid; }
+.cn-cue { padding: .6em .9em; background: #f6f7f9; border-right: 2px solid var(--warn); font-weight: 700; color: var(--ink); text-align: left; line-height: 1.55; }
+.cn-ans { padding: .55em .9em; }
+.cn-ans > *:first-child { margin-top: 0; } .cn-ans > *:last-child { margin-bottom: 0; }
+.cn-ans .callout { margin: .4em 0; }
+.cn-recap { padding: .6em .9em; background: var(--accent-soft); break-inside: avoid; }
+.cn-recap-label { display: block; font-size: .74em; font-weight: 800; color: var(--accent); letter-spacing: .05em; margin-bottom: .1em; }
+.cn-recap p { margin: 0; font-weight: 600; }
+
+/* ===== layered reading ===== */
+.layer { margin: 1.2em 0; padding-left: 1em; border-left: 4px solid var(--accent); }
+.layer-1 { border-left-color: #1baf7a; } .layer-2 { border-left-color: #eda100; } .layer-3 { border-left-color: var(--accent); }
+.layer-head { display: flex; align-items: baseline; gap: .7em; margin-bottom: .5em; break-after: avoid; text-align: left; }
+.layer-chip { font-weight: 800; font-size: .86em; padding: .15em .7em; border-radius: 99px; color: #fff; background: var(--accent); white-space: nowrap; }
+.layer-1 .layer-chip { background: #128a5f; } .layer-2 .layer-chip { background: #b77a00; }
+.layer-desc { color: var(--ink-soft); font-size: .9em; }
+.layer-1 ul, .layer-1 ol { padding-left: 1.2em; }
+.layer-1 li { margin: .3em 0; }
+.cn-title, .cn-colhead { break-after: avoid; }
+.cornell > .cn-colhead + .cn-row { break-before: avoid; }
+.pat-body .mermaid-wrap svg, .cn-ans .mermaid-wrap svg { max-height: 82mm; }

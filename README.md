@@ -6,7 +6,7 @@ PeanutGT 的 Claude Skills 合集。每個 skill 放在 `skills/<skill-name>/` �
 
 | Skill | 說明 |
 |---|---|
-| [exam-prep](skills/exam-prep/) | 把講義、投影片、課本、手寫筆記照片、考古題（可直接上傳或給 Google Drive 連結）整理成排版精美的 PDF：學習講義、重點整理、練習題、獨立解答本、公式小抄；計算題答案用程式驗算 |
+| [exam-prep](skills/exam-prep/) | 把講義、投影片、課本、手寫筆記照片、考古題（可直接上傳或給 Google Drive 連結）重新組織成排版精美的 PDF：章節講義／重點、題型解題卡、Cornell 回憶筆記、分層講義，附概念地圖與統計/線代圖表；另可出練習題、獨立解答本、公式小抄，計算答案用程式驗算 |
 
 ## 安裝
 

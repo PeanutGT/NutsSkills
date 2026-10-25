@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: probstats-organize-styles
+expected_outcome: |
+  Three PDFs (pattern cards, Cornell recall notes, layered handout) in the modern theme built from the photographed discrete-distribution notes. Each opens with a concept map, uses distribution charts, marks the missing Chapter 3 content as supplementary, and every number shown is correct.
+context:
+  scaffold_script: place-files.sh

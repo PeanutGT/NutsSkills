@@ -34,3 +34,6 @@ h3::before { content: counter(h2) "." counter(h3) "　"; color: var(--accent); }
 .toc { border-radius: 0; border-left: 0; border-right: 0; }
 th { border-bottom: 1.5px solid var(--ink); }
 table { border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
+.pattern, .cornell, .cmap { border-radius: 2px; }
+.pat-head { background: #f7efe9; }
+.cn-cue, .cn-colhead span:first-child { background: #faf8f4; }
