@@ -62,7 +62,13 @@ python tools/build_zip.py exam-prep    # 打包成 dist/exam-prep-<版本>.zip
 
 ## 發布新版本（維護者）
 
-合併到 `main` 後，推送格式為 `<skill-name>-v<版本>` 的 tag，GitHub Actions 會自動驗證、打包 zip 並建立 Release：
+合併到 `main`、CI 通過後，任選一種方式，GitHub Actions 會自動驗證、打包 zip 並建立 Release：
+
+**方法一：在網頁上點一下（推薦）**
+
+GitHub repo → **Actions** → 左側 **Release** → 右上 **Run workflow** → 輸入 skill 名稱（預設 `exam-prep`）→ **Run workflow**。版本號會自動讀取 SKILL.md 的 `metadata.version`；該版本已經發布過的話會拒絕執行，提醒你先改版本號。
+
+**方法二：推送 tag**
 
 ```bash
 git tag exam-prep-v2.1.0

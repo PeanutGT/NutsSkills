@@ -1,9 +1,17 @@
 name: Release
 
-# Push a tag named <skill-name>-v<version>, e.g. exam-prep-v2.0.0
+# Two ways to release:
+#   1. GitHub → Actions → Release → Run workflow, pick the skill (version is read from its SKILL.md)
+#   2. Push a tag named <skill-name>-v<version>, e.g. exam-prep-v2.0.0
 on:
   push:
     tags: ["*-v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: "Skill folder name under skills/"
+        required: true
+        default: exam-prep
 
 permissions:
   contents: write
@@ -21,14 +29,16 @@ jobs:
           node-version: "22"
       - run: pip install pyyaml
 
-      - name: Parse tag
+      - name: Resolve skill and version
         id: tag
+        env:
+          INPUT_SKILL: ${{ inputs.skill }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          SKILL="${TAG%-v*}"
-          VERSION="${TAG##*-v}"
-          echo "skill=$SKILL" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            SKILL="${INPUT_SKILL}"
+          else
+            SKILL="${GITHUB_REF_NAME%-v*}"
+          fi
           test -f "skills/$SKILL/SKILL.md" || { echo "::error::skills/$SKILL/SKILL.md not found"; exit 1; }
           DECLARED=$(python - "$SKILL" <<'PY'
           import re, sys, yaml
@@ -37,6 +47,18 @@ jobs:
           print((fm.get("metadata") or {}).get("version", ""))
           PY
           )
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            VERSION="$DECLARED"
+            if git ls-remote --exit-code --tags origin "refs/tags/$SKILL-v$VERSION" >/dev/null; then
+              echo "::error::$SKILL-v$VERSION has already been released. Bump metadata.version in skills/$SKILL/SKILL.md first."
+              exit 1
+            fi
+          else
+            VERSION="${GITHUB_REF_NAME##*-v}"
+          fi
+          echo "skill=$SKILL" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$SKILL-v$VERSION" >> "$GITHUB_OUTPUT"
           if [ "$DECLARED" != "$VERSION" ]; then
             echo "::error::Tag version $VERSION does not match metadata.version $DECLARED in skills/$SKILL/SKILL.md"
             exit 1
@@ -65,6 +87,8 @@ jobs:
 
       - uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           name: ${{ steps.tag.outputs.skill }} v${{ steps.tag.outputs.version }}
           body_path: notes.md
           files: dist/${{ steps.tag.outputs.skill }}-${{ steps.tag.outputs.version }}.zip
