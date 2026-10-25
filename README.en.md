@@ -1,18 +1,29 @@
-# NutsSkills 🥜
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/header-en-dark.svg">
+    <img src="docs/images/readme/header-en-light.svg" alt="NutsSkills, Claude Skills by PeanutGT" width="880">
+  </picture>
+</h1>
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Validate](https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml/badge.svg)](https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml)
-[![Release](https://img.shields.io/github/v/release/PeanutGT/NutsSkills?display_name=tag&sort=date)](https://github.com/PeanutGT/NutsSkills/releases)
+<p align="center">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"></a>
+  <a href="https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml"><img alt="Validate" src="https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml/badge.svg"></a>
+  <a href="https://github.com/PeanutGT/NutsSkills/releases"><img alt="Release" src="https://img.shields.io/github/v/release/PeanutGT/NutsSkills?display_name=tag&sort=date"></a>
+</p>
 
-[繁體中文](README.md) | English
-
-A collection of Claude Skills by PeanutGT. A skill is a bundle of instructions and tools; once installed, Claude uses it automatically whenever it fits the task.
+<p align="center"><a href="README.md">繁體中文</a> | English</p>
 
 ## Skills
 
 | Skill | Description | Version |
 |---|---|---|
 | [exam-prep](skills/exam-prep/) | Reorganizes slides, textbooks, photos of handwritten notes and past exams (uploaded or via Google Drive links) into beautifully laid-out PDFs: detailed handouts / concise notes, **exam pattern cards**, **Cornell recall notes**, **layered notes** (30 s / 5 min / full), with concept maps and statistics / linear-algebra figures. Also practice questions, separate answer keys and cheat sheets, with computed answers verified in code. Output is Traditional Chinese by default. | [Changelog](skills/exam-prep/CHANGELOG.md) |
+
+<p align="center">
+  <img src="docs/images/exam-prep/overview.png" alt="Sample pages from exam-prep: pattern cards, Cornell recall notes and layered notes" width="720">
+  <br>
+  <sub>exam-prep output: pattern cards, Cornell recall notes and layered notes, all generated from one photo of probability and statistics notes</sub>
+</p>
 
 ## Install
 

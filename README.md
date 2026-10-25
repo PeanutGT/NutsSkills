@@ -1,18 +1,29 @@
-# NutsSkills 🥜
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/header-zh-dark.svg">
+    <img src="docs/images/readme/header-zh-light.svg" alt="NutsSkills，PeanutGT 的 Claude Skills 合集" width="880">
+  </picture>
+</h1>
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Validate](https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml/badge.svg)](https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml)
-[![Release](https://img.shields.io/github/v/release/PeanutGT/NutsSkills?display_name=tag&sort=date)](https://github.com/PeanutGT/NutsSkills/releases)
+<p align="center">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"></a>
+  <a href="https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml"><img alt="Validate" src="https://github.com/PeanutGT/NutsSkills/actions/workflows/validate.yml/badge.svg"></a>
+  <a href="https://github.com/PeanutGT/NutsSkills/releases"><img alt="Release" src="https://img.shields.io/github/v/release/PeanutGT/NutsSkills?display_name=tag&sort=date"></a>
+</p>
 
-繁體中文 | [English](README.en.md)
-
-PeanutGT 的 Claude Skills 合集。Skill 是一包指示和工具，安裝後 Claude 會在適合的時候自動使用它，把某類工作做得更好。
+<p align="center">繁體中文 | <a href="README.en.md">English</a></p>
 
 ## Skills
 
 | Skill | 說明 | 版本 |
 |---|---|---|
 | [exam-prep](skills/exam-prep/) | 把講義、投影片、課本、手寫筆記照片、考古題（可直接上傳或給 Google Drive 連結）重新組織成排版精美的 PDF：章節講義／重點、**題型解題卡**、**Cornell 回憶筆記**、**分層講義**，附概念地圖與統計/線代圖表；另可出練習題、獨立解答本、公式小抄，計算答案用程式驗算 | [更新紀錄](skills/exam-prep/CHANGELOG.md) |
+
+<p align="center">
+  <img src="docs/images/exam-prep/overview.png" alt="exam-prep 產出的題型解題卡、Cornell 回憶筆記、分層講義頁面範例" width="720">
+  <br>
+  <sub>exam-prep 的產出：題型解題卡、Cornell 回憶筆記、分層講義（同一份機統筆記照片產出）</sub>
+</p>
 
 ## 安裝
 
