@@ -18,7 +18,7 @@
 | Skill | 說明 | 版本 |
 |---|---|---|
 | [exam-prep](skills/exam-prep/) | 把講義、投影片、課本、手寫筆記照片、考古題（可直接上傳或給 Google Drive 連結）重新組織成排版精美的 PDF：章節講義／重點、**題型解題卡**、**Cornell 回憶筆記**、**分層講義**，附概念地圖與統計/線代圖表；另可出練習題、獨立解答本、公式小抄，計算答案用程式驗算 | [更新紀錄](skills/exam-prep/CHANGELOG.md) |
-| [music-studio](skills/music-studio/) | 在你的 NVIDIA 顯卡上用 ACE-Step 1.5 本機生成純音樂／配樂（遊戲無縫循環、影片配樂、讀書工作背景音、個人創作），附可自訂的預設值、風格庫、中文描述詞庫、工作流程與本機儀表板 | [更新紀錄](skills/music-studio/CHANGELOG.md) |
+| [music-studio](skills/music-studio/) | 在你的 NVIDIA 顯卡上用 ACE-Step 1.5 本機生成純音樂／配樂（遊戲無縫循環、影片配樂、讀書工作背景音、個人創作），附可自訂的預設值、風格庫、中文描述詞庫、工作流程與本機儀表板 **(WIP)** | [更新紀錄](skills/music-studio/CHANGELOG.md) |
 
 <p align="center">
   <img src="docs/images/exam-prep/overview.png" alt="exam-prep 產出的題型解題卡、Cornell 回憶筆記、分層講義頁面範例" width="720">
