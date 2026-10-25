@@ -1,0 +1,83 @@
+{
+  "_doc": "Mood tags appended to a style's caption. bpm_delta shifts the style's default tempo. Add your own in <workspace>/moods.json (same shape).",
+  "calm": {
+    "caption": "calm, soothing, peaceful",
+    "bpm_delta": -8,
+    "label_zh": "平靜"
+  },
+  "melancholic": {
+    "caption": "melancholic, wistful, bittersweet",
+    "bpm_delta": -6,
+    "label_zh": "憂傷"
+  },
+  "nostalgic": {
+    "caption": "nostalgic, warm, sentimental",
+    "bpm_delta": -3,
+    "label_zh": "懷舊"
+  },
+  "hopeful": {
+    "caption": "hopeful, uplifting, bright",
+    "bpm_delta": 3,
+    "label_zh": "希望"
+  },
+  "epic": {
+    "caption": "epic, grand, powerful, big dynamics",
+    "bpm_delta": 8,
+    "label_zh": "史詩"
+  },
+  "tense": {
+    "caption": "tense, suspenseful, uneasy",
+    "bpm_delta": 6,
+    "label_zh": "緊張"
+  },
+  "mysterious": {
+    "caption": "mysterious, enigmatic, curious",
+    "bpm_delta": -4,
+    "label_zh": "神秘"
+  },
+  "playful": {
+    "caption": "playful, bouncy, cheerful",
+    "bpm_delta": 8,
+    "label_zh": "俏皮"
+  },
+  "dark": {
+    "caption": "dark, brooding, ominous",
+    "bpm_delta": 0,
+    "label_zh": "黑暗"
+  },
+  "dreamy": {
+    "caption": "dreamy, floating, hazy",
+    "bpm_delta": -5,
+    "label_zh": "夢幻"
+  },
+  "energetic": {
+    "caption": "energetic, driving, high energy",
+    "bpm_delta": 12,
+    "label_zh": "活力"
+  },
+  "romantic": {
+    "caption": "romantic, tender, intimate",
+    "bpm_delta": -4,
+    "label_zh": "浪漫"
+  },
+  "triumphant": {
+    "caption": "triumphant, victorious, heroic",
+    "bpm_delta": 6,
+    "label_zh": "勝利"
+  },
+  "eerie": {
+    "caption": "eerie, haunting, unsettling",
+    "bpm_delta": -4,
+    "label_zh": "詭異"
+  },
+  "cozy": {
+    "caption": "cozy, homely, comforting",
+    "bpm_delta": -3,
+    "label_zh": "溫馨"
+  },
+  "focused": {
+    "caption": "steady, unobtrusive, repetitive, minimal melodic change",
+    "bpm_delta": 0,
+    "label_zh": "專注"
+  }
+}

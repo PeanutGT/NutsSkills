@@ -1,0 +1,20 @@
+{
+  "id": "from-description",
+  "name": "Free description (no preset style)",
+  "description": "Nothing is added to your words: the caption comes only from your description, moods and extra tags. Best when none of the styles fit.",
+  "caption": "instrumental",
+  "avoid": "vocals",
+  "time_signature": "4",
+  "duration": {
+    "min": 20,
+    "default": 90,
+    "max": 180
+  },
+  "loopable": false,
+  "tags": [
+    "free"
+  ],
+  "notes": "Tempo and key are left to the language model unless you set them.",
+  "name_zh": "自由描述（不套風格）",
+  "description_zh": "完全依你的描述、情緒和額外標籤產生 caption。沒有合適的風格時用這個。"
+}

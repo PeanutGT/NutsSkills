@@ -1,0 +1,56 @@
+{
+  "id": "video-score",
+  "name": "Video score (exact length)",
+  "description": "Cut to the exact scene length with a natural fade, normalise for under-dialogue use, export wav + mp3.",
+  "defaults": {
+    "quality": "standard",
+    "variants": 2
+  },
+  "stages": [
+    {
+      "id": "plan",
+      "gate": "confirm",
+      "note": "Confirm the exact duration and the mood arc (calm start, build, resolve)."
+    },
+    {
+      "id": "generate",
+      "gate": "auto"
+    },
+    {
+      "id": "audition",
+      "gate": "pick"
+    },
+    {
+      "id": "postprocess",
+      "steps": [
+        {
+          "op": "trim_silence"
+        },
+        {
+          "op": "fit",
+          "duration": "spec",
+          "snap": "none"
+        },
+        {
+          "op": "fade",
+          "in": 0.5,
+          "out": 3.0
+        },
+        {
+          "op": "loudnorm",
+          "target_lufs": -18,
+          "true_peak_db": -1.5
+        },
+        {
+          "op": "export",
+          "formats": [
+            "wav24",
+            "mp3"
+          ]
+        }
+      ]
+    }
+  ],
+  "name_zh": "影片配樂（精確長度）",
+  "description_zh": "剪到指定秒數並淡出，響度留給對白。"
+}

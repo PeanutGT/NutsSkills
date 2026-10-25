@@ -1,0 +1,28 @@
+{
+  "id": "epic-trailer",
+  "name": "Epic Trailer",
+  "description": "Massive cinematic build for trailers and reveals.",
+  "caption": "epic cinematic trailer music, instrumental, massive drums, choir pads, brass, risers, powerful, heroic, crescendo",
+  "avoid": "quiet ending, vocals with words",
+  "bpm": [
+    80,
+    110
+  ],
+  "keys": [
+    "D minor",
+    "C minor",
+    "F minor"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 30,
+    "default": 75,
+    "max": 240
+  },
+  "loopable": false,
+  "tags": [
+    "video"
+  ],
+  "name_zh": "史詩預告",
+  "description_zh": "大鼓、銅管、逐步推高的預告片音樂。"
+}

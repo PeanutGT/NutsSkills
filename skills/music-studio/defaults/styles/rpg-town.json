@@ -1,0 +1,30 @@
+{
+  "id": "rpg-town",
+  "name": "Peaceful Village (RPG)",
+  "description": "Warm fantasy-village theme: guitar, flute, harp.",
+  "caption": "fantasy RPG village theme, instrumental, acoustic guitar, flute, light strings, harp, warm, folk, pastoral, gentle",
+  "avoid": "heavy drums, distortion, vocals",
+  "bpm": [
+    90,
+    115
+  ],
+  "keys": [
+    "D Major",
+    "G Major",
+    "A minor",
+    "C Major"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 45,
+    "default": 90,
+    "max": 240
+  },
+  "loopable": true,
+  "tags": [
+    "game"
+  ],
+  "notes": "Ask for a short, steady structure with no long intro or outro so it loops cleanly.",
+  "name_zh": "RPG 城鎮",
+  "description_zh": "和平的村莊、城鎮主題，適合循環。"
+}

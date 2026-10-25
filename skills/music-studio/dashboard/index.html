@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="ms-token" content="__TOKEN__">
+<meta name="color-scheme" content="dark">
+<title>Music Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="rack-top">
+  <div class="brand">Music Studio</div>
+  <div class="engine" id="engine" role="status" aria-live="polite"></div>
+  <nav class="tabs" role="tablist" aria-label="主要區塊">
+    <button role="tab" id="tab-create" aria-selected="true" aria-controls="view" data-view="create">創作</button>
+    <button role="tab" id="tab-library" aria-selected="false" aria-controls="view" data-view="library">資料庫</button>
+    <button role="tab" id="tab-settings" aria-selected="false" aria-controls="view" data-view="settings">設定</button>
+  </nav>
+</header>
+<main id="view" role="tabpanel" tabindex="-1"></main>
+<footer class="dock" id="dock" aria-label="生成佇列"></footer>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="/app.js"></script>
+</body>
+</html>
