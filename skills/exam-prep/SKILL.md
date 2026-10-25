@@ -1,6 +1,12 @@
 ---
 name: exam-prep
 description: 把學習資料（講義/投影片 PDF、PPT、課本章節、手寫或手機拍的筆記照片、考古題、作業，可直接上傳或給 Google Drive 檔案/資料夾連結）重新組織成排版精美的 PDF。整理方式可複選：詳盡章節講義、精簡重點、依考試題型重組的解題卡、Cornell 主動回憶筆記、30 秒/5 分鐘/完整的分層講義；每份都附概念地圖（依賴關係）並大量使用圖表（統計分布、盒鬚圖、迴歸、線性變換等）。另可出練習題、獨立解答本、公式小抄，計算答案用程式驗算。只要使用者提到期中考、期末考、小考、複習、考前衝刺、整理重點、畫重點、整理教材、做成講義、學習講義、自學、讀不懂教材、解題技巧、題型整理、出練習題、模擬考、考古題、讀書筆記、study guide、lecture notes、exam prep、practice questions、cheat sheet，或丟了課堂資料並想學懂或準備考試，就使用這個 skill——即使他沒有明確說要 PDF 或沒說「skill」。
+license: Apache-2.0
+compatibility: 需要可執行程式碼的環境（Claude.ai 需開啟程式碼執行；Claude Code 可直接使用），並能安裝 npm 與 pip 套件。渲染需要 Node.js 18+ 與 Chromium（Playwright），圖表與驗算需要 Python 3（matplotlib、sympy、scipy）。
+metadata:
+  version: "2.0.0"
+  author: PeanutGT
+  repository: https://github.com/PeanutGT/NutsSkills
 ---
 
 # Exam Prep — 學習講義與考試複習包產生器

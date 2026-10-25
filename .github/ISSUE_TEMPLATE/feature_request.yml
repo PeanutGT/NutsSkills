@@ -1,0 +1,29 @@
+name: 功能建議 Feature request
+description: 想要新的功能、整理方式、圖表或新的 skill
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: skill
+    attributes:
+      label: 哪個 skill？ Skill
+      options:
+        - exam-prep
+        - 新的 skill New skill
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 想解決什麼問題？ Problem
+      description: 例如「讀統計時，看不懂檢定的拒絕域在哪裡」
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: 你想像的做法 Proposed solution
+  - type: textarea
+    id: example
+    attributes:
+      label: 範例 Example
+      description: 有類似的講義、筆記格式可以參考嗎？（請勿上傳有版權的檔案）

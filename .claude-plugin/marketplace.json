@@ -1,0 +1,20 @@
+{
+  "name": "nutsskills",
+  "owner": {
+    "name": "PeanutGT",
+    "url": "https://github.com/PeanutGT"
+  },
+  "metadata": {
+    "description": "PeanutGT's Claude skills — study materials to beautifully laid-out exam-prep PDFs, and more.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "exam-prep",
+      "description": "Turn slides, textbooks, handwritten-note photos and past exams into exam-prep PDFs: detailed handouts, pattern cards, Cornell recall notes, layered notes, practice questions with verified answers, and cheat sheets. Traditional Chinese by default.",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/exam-prep"]
+    }
+  ]
+}

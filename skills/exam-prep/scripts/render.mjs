@@ -326,7 +326,21 @@ fs.writeFileSync(tmpHtml, doc);
 
 // ---------- print with Chromium ----------
 const { mod: pw } = need("playwright");
-const browser = await pw.chromium.launch();
+async function launchChromium() {
+  try { return await pw.chromium.launch(); } catch (e) {
+    if (!/Executable doesn't exist|browserType\.launch/i.test(String(e.message))) throw e;
+    console.error("[exam-prep] Chromium not found; trying `npx playwright install chromium` ...");
+    try {
+      execSync("npx --yes playwright install chromium", { stdio: "inherit", env: { ...process.env, NODE_PATH: [DEPS_DIR + "/node_modules", process.env.NODE_PATH || ""].join(path.delimiter) } });
+      return await pw.chromium.launch();
+    } catch (e2) {
+      console.error("[exam-prep] Could not start Chromium. Install it with `npx playwright install --with-deps chromium`, " +
+        "or set PLAYWRIGHT_BROWSERS_PATH to an existing Playwright browser folder. See the skill README (執行需求).");
+      throw e2;
+    }
+  }
+}
+const browser = await launchChromium();
 const page = await browser.newPage();
 await page.goto(pathToFileURL(path.resolve(tmpHtml)).href, { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);

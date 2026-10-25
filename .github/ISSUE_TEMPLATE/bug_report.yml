@@ -1,0 +1,62 @@
+name: 回報問題 Bug report
+description: Skill 沒有正常運作、產出錯誤或排版問題
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        謝謝回報！⚠️ **請不要上傳有版權的講義、考卷，或含個人資料的檔案。** 用文字描述，或只附出問題那一頁的截圖。
+        Please don't upload copyrighted course materials or personal data.
+  - type: dropdown
+    id: skill
+    attributes:
+      label: 哪個 skill？ Skill
+      options:
+        - exam-prep
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 版本 Version
+      description: zip 檔名中的版本，或 SKILL.md 的 metadata.version
+      placeholder: "2.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 在哪裡使用？ Where
+      options:
+        - Claude.ai 網頁
+        - Claude 桌面版
+        - Claude Code
+        - 其他 Other
+    validations:
+      required: true
+  - type: textarea
+    id: prompt
+    attributes:
+      label: 你對 Claude 說了什麼？ What did you ask
+      description: 貼上你的訊息；提供了哪些類型的資料（例如：3 份投影片 PDF＋1 張手寫筆記照片）
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 預期的結果 Expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 實際的結果 Actual
+      description: 發生了什麼？Claude 回報的錯誤訊息請完整貼上
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: 截圖 Screenshot
+      description: 出問題那一頁的截圖（選填）

@@ -1,6 +1,11 @@
 # exam-prep
 
+繁體中文 | [English](README.en.md)
+
 把學習資料整理成排版精美、可列印的 PDF，用來學懂教材或準備考試。
+
+![題型解題卡、Cornell 回憶筆記、分層講義的頁面範例](../../docs/images/exam-prep/overview.png)
+<sub>左起：題型解題卡、Cornell 回憶筆記、分層講義（同一份機統筆記照片產出）</sub>
 
 ## 特色
 
@@ -27,6 +32,10 @@
 
 投影片 PDF／PPT、課本章節、手寫或手機拍的筆記照片、考古題、作業；可直接上傳，或給 Google Drive 檔案／資料夾連結（需連接 Google Drive）。
 
+## 安裝
+
+見 [repo 首頁的安裝說明](../../README.md#安裝)。Claude.ai 使用者到 [Releases](https://github.com/PeanutGT/NutsSkills/releases) 下載 `exam-prep-<版本>.zip` 上傳即可。
+
 ## 使用方式
 
 安裝後直接對 Claude 說，例如：
@@ -37,7 +46,16 @@
 
 Claude 會先讀完資料，再詢問範圍、要哪些文件、主題、題型與語言等，然後產出 PDF。
 
+## 概念地圖
+
+每份整理文件開頭都有全範圍概念地圖，每章開頭有章節地圖，標出前置依賴與常考概念：
+
+![概念地圖範例](../../docs/images/exam-prep/concept-maps.png)
+
 ## 執行需求
+
+Claude.ai 上需要開啟**程式碼執行**（Settings → Capabilities）；skill 會在執行環境中自動安裝缺少的套件。在自己的電腦用 Claude Code 時需要：
+
 
 - Node.js（渲染用；`katex`、`marked`、`playwright`、`mermaid` 缺少時會自動安裝到 `~/.exam-prep-deps`）
 - Chromium（Playwright 使用）、Noto Sans/Serif CJK TC 字型
@@ -51,5 +69,13 @@ Claude 會先讀完資料，再詢問範圍、要哪些文件、主題、題型�
 - `scripts/figures.py` — 教學圖表
 - `scripts/verify_helpers.py` — 驗算比較工具
 - `assets/themes/` — 主題樣式
-- `references/` — 撰寫語法、出題指南、驗算流程、輸入資料讀取方式
-- `evals/` — 測試案例
+- `references/` — 撰寫語法、整理方式、圖表、出題指南、驗算流程、輸入資料讀取方式
+- `evals/` — 測試案例（開發用，不會打包進 Releases 的 zip）
+- `CHANGELOG.md` — 更新紀錄
+
+## 已知限制
+
+- 輸出以繁體中文為主（練習題可選英文或中英對照）
+- 掃描品質差或字跡潦草的手寫筆記，辨識可能出錯；關鍵數值不確定時 Claude 會請你確認
+- 證明題、申論題無法用程式驗算，會在解答標示「無法程式驗算」
+- Google Drive 讀取需要先連接 Google Drive；產出的 PDF 不會自動存回 Drive
