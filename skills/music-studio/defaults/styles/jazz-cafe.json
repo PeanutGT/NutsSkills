@@ -1,0 +1,30 @@
+{
+  "id": "jazz-cafe",
+  "name": "Jazz Café",
+  "description": "Relaxed late-night piano-trio jazz.",
+  "caption": "smooth jazz, instrumental, piano trio, upright bass, brushed drums, warm, late night cafe, relaxed swing, intimate",
+  "avoid": "vocals, electric guitar solos, loud dynamics",
+  "bpm": [
+    80,
+    110
+  ],
+  "keys": [
+    "Bb Major",
+    "F Major",
+    "D minor",
+    "G minor"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 45,
+    "default": 120,
+    "max": 240
+  },
+  "loopable": false,
+  "tags": [
+    "focus",
+    "personal"
+  ],
+  "name_zh": "咖啡廳爵士",
+  "description_zh": "輕鬆的鋼琴三重奏爵士。"
+}

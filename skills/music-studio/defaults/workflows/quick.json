@@ -1,0 +1,46 @@
+{
+  "id": "quick",
+  "name": "Quick track",
+  "description": "Plan, generate variants, pick one, normalise, export. The everyday default.",
+  "stages": [
+    {
+      "id": "plan",
+      "gate": "auto"
+    },
+    {
+      "id": "generate",
+      "gate": "auto"
+    },
+    {
+      "id": "audition",
+      "gate": "pick"
+    },
+    {
+      "id": "postprocess",
+      "steps": [
+        {
+          "op": "trim_silence"
+        },
+        {
+          "op": "fade",
+          "in": 0.0,
+          "out": 3.0,
+          "when": "not_loopable"
+        },
+        {
+          "op": "loudnorm",
+          "target_lufs": -16,
+          "true_peak_db": -1.5
+        },
+        {
+          "op": "export",
+          "formats": [
+            "flac"
+          ]
+        }
+      ]
+    }
+  ],
+  "name_zh": "一般",
+  "description_zh": "生成幾個版本，挑一個，調響度後匯出。"
+}

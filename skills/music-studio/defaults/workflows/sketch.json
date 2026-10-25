@@ -1,0 +1,36 @@
+{
+  "id": "sketch",
+  "name": "Sketch (fast ideas)",
+  "description": "Many cheap draft variants to explore a direction; no mastering.",
+  "defaults": {
+    "quality": "draft",
+    "variants": 3
+  },
+  "stages": [
+    {
+      "id": "plan",
+      "gate": "auto"
+    },
+    {
+      "id": "generate",
+      "gate": "auto"
+    },
+    {
+      "id": "audition",
+      "gate": "pick"
+    },
+    {
+      "id": "postprocess",
+      "steps": [
+        {
+          "op": "export",
+          "formats": [
+            "flac"
+          ]
+        }
+      ]
+    }
+  ],
+  "name_zh": "快速草稿",
+  "description_zh": "便宜快速地多試幾個方向。"
+}

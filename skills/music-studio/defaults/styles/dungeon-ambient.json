@@ -1,0 +1,26 @@
+{
+  "id": "dungeon-ambient",
+  "name": "Dark Dungeon",
+  "description": "Eerie drones and sparse textures for tense exploration.",
+  "caption": "dark ambient, instrumental, low drones, eerie textures, distant metallic hits, sparse, tense atmosphere, horror game, subterranean",
+  "avoid": "melody, steady beat, bright tones",
+  "bpm": null,
+  "keys": [
+    "E minor",
+    "C minor",
+    "F# minor"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 45,
+    "default": 120,
+    "max": 240
+  },
+  "loopable": true,
+  "tags": [
+    "game",
+    "video"
+  ],
+  "name_zh": "地下城",
+  "description_zh": "陰暗、迴響的探索氛圍。"
+}

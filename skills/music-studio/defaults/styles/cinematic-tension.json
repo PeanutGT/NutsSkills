@@ -1,0 +1,29 @@
+{
+  "id": "cinematic-tension",
+  "name": "Cinematic Tension",
+  "description": "Thriller underscore with rising unease.",
+  "caption": "cinematic suspense, instrumental, low pulsing synth, ticking percussion, dissonant strings, rising tension, thriller underscore",
+  "avoid": "resolved happy harmony, vocals",
+  "bpm": [
+    90,
+    120
+  ],
+  "keys": [
+    "C# minor",
+    "F minor",
+    "D minor"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 30,
+    "default": 75,
+    "max": 240
+  },
+  "loopable": false,
+  "tags": [
+    "video",
+    "game"
+  ],
+  "name_zh": "電影感・緊張",
+  "description_zh": "懸疑、壓迫感的場景配樂。"
+}

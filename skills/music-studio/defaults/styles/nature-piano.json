@@ -1,0 +1,31 @@
+{
+  "id": "nature-piano",
+  "name": "Quiet Piano",
+  "description": "Sparse, reflective solo piano with lots of space.",
+  "caption": "solo piano, instrumental, gentle, sparse, peaceful, reflective, soft touch, spacious reverb, minimal",
+  "avoid": "drums, strings, fast passages",
+  "bpm": [
+    55,
+    75
+  ],
+  "keys": [
+    "C Major",
+    "A minor",
+    "E minor",
+    "Ab Major"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 45,
+    "default": 120,
+    "max": 240
+  },
+  "loopable": false,
+  "tags": [
+    "focus",
+    "personal",
+    "video"
+  ],
+  "name_zh": "安靜鋼琴",
+  "description_zh": "簡單的獨奏鋼琴，留白多。"
+}

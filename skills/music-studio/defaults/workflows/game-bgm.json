@@ -1,0 +1,51 @@
+{
+  "id": "game-bgm",
+  "name": "Game BGM (seamless loop)",
+  "description": "Confirm the plan, generate several candidates, pick one, make it loop seamlessly, normalise, export ogg + wav for game engines.",
+  "defaults": {
+    "quality": "standard",
+    "variants": 2
+  },
+  "stages": [
+    {
+      "id": "plan",
+      "gate": "confirm",
+      "note": "Confirm style, BPM, key and length. Prefer a short, steady structure with no long intro/outro."
+    },
+    {
+      "id": "generate",
+      "gate": "auto"
+    },
+    {
+      "id": "audition",
+      "gate": "pick"
+    },
+    {
+      "id": "postprocess",
+      "steps": [
+        {
+          "op": "trim_silence"
+        },
+        {
+          "op": "loop",
+          "crossfade": 2.0,
+          "snap_bars": true
+        },
+        {
+          "op": "loudnorm",
+          "target_lufs": -16,
+          "true_peak_db": -1.5
+        },
+        {
+          "op": "export",
+          "formats": [
+            "ogg",
+            "wav"
+          ]
+        }
+      ]
+    }
+  ],
+  "name_zh": "遊戲 BGM（無縫循環）",
+  "description_zh": "挑一版做成可無縫循環，匯出 ogg 和 wav 給遊戲引擎。"
+}

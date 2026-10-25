@@ -1,0 +1,29 @@
+{
+  "id": "chiptune-adventure",
+  "name": "Chiptune Adventure",
+  "description": "Upbeat 8-bit platformer energy.",
+  "caption": "chiptune, 8-bit, instrumental, square wave lead, pulse bass, fast arpeggios, upbeat, retro platformer, catchy melody",
+  "avoid": "realistic instruments, vocals, reverb wash",
+  "bpm": [
+    130,
+    160
+  ],
+  "keys": [
+    "C Major",
+    "G Major",
+    "A minor",
+    "E minor"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 30,
+    "default": 75,
+    "max": 240
+  },
+  "loopable": true,
+  "tags": [
+    "game"
+  ],
+  "name_zh": "8-bit 冒險",
+  "description_zh": "復古遊戲機音色的冒險曲。"
+}

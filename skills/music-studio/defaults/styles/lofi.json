@@ -1,0 +1,32 @@
+{
+  "id": "lofi",
+  "name": "Lo-fi Chill",
+  "description": "Warm, dusty lo-fi hip hop for studying, working or relaxing.",
+  "caption": "lo-fi hip hop, instrumental, mellow, warm Rhodes piano, dusty vinyl crackle, laid-back boom bap drums, soft bass, tape saturation, relaxing",
+  "avoid": "vocals, harsh highs, busy drum fills, sudden dynamic changes",
+  "bpm": [
+    70,
+    88
+  ],
+  "keys": [
+    "C minor",
+    "F minor",
+    "A minor",
+    "Eb Major"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 45,
+    "default": 120,
+    "max": 240
+  },
+  "loopable": true,
+  "tags": [
+    "focus",
+    "game",
+    "personal"
+  ],
+  "notes": "Very loop-friendly: repeating 4-8 bar patterns. Good default for background use.",
+  "name_zh": "Lo-fi 放鬆",
+  "description_zh": "溫暖、帶黑膠雜訊的 lo-fi 嘻哈，讀書、工作、放空都適合。"
+}

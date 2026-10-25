@@ -1,0 +1,94 @@
+{
+  "skill_name": "music-studio",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我在做一款 2D RPG,需要一首新手村的循環 BGM,大概 90 秒,要能無縫循環,輸出 ogg 給 Godot 用。",
+      "expected_output": "Plans with style rpg-town (or similar), game-bgm workflow, loop-friendly caption (steady, repetitive, no intro/outro), generates variants, runs postprocess with loop + loudnorm, exports ogg, reports the QC seam line and states the loop is crossfade-based.",
+      "assertions": [
+        "Uses msconfig.py plan and engine.py generate rather than inventing parameters",
+        "Caption is English and contains steady/repetitive and no build/outro words",
+        "Runs the loop step and exports ogg",
+        "Reports QC / seam result in plain words and offers the loop preview",
+        "Does not claim the BPM or loop is guaranteed"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "以後我的預設都用 high 品質,而且響度目標改成 -14 LUFS。",
+      "expected_output": "Writes the two keys to the workspace config via msconfig.py set, validates, tells the user what changed and how to revert; does not touch defaults/.",
+      "assertions": [
+        "Runs msconfig.py set quality.default high and postprocess.loudness_lufs -14",
+        "Runs validate",
+        "Does not edit files under defaults/",
+        "Mentions unset as the way to revert"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "幫我做一段 42 秒的短片配樂,前面平靜,後面慢慢升起情緒,結尾要自然收掉。沒有 GPU 先讓我看看流程。",
+      "expected_output": "Uses the video-score workflow with duration 42 and the mock engine, describes the arc in the caption, warns that mock audio is a synthetic test signal, fit step makes it exactly 42 s with a fade-out.",
+      "assertions": [
+        "Uses --engine mock or config engine mock and says the audio is a test signal",
+        "Duration is exactly 42 in the spec and the final file length is about 42 s",
+        "Caption describes the arc (calm then building)",
+        "Does not promise that the build hits a specific second"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "我想做一個新的風格叫「雨夜咖啡廳」,爵士鋼琴加雨聲,慢節奏,之後常用。",
+      "expected_output": "Creates a user style file in the workspace styles folder (or via the dashboard) with English caption tags, bpm range, keys and duration, validates it, and generates or offers a sample.",
+      "assertions": [
+        "Style file is created in the workspace, not in the skill's defaults/",
+        "Caption tags are English and concrete (instruments, texture)",
+        "msconfig.py validate passes",
+        "Style appears in msconfig.py styles"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "我生成的時候一直出現 oom,怎麼辦?我的卡是 8GB。",
+      "expected_output": "Runs engine.py check, explains tier mid, suggests draft quality / shorter length / lower max_batch / closing GPU apps, mentions the automatic retry with one variant, points to troubleshooting.",
+      "assertions": [
+        "Runs or references engine.py check",
+        "Mentions the automatic batch-1 retry",
+        "Suggests concrete settings with the exact config keys",
+        "Does not suggest editing anything inside defaults/"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "幫我做一首有主唱的中文流行歌。",
+      "expected_output": "Says vocals are phase 2 and not built yet, points to roadmap, offers an instrumental backing track in the meantime.",
+      "assertions": [
+        "States plainly that vocal songs are not supported yet",
+        "Offers instrumental alternative",
+        "Does not fabricate lyrics generation through the engine"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "我用 8GB 顯卡,生出來的音樂雜訊很多,而且不太像我描述的『下雨天讀書的鋼琴爵士』。",
+      "expected_output": "Reads quality.md, runs engine.py check, inspects the last take's effective/warnings, finds causes (quantization/no LM/long duration/description not in caption), fixes config via msconfig.py set in the workspace, regenerates with the same seed and shows the caption preview.",
+      "assertions": [
+        "Looks at the take's effective settings or engine.py check instead of guessing",
+        "Identifies at least one concrete cause and changes a workspace setting",
+        "Writes an English caption that includes rain, piano and jazz tags",
+        "Keeps the duration within 30-120 s",
+        "Does not edit defaults/"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "幫我做一首咖啡廳的輕鬆爵士背景音樂,越快越好。",
+      "expected_output": "Plans without asking questions, starts the dashboard in the background and gives the URL (or tells the user to double-click start_dashboard.bat), generates with draft/standard, reports progress in short lines.",
+      "assertions": [
+        "Asks no more than one question",
+        "Provides the dashboard URL or the start_dashboard.bat instruction",
+        "Caption is English with jazz, piano and cafe-like tags",
+        "Reports the result with a next step (pick, refine or finalize)"
+      ]
+    }
+  ]
+}

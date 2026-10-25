@@ -1,0 +1,50 @@
+{
+  "id": "focus-session",
+  "name": "Focus session",
+  "description": "Long, quiet, even background audio for work or study.",
+  "defaults": {
+    "quality": "standard",
+    "variants": 2,
+    "duration": 120
+  },
+  "stages": [
+    {
+      "id": "plan",
+      "gate": "auto"
+    },
+    {
+      "id": "generate",
+      "gate": "auto"
+    },
+    {
+      "id": "audition",
+      "gate": "pick"
+    },
+    {
+      "id": "postprocess",
+      "steps": [
+        {
+          "op": "trim_silence"
+        },
+        {
+          "op": "fade",
+          "in": 4.0,
+          "out": 6.0
+        },
+        {
+          "op": "loudnorm",
+          "target_lufs": -20,
+          "true_peak_db": -1.5
+        },
+        {
+          "op": "export",
+          "formats": [
+            "mp3"
+          ]
+        }
+      ]
+    }
+  ],
+  "name_zh": "讀書／工作背景",
+  "description_zh": "較長、較安靜，長淡入淡出。"
+}

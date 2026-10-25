@@ -1,0 +1,1219 @@
+{
+ "_doc": "Maps words in your plain-language description to English caption tags. 'match' = words to look for (Chinese or English, case-insensitive), 'tags' = what is added, 'bpm_delta' nudges the style's tempo. Add or override entries in <workspace>/lexicon.json (same shape; set \"tags\": \"\" to disable a built-in entry).",
+ "piano": {
+  "match": [
+   "鋼琴",
+   "piano",
+   "琴聲"
+  ],
+  "tags": "warm piano",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "grand-piano": {
+  "match": [
+   "三角鋼琴",
+   "grand piano"
+  ],
+  "tags": "expressive grand piano",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "rhodes": {
+  "match": [
+   "rhodes",
+   "電鋼琴",
+   "electric piano"
+  ],
+  "tags": "warm Rhodes electric piano",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "guitar-acoustic": {
+  "match": [
+   "木吉他",
+   "民謠吉他",
+   "acoustic guitar",
+   "吉他"
+  ],
+  "tags": "fingerpicked acoustic guitar",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "guitar-electric": {
+  "match": [
+   "電吉他",
+   "electric guitar"
+  ],
+  "tags": "electric guitar",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "violin": {
+  "match": [
+   "小提琴",
+   "violin"
+  ],
+  "tags": "expressive solo violin",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "cello": {
+  "match": [
+   "大提琴",
+   "cello"
+  ],
+  "tags": "warm cello",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "strings": {
+  "match": [
+   "弦樂",
+   "strings"
+  ],
+  "tags": "lush string ensemble",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "orchestra": {
+  "match": [
+   "管弦",
+   "交響",
+   "樂團",
+   "orchestra",
+   "orchestral"
+  ],
+  "tags": "orchestral",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "flute": {
+  "match": [
+   "長笛",
+   "笛子",
+   "flute"
+  ],
+  "tags": "airy flute",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "harp": {
+  "match": [
+   "豎琴",
+   "harp"
+  ],
+  "tags": "gentle harp",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "harpsichord": {
+  "match": [
+   "大鍵琴",
+   "harpsichord"
+  ],
+  "tags": "harpsichord",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "organ": {
+  "match": [
+   "管風琴",
+   "organ"
+  ],
+  "tags": "church pipe organ",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "sax": {
+  "match": [
+   "薩克斯風",
+   "薩克斯",
+   "sax"
+  ],
+  "tags": "smooth saxophone",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "trumpet": {
+  "match": [
+   "小號",
+   "trumpet",
+   "銅管",
+   "brass"
+  ],
+  "tags": "brass section",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "marimba": {
+  "match": [
+   "馬林巴",
+   "marimba",
+   "木琴",
+   "xylophone"
+  ],
+  "tags": "marimba",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "bells": {
+  "match": [
+   "鈴聲",
+   "鐘聲",
+   "風鈴",
+   "bells",
+   "glockenspiel"
+  ],
+  "tags": "soft bells, glockenspiel",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "music-box": {
+  "match": [
+   "音樂盒",
+   "music box"
+  ],
+  "tags": "music box",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "synth-pad": {
+  "match": [
+   "合成器鋪底",
+   "pad",
+   "氛圍合成"
+  ],
+  "tags": "warm synth pads",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "synth": {
+  "match": [
+   "合成器",
+   "synth",
+   "電子"
+  ],
+  "tags": "analog synthesizers",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "arp": {
+  "match": [
+   "琶音",
+   "arpeggio",
+   "arp"
+  ],
+  "tags": "arpeggiated synth",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "bass": {
+  "match": [
+   "貝斯",
+   "bass"
+  ],
+  "tags": "round bass",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "drums": {
+  "match": [
+   "鼓聲",
+   "鼓點",
+   "drums",
+   "drum"
+  ],
+  "tags": "tight drums",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "taiko": {
+  "match": [
+   "太鼓",
+   "taiko",
+   "戰鼓"
+  ],
+  "tags": "taiko drums",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "choir": {
+  "match": [
+   "合唱",
+   "choir",
+   "人聲和聲"
+  ],
+  "tags": "wordless choir pads",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "erhu": {
+  "match": [
+   "二胡",
+   "erhu"
+  ],
+  "tags": "erhu",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "guzheng": {
+  "match": [
+   "古箏",
+   "guzheng"
+  ],
+  "tags": "guzheng",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "shakuhachi": {
+  "match": [
+   "尺八",
+   "shakuhachi"
+  ],
+  "tags": "shakuhachi flute",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "ukulele": {
+  "match": [
+   "烏克麗麗",
+   "ukulele"
+  ],
+  "tags": "ukulele",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "chiptune-sound": {
+  "match": [
+   "8bit",
+   "8-bit",
+   "八位元",
+   "芯片",
+   "chiptune"
+  ],
+  "tags": "8-bit chiptune square waves",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "lofi": {
+  "match": [
+   "lofi",
+   "lo-fi",
+   "低傳真"
+  ],
+  "tags": "lo-fi hip hop, dusty vinyl crackle",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "jazz": {
+  "match": [
+   "爵士",
+   "jazz"
+  ],
+  "tags": "smooth jazz",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "classical": {
+  "match": [
+   "古典",
+   "classical"
+  ],
+  "tags": "classical",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "ambient": {
+  "match": [
+   "氛圍",
+   "ambient",
+   "環境音樂"
+  ],
+  "tags": "ambient, spacious, evolving textures",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "edm": {
+  "match": [
+   "電子舞曲",
+   "edm",
+   "house",
+   "電音"
+  ],
+  "tags": "electronic dance music",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "synthwave": {
+  "match": [
+   "合成器浪潮",
+   "synthwave",
+   "復古未來",
+   "80年代",
+   "80s"
+  ],
+  "tags": "80s synthwave, analog synths, gated reverb",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "rock": {
+  "match": [
+   "搖滾",
+   "rock"
+  ],
+  "tags": "rock",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "folk": {
+  "match": [
+   "民謠",
+   "folk"
+  ],
+  "tags": "folk",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "cinematic": {
+  "match": [
+   "電影感",
+   "電影",
+   "配樂",
+   "cinematic",
+   "film score"
+  ],
+  "tags": "cinematic film score",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "trailer": {
+  "match": [
+   "預告片",
+   "trailer"
+  ],
+  "tags": "epic trailer music, braams, risers",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "celtic": {
+  "match": [
+   "凱爾特",
+   "celtic"
+  ],
+  "tags": "celtic folk",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "bossa": {
+  "match": [
+   "巴薩諾瓦",
+   "bossa"
+  ],
+  "tags": "bossa nova",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "trap": {
+  "match": [
+   "trap",
+   "嘻哈",
+   "hip hop",
+   "hiphop"
+  ],
+  "tags": "hip hop beat",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "orchestral-fantasy": {
+  "match": [
+   "奇幻",
+   "fantasy"
+  ],
+  "tags": "fantasy adventure",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "horror": {
+  "match": [
+   "恐怖",
+   "驚悚",
+   "horror"
+  ],
+  "tags": "dark horror atmosphere, dissonance",
+  "group": "genre",
+  "bpm_delta": -6
+ },
+ "minimal": {
+  "match": [
+   "極簡",
+   "minimal"
+  ],
+  "tags": "minimalist, sparse",
+  "group": "genre",
+  "bpm_delta": 0
+ },
+ "rain": {
+  "match": [
+   "下雨",
+   "雨天",
+   "雨聲",
+   "雨夜",
+   "rain"
+  ],
+  "tags": "soft rain ambience",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "thunder": {
+  "match": [
+   "雷聲",
+   "打雷",
+   "thunder"
+  ],
+  "tags": "distant thunder",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "ocean": {
+  "match": [
+   "海浪",
+   "海邊",
+   "ocean",
+   "waves"
+  ],
+  "tags": "ocean waves ambience",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "forest": {
+  "match": [
+   "森林",
+   "鳥叫",
+   "鳥鳴",
+   "forest",
+   "birds"
+  ],
+  "tags": "forest ambience, birdsong",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "fire": {
+  "match": [
+   "營火",
+   "壁爐",
+   "fire",
+   "fireplace"
+  ],
+  "tags": "crackling fireplace",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "wind": {
+  "match": [
+   "風聲",
+   "微風",
+   "wind"
+  ],
+  "tags": "gentle wind",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "night": {
+  "match": [
+   "夜晚",
+   "深夜",
+   "夜",
+   "night"
+  ],
+  "tags": "night time, intimate",
+  "group": "scene",
+  "bpm_delta": -4
+ },
+ "city": {
+  "match": [
+   "城市",
+   "都會",
+   "city"
+  ],
+  "tags": "urban night city atmosphere",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "cafe": {
+  "match": [
+   "咖啡廳",
+   "咖啡店",
+   "咖啡",
+   "cafe",
+   "coffee"
+  ],
+  "tags": "cozy cafe atmosphere",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "vinyl": {
+  "match": [
+   "黑膠",
+   "vinyl"
+  ],
+  "tags": "dusty vinyl crackle",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "tape": {
+  "match": [
+   "卡帶",
+   "tape"
+  ],
+  "tags": "tape saturation, warble",
+  "group": "texture",
+  "bpm_delta": 0
+ },
+ "space": {
+  "match": [
+   "太空",
+   "宇宙",
+   "space",
+   "cosmic"
+  ],
+  "tags": "cosmic, vast, ethereal",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "underwater": {
+  "match": [
+   "水底",
+   "水下",
+   "underwater"
+  ],
+  "tags": "underwater, muffled, flowing",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "cave": {
+  "match": [
+   "洞穴",
+   "地下城",
+   "dungeon",
+   "cave"
+  ],
+  "tags": "dark dungeon, echoing, ominous",
+  "group": "scene",
+  "bpm_delta": -6
+ },
+ "castle": {
+  "match": [
+   "城堡",
+   "castle"
+  ],
+  "tags": "medieval castle, noble",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "village": {
+  "match": [
+   "村莊",
+   "新手村",
+   "小鎮",
+   "village",
+   "town"
+  ],
+  "tags": "peaceful village, pastoral",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "desert": {
+  "match": [
+   "沙漠",
+   "desert"
+  ],
+  "tags": "desert, arid, modal melodies",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "snow": {
+  "match": [
+   "雪",
+   "冬天",
+   "snow",
+   "winter"
+  ],
+  "tags": "snowy winter, crystalline, quiet",
+  "group": "scene",
+  "bpm_delta": -4
+ },
+ "summer": {
+  "match": [
+   "夏天",
+   "夏日",
+   "summer"
+  ],
+  "tags": "sunny summer, breezy",
+  "group": "scene",
+  "bpm_delta": 4
+ },
+ "sunrise": {
+  "match": [
+   "日出",
+   "清晨",
+   "早晨",
+   "morning",
+   "sunrise"
+  ],
+  "tags": "gentle morning light, fresh",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "sunset": {
+  "match": [
+   "黃昏",
+   "夕陽",
+   "sunset"
+  ],
+  "tags": "golden hour, warm, wistful",
+  "group": "scene",
+  "bpm_delta": -3
+ },
+ "road": {
+  "match": [
+   "公路",
+   "開車",
+   "drive",
+   "road trip"
+  ],
+  "tags": "night drive, steady pulse",
+  "group": "scene",
+  "bpm_delta": 6
+ },
+ "battle": {
+  "match": [
+   "戰鬥",
+   "打王",
+   "boss",
+   "battle",
+   "fight"
+  ],
+  "tags": "intense battle, driving rhythm",
+  "group": "scene",
+  "bpm_delta": 14
+ },
+ "chase": {
+  "match": [
+   "追逐",
+   "逃亡",
+   "chase"
+  ],
+  "tags": "frantic chase, urgent",
+  "group": "scene",
+  "bpm_delta": 14
+ },
+ "victory": {
+  "match": [
+   "勝利",
+   "通關",
+   "victory"
+  ],
+  "tags": "triumphant fanfare",
+  "group": "scene",
+  "bpm_delta": 6
+ },
+ "menu": {
+  "match": [
+   "選單",
+   "主選單",
+   "menu",
+   "title screen"
+  ],
+  "tags": "game title screen theme",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "shop": {
+  "match": [
+   "商店",
+   "shop"
+  ],
+  "tags": "light shop theme, cheerful",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "puzzle": {
+  "match": [
+   "解謎",
+   "益智",
+   "puzzle"
+  ],
+  "tags": "casual puzzle game, curious, light",
+  "group": "scene",
+  "bpm_delta": -2
+ },
+ "study": {
+  "match": [
+   "讀書",
+   "念書",
+   "學習",
+   "專注",
+   "study",
+   "focus",
+   "work"
+  ],
+  "tags": "steady, unobtrusive, focused",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "sleep": {
+  "match": [
+   "睡眠",
+   "助眠",
+   "sleep",
+   "lullaby",
+   "搖籃"
+  ],
+  "tags": "sleep music, very slow, soft",
+  "group": "scene",
+  "bpm_delta": -20,
+  "remove": [
+   "drum",
+   "upbeat",
+   "energetic",
+   "driving",
+   "bouncy"
+  ]
+ },
+ "meditation": {
+  "match": [
+   "冥想",
+   "靜心",
+   "meditation",
+   "瑜伽",
+   "yoga"
+  ],
+  "tags": "meditative drone, slow breathing",
+  "group": "scene",
+  "bpm_delta": -20,
+  "remove": [
+   "drum",
+   "upbeat",
+   "energetic",
+   "driving",
+   "bouncy",
+   "beat"
+  ]
+ },
+ "wedding": {
+  "match": [
+   "婚禮",
+   "wedding"
+  ],
+  "tags": "romantic, elegant",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "corporate": {
+  "match": [
+   "企業",
+   "產品",
+   "簡報",
+   "corporate",
+   "product demo",
+   "startup"
+  ],
+  "tags": "corporate upbeat, clean, motivational",
+  "group": "scene",
+  "bpm_delta": 6
+ },
+ "vlog": {
+  "match": [
+   "vlog",
+   "旅遊",
+   "旅行",
+   "travel"
+  ],
+  "tags": "bright travel vlog, acoustic, positive",
+  "group": "scene",
+  "bpm_delta": 6
+ },
+ "kids": {
+  "match": [
+   "兒童",
+   "小孩",
+   "童趣",
+   "kids"
+  ],
+  "tags": "playful children's music",
+  "group": "scene",
+  "bpm_delta": 4
+ },
+ "relax": {
+  "match": [
+   "放鬆",
+   "輕鬆",
+   "舒服",
+   "relax",
+   "chill",
+   "療癒",
+   "healing"
+  ],
+  "tags": "relaxing, laid-back, soothing",
+  "group": "mood",
+  "bpm_delta": -6
+ },
+ "cozy": {
+  "match": [
+   "溫暖",
+   "溫馨",
+   "cozy",
+   "warm"
+  ],
+  "tags": "warm, cozy",
+  "group": "mood",
+  "bpm_delta": -3
+ },
+ "sad": {
+  "match": [
+   "悲傷",
+   "傷感",
+   "難過",
+   "憂鬱",
+   "哀",
+   "sad",
+   "失落"
+  ],
+  "tags": "melancholic, sorrowful, tender",
+  "group": "mood",
+  "bpm_delta": -8
+ },
+ "lonely": {
+  "match": [
+   "孤獨",
+   "寂寞",
+   "lonely"
+  ],
+  "tags": "lonely, sparse, introspective",
+  "group": "mood",
+  "bpm_delta": -8
+ },
+ "nostalgic": {
+  "match": [
+   "懷舊",
+   "回憶",
+   "nostalgic"
+  ],
+  "tags": "nostalgic, wistful",
+  "group": "mood",
+  "bpm_delta": -4
+ },
+ "happy": {
+  "match": [
+   "開心",
+   "快樂",
+   "歡樂",
+   "happy",
+   "joyful"
+  ],
+  "tags": "joyful, bright, bouncy",
+  "group": "mood",
+  "bpm_delta": 6
+ },
+ "hope": {
+  "match": [
+   "希望",
+   "hopeful"
+  ],
+  "tags": "hopeful, uplifting",
+  "group": "mood",
+  "bpm_delta": 2
+ },
+ "epic": {
+  "match": [
+   "史詩",
+   "壯闊",
+   "宏大",
+   "epic"
+  ],
+  "tags": "epic, grand, powerful",
+  "group": "mood",
+  "bpm_delta": 8
+ },
+ "tense": {
+  "match": [
+   "緊張",
+   "懸疑",
+   "tense",
+   "suspense"
+  ],
+  "tags": "tense, suspenseful, ticking pulse",
+  "group": "mood",
+  "bpm_delta": 4
+ },
+ "mystery": {
+  "match": [
+   "神秘",
+   "mysterious",
+   "mystery"
+  ],
+  "tags": "mysterious, curious",
+  "group": "mood",
+  "bpm_delta": -2
+ },
+ "dark": {
+  "match": [
+   "黑暗",
+   "陰暗",
+   "暗黑",
+   "dark"
+  ],
+  "tags": "dark, brooding",
+  "group": "mood",
+  "bpm_delta": -4
+ },
+ "romantic": {
+  "match": [
+   "浪漫",
+   "戀愛",
+   "romantic"
+  ],
+  "tags": "romantic, intimate",
+  "group": "mood",
+  "bpm_delta": -4
+ },
+ "dreamy": {
+  "match": [
+   "夢幻",
+   "dreamy",
+   "空靈",
+   "ethereal"
+  ],
+  "tags": "dreamy, ethereal, reverb-soaked",
+  "group": "mood",
+  "bpm_delta": -4
+ },
+ "energetic": {
+  "match": [
+   "活力",
+   "動感",
+   "熱血",
+   "energetic"
+  ],
+  "tags": "energetic, driving",
+  "group": "mood",
+  "bpm_delta": 10
+ },
+ "playful": {
+  "match": [
+   "俏皮",
+   "可愛",
+   "playful",
+   "cute"
+  ],
+  "tags": "playful, bouncy, light",
+  "group": "mood",
+  "bpm_delta": 4
+ },
+ "majestic": {
+  "match": [
+   "莊嚴",
+   "神聖",
+   "majestic"
+  ],
+  "tags": "majestic, solemn",
+  "group": "mood",
+  "bpm_delta": -2
+ },
+ "slow": {
+  "match": [
+   "慢板",
+   "慢節奏",
+   "緩慢",
+   "slow"
+  ],
+  "tags": "slow tempo",
+  "group": "tempo",
+  "bpm_delta": -10
+ },
+ "fast": {
+  "match": [
+   "快節奏",
+   "快板",
+   "快速",
+   "fast",
+   "upbeat"
+  ],
+  "tags": "fast tempo, upbeat",
+  "group": "tempo",
+  "bpm_delta": 12
+ },
+ "steady": {
+  "match": [
+   "循環",
+   "loop",
+   "無縫",
+   "steady"
+  ],
+  "tags": "steady, repetitive, consistent groove",
+  "group": "structure",
+  "bpm_delta": 0
+ },
+ "build": {
+  "match": [
+   "漸強",
+   "慢慢升起",
+   "逐漸",
+   "crescendo",
+   "build"
+  ],
+  "tags": "slow build, rising intensity, swelling",
+  "group": "structure",
+  "bpm_delta": 0
+ },
+ "no-drums": {
+  "match": [
+   "沒有鼓",
+   "無鼓",
+   "不要鼓",
+   "no drums",
+   "不要節奏",
+   "沒有節奏",
+   "無節奏"
+  ],
+  "tags": "no percussion",
+  "group": "structure",
+  "bpm_delta": 0,
+  "remove": [
+   "drum",
+   "percussion",
+   "beat",
+   "snare",
+   "kick"
+  ]
+ },
+ "sparse": {
+  "match": [
+   "簡單",
+   "稀疏",
+   "sparse"
+  ],
+  "tags": "sparse, minimal arrangement",
+  "group": "structure",
+  "bpm_delta": 0
+ },
+ "rich": {
+  "match": [
+   "豐富",
+   "厚實",
+   "rich"
+  ],
+  "tags": "rich layered arrangement",
+  "group": "structure",
+  "bpm_delta": 0
+ },
+ "intimate": {
+  "match": [
+   "親密",
+   "近距離",
+   "intimate"
+  ],
+  "tags": "dry and intimate, close-mic",
+  "group": "production",
+  "bpm_delta": 0
+ },
+ "big-hall": {
+  "match": [
+   "大廳",
+   "大空間",
+   "big hall",
+   "宏偉"
+  ],
+  "tags": "big hall reverb",
+  "group": "production",
+  "bpm_delta": 0
+ },
+ "lofi-fx": {
+  "match": [
+   "復古",
+   "retro"
+  ],
+  "tags": "retro, vintage warmth",
+  "group": "production",
+  "bpm_delta": 0
+ },
+ "defeat": {
+  "match": [
+   "失敗",
+   "戰敗",
+   "敗北",
+   "game over",
+   "defeat",
+   "輸了"
+  ],
+  "tags": "somber, defeat, quiet resignation",
+  "group": "scene",
+  "bpm_delta": -8
+ },
+ "loading": {
+  "match": [
+   "載入畫面",
+   "讀取畫面",
+   "loading screen"
+  ],
+  "tags": "short calm loop, unobtrusive",
+  "group": "scene",
+  "bpm_delta": 0
+ },
+ "ending": {
+  "match": [
+   "結局",
+   "片尾",
+   "ending",
+   "credits"
+  ],
+  "tags": "bittersweet ending theme, resolving",
+  "group": "scene",
+  "bpm_delta": -4
+ },
+ "war": {
+  "match": [
+   "戰爭",
+   "戰場",
+   "軍事",
+   "war",
+   "military"
+  ],
+  "tags": "military snare, low brass, gritty",
+  "group": "scene",
+  "bpm_delta": 4
+ },
+ "desolate": {
+  "match": [
+   "落寞",
+   "蒼涼",
+   "荒涼",
+   "desolate"
+  ],
+  "tags": "desolate, empty, distant",
+  "group": "mood",
+  "bpm_delta": -6
+ },
+ "resigned": {
+  "match": [
+   "無奈",
+   "不甘",
+   "惋惜"
+  ],
+  "tags": "wistful, regretful",
+  "group": "mood",
+  "bpm_delta": -4
+ },
+ "game": {
+  "match": [
+   "遊戲畫面",
+   "遊戲配樂",
+   "遊戲音樂",
+   "遊戲"
+  ],
+  "tags": "video game soundtrack",
+  "group": "scene",
+  "bpm_delta": 0
+ }
+}

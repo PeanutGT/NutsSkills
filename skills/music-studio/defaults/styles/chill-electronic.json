@@ -1,0 +1,31 @@
+{
+  "id": "chill-electronic",
+  "name": "Chill Electronic",
+  "description": "Downtempo electronic with dreamy synths.",
+  "caption": "chillwave, downtempo electronic, instrumental, soft synths, smooth bass, light beat, dreamy, atmospheric",
+  "avoid": "vocals, harsh leads",
+  "bpm": [
+    90,
+    110
+  ],
+  "keys": [
+    "F minor",
+    "A minor",
+    "C Major",
+    "D minor"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 45,
+    "default": 120,
+    "max": 240
+  },
+  "loopable": true,
+  "tags": [
+    "focus",
+    "personal",
+    "game"
+  ],
+  "name_zh": "輕電子",
+  "description_zh": "柔和的電子節拍。"
+}

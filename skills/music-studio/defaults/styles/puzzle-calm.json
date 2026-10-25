@@ -1,0 +1,29 @@
+{
+  "id": "puzzle-calm",
+  "name": "Puzzle Calm",
+  "description": "Light, airy, whimsical music for casual and puzzle games.",
+  "caption": "light playful instrumental, soft piano, marimba, pizzicato strings, gentle, whimsical, casual puzzle game, airy",
+  "avoid": "heavy bass, aggressive drums",
+  "bpm": [
+    90,
+    110
+  ],
+  "keys": [
+    "C Major",
+    "F Major",
+    "G Major"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 45,
+    "default": 90,
+    "max": 240
+  },
+  "loopable": true,
+  "tags": [
+    "game",
+    "focus"
+  ],
+  "name_zh": "輕鬆解謎",
+  "description_zh": "輕巧、好奇的休閒遊戲配樂。"
+}
