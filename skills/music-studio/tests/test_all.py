@@ -161,6 +161,9 @@ class TestAceRunner(Base):
         super().setUp()
         self.ace = self.tmp / "ace"
         shutil.copytree(ROOT / "tests" / "fake_acestep", self.ace, symlinks=False, ignore=shutil.ignore_patterns(".venv"))
+        # git does not keep empty folders, so the fake checkpoints are made here (no sft: tests its fallback)
+        for name in ("acestep-v15-turbo", "vae", "Qwen3-Embedding-0.6B", "acestep-5Hz-lm-1.7B"):
+            (self.ace / "checkpoints" / name).mkdir(parents=True, exist_ok=True)
         py = self.ace / ".venv" / "bin"; py.mkdir(parents=True)
         (py / "python").symlink_to(sys.executable)
         self.sh("msconfig.py", "set", "ace_step_dir", str(self.ace))

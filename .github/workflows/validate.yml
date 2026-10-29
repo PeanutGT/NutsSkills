@@ -24,6 +24,21 @@ jobs:
       - run: pip install pyyaml
       - run: python tools/validate_skills.py
 
+  music-studio-tests:
+    name: Unit tests (music-studio)
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pip install numpy
+      - run: python -m unittest discover -s tests -v
+        working-directory: skills/music-studio
+
   smoke:
     name: Render smoke test (exam-prep)
     runs-on: ubuntu-latest

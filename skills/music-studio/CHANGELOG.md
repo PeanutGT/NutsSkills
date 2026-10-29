@@ -2,6 +2,12 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [3.1.1] - 2026-10-29
+
+### 修正
+- 從 GitHub 全新 clone 後有 2 項測試失敗：假 ACE-Step 的模型資料夾是空目錄，git 不會保存，現在改由測試自己建立
+- CI 新增 music-studio 單元測試（Linux + ffmpeg + numpy）
+
 ## [3.1.0] - 2026-10-25
 
 ### 新增
