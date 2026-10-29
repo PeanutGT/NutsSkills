@@ -52,6 +52,23 @@ def main() -> int:
         if problems:
             print(log)
             failed = True
+    # ingest + preview on the eval inputs and the rendered PDF
+    files = sorted((SKILL / "evals").glob("*/files/*"))
+    r = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), *map(str, files), "--out", str(out / "ingest")],
+                       capture_output=True, text=True)
+    report = out / "ingest" / "report.md"
+    ok = r.returncode == 0 and report.exists() and list((out / "ingest" / "sheets").glob("*"))
+    print(f"[ingest] {'ok' if ok else 'FAIL'} ({len(files)} files)")
+    if not ok:
+        print(r.stdout + r.stderr)
+        failed = True
+    r = subprocess.run([sys.executable, str(SKILL / "scripts" / "preview.py"), str(out / "sample-modern.pdf"), "--out", str(out / "preview")],
+                       capture_output=True, text=True)
+    ok = r.returncode == 0 and list((out / "preview").glob("*-overview-*.png"))
+    print(f"[preview] {'ok' if ok else 'FAIL'}")
+    if not ok:
+        print(r.stdout + r.stderr)
+        failed = True
     return 1 if failed else 0
 
 

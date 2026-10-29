@@ -128,7 +128,7 @@ $$\det\begin{pmatrix}2-\lambda&1\\1&2-\lambda\end{pmatrix}=(2-\lambda)^2-1=0 \Ri
 
 ## 整理方式專用容器
 
-各容器的寫法與用途詳見 `organize-styles.md`，這裡只列語法。
+各容器的寫法與用途詳見 `organize-styles.md`（地圖）與 `styles/*.md`（各整理方式），這裡只列語法。
 
 | 容器 | 用途 |
 |---|---|

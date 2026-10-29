@@ -25,6 +25,7 @@ It doesn't just rewrite the textbook chapter by chapter — it **reorganizes the
 3. **Concept maps** — a whole-scope map and one per chapter, showing prerequisites and frequently tested ideas
 4. **Figures** — distribution bar charts, shaded probability areas, histograms, annotated box plots, regression, Venn diagrams, probability trees, linear maps…
 5. **Verified numbers** — answers, worked examples and numbers on figures are recomputed with SymPy / SciPy
+6. **Token-frugal** — sources are read once into a cited `materials.md`; only pages whose text can't be extracted (formulas, figures, photos) are looked at, several per low-resolution contact sheet
 
 Also: practice questions (Chinese / English / bilingual), a separate answer key, a two-column cheat sheet. Three themes: modern, textbook, cheat-sheet.
 

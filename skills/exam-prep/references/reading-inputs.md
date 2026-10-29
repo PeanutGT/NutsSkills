@@ -1,45 +1,67 @@
-# 讀取各類學習資料
+# 讀取學習資料：整理一次，之後只用整理好的檔案
 
-目標是把所有資料都讀進來，建立完整的內容地圖。寧可多讀，不要只看前幾頁就開始寫——漏掉的章節使用者考試時會遇到。
+原則：**原始資料只讀一次**。讀完寫成 `materials.md`，之後的概念分析、每一份文件都只根據 `materials.md` 和 `concepts.md` 寫，不再回頭讀 PDF 或圖片。一次產出好幾份文件時，這樣最省，也能確保每份文件用的內容一致。
 
-## PDF（講義、投影片、課本）
+寧可讀完，不要只看前幾頁就開始寫——漏掉的章節使用者考試時會遇到。
 
-```bash
-pdftotext -layout slides.pdf - | head -200     # 先看文字層
-pdfinfo slides.pdf                               # 頁數
-```
-
-- 有文字層：用 `pdftotext` 擷取全文
-- **數學公式、圖表、示意圖**在文字層常常亂掉或消失。投影片類 PDF 請另外把頁面轉成圖片檢視：
-  `pdftoppm -r 80 -png slides.pdf page` 然後用 Read 看圖片，至少看公式密集的頁面
-- 沒有文字層（掃描檔）→ 當成圖片處理（見下）
-- 頁數很多時分批讀，但要讀完
-
-## PowerPoint (.pptx)
+## 1. 執行 ingest
 
 ```bash
-pip install --break-system-packages -q python-pptx 2>/dev/null
-python3 -c "
-from pptx import Presentation
-import sys
-p = Presentation(sys.argv[1])
-for i, s in enumerate(p.slides, 1):
-    print(f'--- slide {i} ---')
-    for sh in s.shapes:
-        if sh.has_text_frame: print(sh.text_frame.text)
-    if s.has_notes_slide: print('[notes]', s.notes_slide.notes_text_frame.text)
-" deck.pptx
+python <skill-dir>/scripts/ingest.py <所有資料檔> --out ingest/
 ```
 
-公式多為圖片或 OLE 物件，文字擷取不到；若內容看起來缺漏，用 LibreOffice 轉 PDF 再轉圖片檢視：
-`soffice --headless --convert-to pdf deck.pptx`
+支援 PDF、PPTX、DOCX、Markdown／文字檔、照片。它會：
+- 逐頁抽出文字層，存成 `ingest/text/<檔名>.txt`（每頁有 `=== 檔名 p.N ===` 標記，PPTX 連講者備註一起）
+- 判斷**哪些頁面需要看圖**：掃描頁、公式被拆碎、含 PDF 公式字元、以圖為主的頁面、照片
+- 只把這些頁面用低解析度渲染，每 4 張投影片（或 2 頁直式頁面）拼成一張 `ingest/sheets/*.png`
+- 寫一份 `ingest/report.md`，列出每個檔案要讀哪些文字、看哪些 sheet
 
-## 手寫筆記、手機拍的照片
+**先讀 `report.md`**，再讀 `text/`，然後**只看** report 列出的 sheets。沒列出的頁面文字層已經夠用，不要再逐頁轉圖片看——一頁一頁看圖片，每頁大約要 1,000–1,500 tokens。
 
-直接用 Read 檢視圖片，自己辨識文字與公式。
-- 辨識不確定的字或符號，寫進重點時依上下文判斷；真的無法判斷就在回覆中列出請使用者確認，不要自行猜測關鍵數值
-- 照片歪斜或太暗不影響閱讀時不用處理；看不清楚時可用 Pillow 調亮、轉正、放大後再看
-- 手寫筆記常反映**老師上課特別強調的地方**，這些內容在重點整理中應優先保留
+如果某張 sheet 上的公式小到看不清，只針對那一頁放大：
+`pdftoppm -r 110 -f N -l N -png -singlefile file.pdf page_N`，再看 `page_N.png`。
+
+## 2. 寫 materials.md
+
+把讀到的內容寫成一份忠實、完整、標好出處的整理稿。**這不是摘要**：定義、定理、公式、例題、老師的說法都要留下，只是去掉版面雜訊並修好公式。
+
+```markdown
+# Materials
+
+## Ch5 特徵值與特徵向量（la_slides_ch5.pdf p.2–3）
+- 定義：$A\mathbf x=\lambda\mathbf x$，$\mathbf x\neq\mathbf 0$ … [la_slides_ch5 p.2]
+- 定理 1：三角矩陣的特徵值是對角線元素 [la_slides_ch5 p.2]
+- 例：$A=\begin{pmatrix}2&3\\3&-6\end{pmatrix}$，特徵值 $3,-7$（附推導）[la_slides_ch5 p.3]
+- 老師強調：… [筆記照片] / [ch4.pptx 講者備註 p.1]
+
+## 考古題
+- 2025 Q2（15%）：判斷上三角矩陣可否對角化 → 概念：對角化判準；題型：判斷可否對角化 [la_pastexam p.1]
+
+## 不確定的地方
+- 筆記照片第 3 行的指數看不清，可能是 $p^2$ 或 $p^3$（需要請使用者確認）
+```
+
+- 每一條都標出處 `[檔名 p.N]`，之後寫文件時才查得到、也能標 `{{補充}}`
+- 公式一律寫成 LaTeX；PDF 文字層破碎的公式，以 sheet 上看到的為準重寫
+- 看不清楚或互相矛盾的地方集中列在「不確定的地方」，交付前向使用者確認關鍵數值
+- 寫完後刪除不再需要的中間輸出也可以，但 `materials.md` 要保留到最後
+
+## 3. 資料很多時：交給子代理
+
+**能派出子代理的環境**（例如 Claude Code、Claude app 的代理式工作環境），資料超過約 30 頁、或需要看的 sheet 超過 8 張時，把步驟 1–2 交給子代理做，主對話就不會塞滿原始內容：
+
+- 給子代理：資料檔路徑、這份 `reading-inputs.md` 的路徑（請它先讀）、輸出路徑 `materials.md`
+- 要求它只回報：`materials.md` 的路徑、章節清單與頁數、「不確定的地方」——**不要把整理內容貼回來**
+- 資料非常多時可依檔案分給幾個子代理，各寫 `materials-<n>.md`，最後由主對話合併（只合併標題與條目，不重讀原始檔）
+
+**不能派子代理的環境**（例如一般 Claude.ai 聊天）就自己做步驟 1–2，效果一樣，只是主對話會比較長。
+
+## 各類資料的補充說明
+
+- **PDF**：ingest 已處理。沒有 poppler 時：`pip install --break-system-packages pdfplumber` 改用 pdfplumber 抽文字
+- **PPTX**：公式常是圖片或 OLE 物件，ingest 會標出這些投影片；需要 LibreOffice（`soffice`）才能轉成圖片。沒有的話請使用者另存成 PDF 上傳
+- **DOCX**：ingest 用 pandoc 轉文字；含 Word 方程式時會提醒，可請使用者另存 PDF
+- **手寫筆記、照片**：ingest 會縮小到適合閱讀的大小。辨識不確定的字或符號列進「不確定的地方」，不要自行猜測關鍵數值；照片太暗或歪斜看不清時，可用 Pillow 調亮、轉正後再看。手寫筆記和講者備註常反映**老師上課特別強調的地方**，要優先保留
 
 ## 考古題、作業
 
@@ -50,11 +72,6 @@ for i, s in enumerate(p.slides, 1):
 - 出題風格：數字複雜度、中英文、是否偏重推導或計算
 
 如果考古題附有答案，可用來校準解答風格；如果沒有，「逐題詳解」時就要自己解並驗算。
-
-## Word / 純文字 / Markdown
-
-- `.docx`：`pandoc notes.docx -t markdown`
-- `.txt` `.md`：直接讀
 
 ## Google Drive 上的資料
 
@@ -78,11 +95,13 @@ Google Drive 工具名稱是 `mcp__Google_Drive__*`（可能需要先用 ToolSea
 
 ### 3. 讀內容：先文字，必要時再看頁面
 
+從 Drive 讀到的內容同樣整理進 `materials.md`，出處寫成 `[Drive: 檔名 p.N]`。
+
 1. **先用 `read_file_content`**——支援 Google 文件/簡報/試算表、PDF、Word、PPT、圖片，回傳文字，成本最低。
    - Google 文件或簡報加 `includeComments: true`：老師或同學留的註解常常就是重點提示
 2. **公式或圖表讀不出來時**（文字裡出現破碎的符號、矩陣變成一串數字）：
    - 先用 `get_file_metadata` 看檔案大小
-   - **小檔（約 300 KB 以下）**：`download_file_content` 下載。Google 簡報/文件加 `exportMimeType: "application/pdf"` 匯出成 PDF。回傳的 base64 存成檔案後解碼（`base64 -d x.b64 > x.pdf`），再照上面「PDF」的方式轉成圖片檢視
+   - **小檔（約 300 KB 以下）**：`download_file_content` 下載。Google 簡報/文件加 `exportMimeType: "application/pdf"` 匯出成 PDF。回傳的 base64 存成檔案後解碼（`base64 -d x.b64 > x.pdf`），再把這個 PDF 交給 ingest 處理
    - **大檔**：base64 會塞爆對話，不要下載整份。請使用者把該檔案直接上傳到對話，或只上傳公式最多的那幾頁的截圖
 3. 圖片（手寫筆記照片）：小張的可直接下載解碼後用 Read 看；多張大圖同樣請使用者直接上傳
 

@@ -25,6 +25,7 @@
 3. **概念地圖**：每份整理文件都有全範圍總圖與每章章節圖，標出依賴關係與常考概念
 4. **圖表**：分布長條圖、機率面積、直方圖、盒鬚圖、迴歸、文氏圖、機率樹、線性變換……能畫圖的就畫圖
 5. **驗算**：解答、例題、圖上的數字全部用 SymPy/SciPy 重算
+6. **省 token**：原始資料只讀一次並整理成標好出處的 `materials.md`；只有公式、圖表、照片等文字抽不出來的頁面才看圖，而且多頁拼成一張低解析度總覽
 
 另可產出練習題（中文／英文／中英對照可選）、與題目分開的解答本、雙欄公式小抄。三套主題：現代筆記風、教科書風、精簡小抄風。
 
@@ -65,11 +66,13 @@ Claude.ai 上需要開啟**程式碼執行**（Settings → Capabilities）；sk
 ## 檔案
 
 - `SKILL.md` — skill 本體
+- `scripts/ingest.py` — 讀取所有資料、挑出需要看圖的頁面
 - `scripts/render.mjs` — Markdown → 主題化 PDF
+- `scripts/preview.py` — PDF 縮圖總覽，檢查排版
 - `scripts/figures.py` — 教學圖表
 - `scripts/verify_helpers.py` — 驗算比較工具
 - `assets/themes/` — 主題樣式
-- `references/` — 撰寫語法、整理方式、圖表、出題指南、驗算流程、輸入資料讀取方式
+- `references/` — 撰寫語法、讀取資料、概念分析與地圖、圖表、出題指南、驗算流程；`references/styles/` 五種整理方式各自的寫法
 - `evals/` — 測試案例（開發用，不會打包進 Releases 的 zip）
 - `CHANGELOG.md` — 更新紀錄
 
