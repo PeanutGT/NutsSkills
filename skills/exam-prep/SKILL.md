@@ -2,9 +2,9 @@
 name: exam-prep
 description: 把講義、投影片、課本、手寫筆記照片、考古題（可上傳或給 Google Drive 連結）重新組織成排版精美的複習 PDF：學習講義、重點整理、題型解題卡、Cornell 回憶筆記、分層講義、練習題與驗算過的解答、公式小抄，附概念地圖與圖表。使用者提到期中考、期末考、小考、複習、整理重點、整理教材、做講義、出練習題、考古題、study guide、exam prep、cheat sheet，或丟了課堂資料想學懂或準備考試時使用。
 license: Apache-2.0
-compatibility: 需要可執行程式碼的環境（Claude.ai 需開啟程式碼執行；Claude Code 可直接使用），並能安裝 npm 與 pip 套件。渲染需要 Node.js 18+ 與 Chromium（Playwright），讀取與檢查需要 poppler，圖表與驗算需要 Python 3（matplotlib、sympy、scipy）。
+compatibility: 需要可執行程式碼的環境（Claude.ai 需開啟程式碼執行；Claude Code、Codex 可直接使用），並能安裝 npm 與 pip 套件。渲染需要 Node.js 18+ 與 Chromium（Playwright），讀取與檢查需要 poppler，圖表與驗算需要 Python 3（matplotlib、sympy、scipy）。
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---
@@ -29,6 +29,16 @@ metadata:
 前五種是「整理文件」，可複選、每種一份 PDF，共用同一份概念分析所以彼此一致。整理文件與小抄以繁體中文為主，**術語第一次出現時中英並列**，例如「特徵值 (eigenvalue)」；練習題語言由使用者選。
 
 ## 工作流程
+
+`<skill-dir>` 指這份 SKILL.md 所在的資料夾，`scripts/`、`references/` 都相對於它。
+
+### 0. 環境（第一次使用，或出現缺套件、無法連網、沒有寫入權限的錯誤時）
+
+```bash
+python <skill-dir>/scripts/setup.py --check   # 只檢查，不安裝，離線也能跑
+```
+
+有缺的就執行 `python <skill-dir>/scripts/setup.py` 安裝（需要網路）。有沙箱的代理環境（例如 Codex 預設不能連網、不能寫入工作資料夾以外的地方）要請使用者核准在沙箱外執行，或請使用者自己在終端機跑一次。poppler、Node.js 無法自動安裝，照檢查結果的提示請使用者安裝。
 
 ### 1. 讀資料：只讀一次，整理成 materials.md
 
@@ -102,11 +112,11 @@ python <skill-dir>/scripts/preview.py out/線性代數_題型解題卡.pdf --pag
 
 先看總覽找版面問題，只放大看起來有問題的頁；**不要逐頁轉圖片看**，文字內容在 Markdown 裡校對。常見問題：公式顯示成紅色原始碼（KaTeX 不支援，改寫）；概念地圖擠成一長條或文字被截（減少節點、換 TD/LR、拆成兩張）；圖表標籤重疊；表格或公式超出頁寬（拆開或用 `aligned`）；幾乎空白的頁（卡片或圖太高，調整或拆開）。
 
-交付 PDF 時用一兩句話說明涵蓋範圍、每份頁數或題數、有幾題無法程式驗算、`materials.md` 裡「不確定的地方」有哪些需要使用者確認。把檔案交給使用者（例如用傳檔工具），不要在對話中重述文件內容。
+交付 PDF 時用一兩句話說明涵蓋範圍、每份頁數或題數、有幾題無法程式驗算、`materials.md` 裡「不確定的地方」有哪些需要使用者確認。把檔案交給使用者（有傳檔工具就用，沒有就告訴使用者檔案路徑），不要在對話中重述文件內容。
 
 ## 檔案
 
-- `scripts/ingest.py` 讀資料與挑出需要看圖的頁　`scripts/render.mjs` Markdown → PDF　`scripts/preview.py` 排版總覽　`scripts/figures.py` 教學圖表　`scripts/verify_helpers.py` 驗算工具
+- `scripts/ingest.py` 讀資料與挑出需要看圖的頁　`scripts/render.mjs` Markdown → PDF　`scripts/preview.py` 排版總覽　`scripts/figures.py` 教學圖表　`scripts/verify_helpers.py` 驗算工具　`scripts/setup.py` 檢查與安裝執行環境
 - `references/reading-inputs.md` 讀資料、materials.md、子代理、Google Drive
 - `references/markdown-format.md` 撰寫語法（寫 Markdown 前必讀）
 - `references/organize-styles.md` 概念分析與概念地圖（共同基礎）　`references/styles/*.md` 五種整理方式各自的寫法

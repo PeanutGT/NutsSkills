@@ -52,6 +52,23 @@ cp -r NutsSkills/skills/exam-prep ~/.claude/skills/          # 所有專案可�
 # 或 cp -r NutsSkills/skills/exam-prep <專案>/.claude/skills/  # 只給單一專案
 ```
 
+### OpenAI Codex
+
+```bash
+codex plugin marketplace add PeanutGT/NutsSkills
+codex plugin install exam-prep@nutsskills
+```
+
+或手動複製到 skills 資料夾：
+
+```bash
+git clone https://github.com/PeanutGT/NutsSkills.git
+cp -r NutsSkills/skills/exam-prep ~/.codex/skills/           # 所有專案可用（Windows：%USERPROFILE%\.codex\skills\）
+# 或 cp -r NutsSkills/skills/exam-prep <專案>/.agents/skills/  # 只給單一專案
+```
+
+Codex 預設的沙箱不能連網，也不能寫入專案資料夾以外的地方，exam-prep 第一次渲染時沒辦法自動安裝套件。請先在一般終端機執行一次 `python ~/.codex/skills/exam-prep/scripts/setup.py`；用 plugin 安裝的話，在 Codex 裡說「幫我安裝 exam-prep 的執行環境」，再核准它在沙箱外執行。之後輸入 `$exam-prep` 或直接描述需求即可使用。
+
 ## 使用
 
 安裝後不需要特別呼叫，直接描述你要做的事，例如：

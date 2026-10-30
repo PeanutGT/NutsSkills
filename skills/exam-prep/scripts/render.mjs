@@ -41,12 +41,21 @@ function tryRequire(name) {
   }
   return null;
 }
+const SETUP_HINT = `Run \`python "${path.join(HERE, "setup.py")}"\` once in a normal terminal (outside any agent sandbox), then retry.`;
+function npmInstall(name) {
+  console.error(`[exam-prep] installing ${name} into ${DEPS_DIR} ...`);
+  try {
+    fs.mkdirSync(DEPS_DIR, { recursive: true });
+    execSync(`npm install --silent --prefix "${DEPS_DIR}" ${name}`, { stdio: "inherit" });
+  } catch {
+    console.error(`[exam-prep] Could not install ${name}: no network, or the sandbox blocks writing to ${DEPS_DIR}. ${SETUP_HINT}`);
+    process.exit(1);
+  }
+}
 function need(name) {
   let r = tryRequire(name);
   if (!r) {
-    console.error(`[exam-prep] installing ${name} into ${DEPS_DIR} ...`);
-    fs.mkdirSync(DEPS_DIR, { recursive: true });
-    execSync(`npm install --silent --prefix "${DEPS_DIR}" ${name}`, { stdio: "inherit" });
+    npmInstall(name);
     r = tryRequire(name);
   }
   if (!r) throw new Error(`Cannot load ${name}`);
@@ -72,9 +81,7 @@ function findMermaid() {
   for (const b of bases) cands.push(path.join(b, "mermaid/dist/mermaid.min.js"), path.join(b, "node_modules/mermaid/dist/mermaid.min.js"));
   let hit = cands.find((c) => fs.existsSync(c));
   if (!hit) {
-    console.error(`[exam-prep] installing mermaid into ${DEPS_DIR} ...`);
-    fs.mkdirSync(DEPS_DIR, { recursive: true });
-    execSync(`npm install --silent --prefix "${DEPS_DIR}" mermaid`, { stdio: "inherit" });
+    npmInstall("mermaid");
     hit = path.join(DEPS_DIR, "node_modules/mermaid/dist/mermaid.min.js");
   }
   return hit;
@@ -335,7 +342,8 @@ async function launchChromium() {
       return await pw.chromium.launch();
     } catch (e2) {
       console.error("[exam-prep] Could not start Chromium. Install it with `npx playwright install --with-deps chromium`, " +
-        "or set PLAYWRIGHT_BROWSERS_PATH to an existing Playwright browser folder. See the skill README (執行需求).");
+        "or set PLAYWRIGHT_BROWSERS_PATH to an existing Playwright browser folder. In a sandboxed agent (e.g. Codex), " +
+        "retry outside the sandbox with approval. " + SETUP_HINT);
       throw e2;
     }
   }

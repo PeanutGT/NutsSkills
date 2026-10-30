@@ -63,11 +63,15 @@ Claude.ai 上需要開啟**程式碼執行**（Settings → Capabilities）；sk
 - Python 3 + `sympy`、`scipy`（驗算用）、`matplotlib`（圖表用）
 - `pdftoppm`（poppler，排版檢查用）
 
+`python scripts/setup.py --check` 檢查缺什麼，`python scripts/setup.py` 一次裝好 npm 套件、Chromium 與 Python 套件（poppler、Node.js 需自行安裝）。用 Codex 時請在沙箱外執行，見[安裝說明](../../README.md#openai-codex)。
+
 ## 檔案
 
 - `SKILL.md` — skill 本體
 - `scripts/ingest.py` — 讀取所有資料、挑出需要看圖的頁面
 - `scripts/render.mjs` — Markdown → 主題化 PDF
+- `scripts/setup.py` — 檢查與安裝執行環境
+- `agents/openai.yaml` — Codex 介面顯示的名稱與簡介
 - `scripts/preview.py` — PDF 縮圖總覽，檢查排版
 - `scripts/figures.py` — 教學圖表
 - `scripts/verify_helpers.py` — 驗算比較工具

@@ -52,6 +52,23 @@ cp -r NutsSkills/skills/exam-prep ~/.claude/skills/          # all projects
 # or cp -r NutsSkills/skills/exam-prep <project>/.claude/skills/  # one project
 ```
 
+### OpenAI Codex
+
+```bash
+codex plugin marketplace add PeanutGT/NutsSkills
+codex plugin install exam-prep@nutsskills
+```
+
+Or copy it into a skills folder manually:
+
+```bash
+git clone https://github.com/PeanutGT/NutsSkills.git
+cp -r NutsSkills/skills/exam-prep ~/.codex/skills/           # all projects (Windows: %USERPROFILE%\.codex\skills\)
+# or cp -r NutsSkills/skills/exam-prep <project>/.agents/skills/  # one project only
+```
+
+Codex's default sandbox has no network and can't write outside the project folder, so exam-prep can't install its packages on first render. Run `python ~/.codex/skills/exam-prep/scripts/setup.py` once in a normal terminal; if you installed it as a plugin, ask Codex to "set up the exam-prep environment" and approve running it outside the sandbox. Then type `$exam-prep` or just describe what you need.
+
 ## Usage
 
 No special command is needed — just describe what you want, e.g.

@@ -2,6 +2,20 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [2.2.0] - 2026-10-30
+
+支援 OpenAI Codex。
+
+### 新增
+- `scripts/setup.py`：`--check` 列出缺少的執行環境（Node.js、npm 套件、Chromium、Python 套件、poppler、中文字型），不安裝、離線也能跑；不加參數則一次裝好能自動安裝的部分。Codex 預設沙箱不能連網、不能寫入專案以外的地方，可以先在終端機跑一次
+- `agents/openai.yaml`：Codex 介面顯示的名稱、簡介與預設提示
+- README 加入 Codex 的安裝方式（plugin marketplace 或複製到 `~/.codex/skills/`）
+
+### 變更
+- SKILL.md 加入「0. 環境」步驟，並說明 `<skill-dir>` 是 SKILL.md 所在的資料夾
+- `render.mjs`：npm 套件裝不起來時（沒有網路或沙箱擋住）直接說明原因並指向 `setup.py`，不再丟出一長串 npm 錯誤
+- 交付檔案與 Google Drive 的說明不再假設一定有傳檔工具或連接器，沒有時改給檔案路徑、請使用者把檔案放進工作資料夾
+
 ## [2.1.0] - 2026-10-29
 
 減少 token 用量：原始資料只讀一次、只看真正需要看的頁面、只載入需要的說明。

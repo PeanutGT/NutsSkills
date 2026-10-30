@@ -55,6 +55,8 @@ On Claude.ai, **code execution** must be enabled (Settings → Capabilities); mi
 - Python 3 with `sympy`, `scipy`, `matplotlib`
 - `pdftoppm` (poppler) for layout checks
 
+`python scripts/setup.py --check` reports what's missing; `python scripts/setup.py` installs the npm packages, Chromium and Python packages in one go (install poppler and Node.js yourself). With Codex, run it outside the sandbox — see the [install guide](../../README.en.md#openai-codex).
+
 ## Known limitations
 
 - Output is primarily Traditional Chinese

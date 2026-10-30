@@ -1,0 +1,4 @@
+interface:
+  display_name: "Exam Prep"
+  short_description: "把講義、投影片、筆記照片、考古題整理成複習 PDF"
+  default_prompt: "用 $exam-prep 把這些教材整理成考前複習 PDF。"

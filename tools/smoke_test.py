@@ -69,6 +69,13 @@ def main() -> int:
     if not ok:
         print(r.stdout + r.stderr)
         failed = True
+    # setup.py --check must see everything the steps above just used
+    r = subprocess.run([sys.executable, str(SKILL / "scripts" / "setup.py"), "--check"], capture_output=True, text=True,
+                       encoding="utf-8")
+    print(f"[setup --check] {'ok' if r.returncode == 0 else 'FAIL'}")
+    if r.returncode:
+        print(r.stdout + r.stderr)
+        failed = True
     return 1 if failed else 0
 
 

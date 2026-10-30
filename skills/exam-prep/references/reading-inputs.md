@@ -79,7 +79,7 @@ python <skill-dir>/scripts/ingest.py <所有資料檔> --out ingest/
 
 ### 1. 確認連接器
 
-Google Drive 工具名稱是 `mcp__Google_Drive__*`（可能需要先用 ToolSearch 載入）。如果完全找不到，用 SearchMcpRegistry 搜尋 `["google drive"]`，再用 SuggestConnectors 讓使用者一鍵連接；同時告訴他也可以先把檔案下載後直接上傳到對話。
+Google Drive 工具名稱是 `mcp__Google_Drive__*`（可能需要先用 ToolSearch 載入）。如果完全找不到，用 SearchMcpRegistry 搜尋 `["google drive"]`，再用 SuggestConnectors 讓使用者一鍵連接；同時告訴他也可以先把檔案下載後直接上傳到對話。沒有這些工具的平台（例如 Codex）就請使用者把檔案下載到工作資料夾。
 
 ### 2. 找到檔案 ID
 
@@ -108,7 +108,7 @@ Google Drive 工具名稱是 `mcp__Google_Drive__*`（可能需要先用 ToolSea
 ### 4. 產出要存回 Drive 時
 
 產出的 PDF 每份通常 300 KB 以上，透過連接器上傳等於把整份檔案 base64 塞進對話，容易失敗，**不要用 `create_file` 上傳 PDF**。改成：
-- 正常用 SendUserFile 交付，告訴使用者可以下載後拖進 Drive
+- 照一般方式交付（有傳檔工具就用，沒有就給檔案路徑），告訴使用者可以下載後拖進 Drive
 - 如果使用者的電腦有連到這個對話，而且裝了 Google Drive 電腦版（同步資料夾），可以把 PDF 直接寫進那個同步資料夾，Drive 會自動同步
 
 ## 資料不足時

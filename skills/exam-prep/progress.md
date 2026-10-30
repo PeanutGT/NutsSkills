@@ -26,6 +26,7 @@
 - 能派子代理的環境，資料多時把讀取交給子代理（一般 Claude.ai 沒有，會自動跳過）
 - 瘦身原則：**搬移與重寫，不做電報式壓縮**（避免指示被誤讀）
 - 指示不綁定特定工具名稱（「有提問工具就用，沒有就用文字問」）
+- 支援 Claude.ai、Claude Code、**OpenAI Codex**（2.2.0 起）。有沙箱擋住網路的平台，執行環境用 `scripts/setup.py` 一次裝好（`--check` 只檢查），不在渲染時臨時安裝
 
 ### 輸入
 - 投影片 PDF／PPTX、課本、手寫筆記照片、考古題、作業、DOCX
@@ -35,7 +36,7 @@
 
 ## 二、現況
 
-- **最新版本：2.1.0**（2026-10-29），已發布 Release（`exam-prep-v2.0.0`、`exam-prep-v2.1.0`）
+- **最新版本：2.2.0**（2026-10-30，Codex 相容，在 `exam-prep-codex` 分支，尚未合併、未發 Release）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
 
@@ -43,6 +44,7 @@
 - 1.x：線代（特徵值，英文投影片＋考古題）、機統（手機拍的筆記照片）完整跑過；抓到的問題都已修（選擇題雙正解、考古題配分算錯、標題孤立在頁尾等）
 - 2.0：機統照片 → 題型解題卡／Cornell／分層講義三份 PDF，21 項數字驗算全過；抓到 `pmf_bar` 尾端機率漏算（已加警告與 `highlight_value`）
 - 2.1：`ingest.py`、`preview.py` 單獨實測過（PDF、PPTX、DOCX、照片）
+- 2.2：Codex 的規格是讀 `openai/codex` 原始碼確認的（skill 位置 `~/.codex/skills`、`~/.agents/skills`、專案 `.agents/skills`；frontmatter 只讀 `name`（≤64 字）與 `description`，其他欄位略過；會讀 `.claude-plugin/marketplace.json`）。`setup.py` 在全新 HOME 實測過：npm 套件與 Python 套件能裝、Chromium 下載在雲端環境被網路政策擋住（訊息正確）。**尚未在真的 Codex 上跑過**
 
 ---
 
@@ -52,8 +54,11 @@
 - [ ] **2.1.0 尚未端到端實跑**：用新流程（ingest → materials.md → 文件）從頭產出一整套，確認 Claude 確實不再重讀原始檔、輸出品質沒有退步。建議用資料結構期中考（Ch1–Ch4）實測
 - [ ] Windows 本機（Claude Code）執行：`ingest.py`／`preview.py` 的標籤字型路徑是 Linux 路徑（有 fallback），poppler 需另裝；確認能跑
 
+- [ ] **在真的 Codex 上實跑**：`codex plugin marketplace add` → `install`、`$exam-prep` 觸發、沙箱裡 `setup.py --check`、沙箱外安裝、Chromium 能不能在沙箱內啟動（不行就要核准在沙箱外渲染）
+- [ ] 和 `exam-prep-2.1.1-windows` 分支合併時，版本號與 CHANGELOG 會衝突（兩邊都從 2.1.0 改），要手動整理
+
 ### 可做的改進
-- [ ] **ChatGPT／其他平台相容**（使用者問過，尚未決定要不要做）：
+- [ ] **ChatGPT 網頁版相容**（使用者問過，尚未決定要不要做；Codex 已在 2.2.0 支援）：
   - 把 KaTeX、Mermaid 打包進 skill，免網路也能渲染（zip 約 50 KB → 5 MB）
   - 沒有 Chromium 時改輸出自含 HTML，讓使用者用瀏覽器列印成 PDF
   - README 加相容性表
