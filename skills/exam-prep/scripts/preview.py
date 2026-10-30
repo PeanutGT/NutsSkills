@@ -21,17 +21,24 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 SHEET_MAX = 1568
+# bold fonts for page labels: Linux, Windows, macOS
+LABEL_FONTS = ["/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+               "C:/Windows/Fonts/arialbd.ttf", "/System/Library/Fonts/Supplemental/Arial Bold.ttf"]
 
 
 def font(size=20):
-    for p in ["/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]:
+    for p in LABEL_FONTS:
         if Path(p).exists():
             return ImageFont.truetype(p, size)
-    return ImageFont.load_default()
+    try:
+        return ImageFont.load_default(size)  # Pillow >= 10.1
+    except TypeError:
+        return ImageFont.load_default()
 
 
 def pages_of(pdf: Path) -> int:
-    out = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, check=True).stdout
+    out = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                         check=True).stdout
     return int(re.search(r"Pages:\s+(\d+)", out).group(1))
 
 
@@ -49,6 +56,7 @@ def main() -> int:
     ap.add_argument("--page", type=int, help="zoom into one page instead of the overview")
     ap.add_argument("--per-sheet", type=int, default=12)
     a = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # file names may hold characters cp950 lacks
     a.out.mkdir(parents=True, exist_ok=True)
     name = a.pdf.stem
     n = pages_of(a.pdf)

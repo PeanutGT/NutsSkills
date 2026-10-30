@@ -36,7 +36,7 @@
 
 ## 二、現況
 
-- **最新版本：2.2.0**（2026-10-30，Codex 相容，已合併進 main，尚未發 Release）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`
+- **最新版本：2.2.1**（2026-10-30，2.2.0 Codex 相容＋2.2.1 Windows 修正，都在 main，尚未發 Release）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
 
@@ -45,6 +45,7 @@
 - 2.0：機統照片 → 題型解題卡／Cornell／分層講義三份 PDF，21 項數字驗算全過；抓到 `pmf_bar` 尾端機率漏算（已加警告與 `highlight_value`）
 - 2.1：`ingest.py`、`preview.py` 單獨實測過（PDF、PPTX、DOCX、照片）
 - 2.2：Codex 的規格是讀 `openai/codex` 原始碼確認的（skill 位置 `~/.codex/skills`、`~/.agents/skills`、專案 `.agents/skills`；frontmatter 只讀 `name`（≤64 字）與 `description`，其他欄位略過；會讀 `.claude-plugin/marketplace.json`）。`setup.py` 在全新 HOME 實測過：npm 套件與 Python 套件能裝、Chromium 下載在雲端環境被網路政策擋住（訊息正確）。**尚未在真的 Codex 上跑過**
+- 2.2.1（Windows）：Linux 上用非 UTF-8 語系模擬 Windows：修正前中文 PDF 全部讀取失敗、報告輸出時程式中止；修正後正常。**尚未在真的 Windows 上跑過**
 
 ---
 
@@ -52,17 +53,15 @@
 
 ### 需要驗證
 - [ ] **2.1.0 尚未端到端實跑**：用新流程（ingest → materials.md → 文件）從頭產出一整套，確認 Claude 確實不再重讀原始檔、輸出品質沒有退步。建議用資料結構期中考（Ch1–Ch4）實測
-- [ ] Windows 本機（Claude Code）執行：`ingest.py`／`preview.py` 的標籤字型路徑是 Linux 路徑（有 fallback），poppler 需另裝；確認能跑
+- [ ] Windows 本機（Claude Code）實跑：2.2.1 已修程式碼層面的問題（cp950 解碼、輸出編碼、字型、LibreOffice 路徑）。還要在真機確認：poppler 的 Windows 版能不能開中文檔名、Playwright 自動安裝 Chromium、`render.mjs` 輸出中文 PDF
 
 - [ ] **在真的 Codex 上實跑**：`codex plugin marketplace add` → `install`、`$exam-prep` 觸發、沙箱裡 `setup.py --check`、沙箱外安裝、Chromium 能不能在沙箱內啟動（不行就要核准在沙箱外渲染）
-- [ ] `exam-prep-2.1.1-windows` 分支（Windows 中文 PDF 讀取修正）等使用者在 Windows 實測後再合併；它是從 2.1.0 分出來的，合併時要改成 2.2.1 並整理 CHANGELOG
 
 ### 可做的改進
 - [ ] **ChatGPT 網頁版相容**（使用者問過，尚未決定要不要做；Codex 已在 2.2.0 支援）：
   - 把 KaTeX、Mermaid 打包進 skill，免網路也能渲染（zip 約 50 KB → 5 MB）
   - 沒有 Chromium 時改輸出自含 HTML，讓使用者用瀏覽器列印成 PDF
   - README 加相容性表
-- [ ] README 安裝範例的 zip 檔名還寫 `exam-prep-2.0.0.zip`，可改成通用寫法
 - [ ] evals 只有 3 個案例，可加：純文字科目（非理工）、大量投影片（測子代理委派）、英文練習題
 - [ ] description 觸發率尚未用 skill-creator 的 `run_loop.py` 最佳化（縮短後更值得測）
 

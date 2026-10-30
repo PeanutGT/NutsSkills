@@ -30,7 +30,7 @@
 
 ### Claude.ai／Claude 桌面版
 
-1. 到 [Releases](https://github.com/PeanutGT/NutsSkills/releases) 下載要用的 skill 的 zip（例如 `exam-prep-2.0.0.zip`），**不用解壓縮**
+1. 到 [Releases](https://github.com/PeanutGT/NutsSkills/releases) 下載要用的 skill 的 zip（檔名是 `<skill 名稱>-<版本>.zip`，例如 `exam-prep-<版本>.zip`），**不用解壓縮**
 2. 確認已開啟程式碼執行：**Settings → Capabilities →「Code execution and file creation」**（Team／Enterprise 需由管理員在組織設定開啟）
 3. 前往 **[Customize → Skills](https://claude.ai/customize/skills)**，按 **＋ → Create skill → Upload a skill**，選擇剛下載的 zip
 4. 在清單中確認 skill 已開啟，開一個新對話即可使用

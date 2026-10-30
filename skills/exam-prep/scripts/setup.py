@@ -28,6 +28,9 @@ PY_PACKAGES = [("PIL", "pillow", True), ("sympy", "sympy", True), ("numpy", "num
                ("scipy", "scipy", True), ("matplotlib", "matplotlib", True),
                ("pptx", "python-pptx", False), ("docx", "python-docx", False)]
 POPPLER = ["pdftotext", "pdfinfo", "pdftoppm"]
+# same default install locations ingest.py checks; LibreOffice is usually not on PATH on Windows and macOS
+SOFFICE_PATHS = ["C:/Program Files/LibreOffice/program/soffice.exe", "C:/Program Files (x86)/LibreOffice/program/soffice.exe",
+                 "/Applications/LibreOffice.app/Contents/MacOS/soffice"]
 
 # resolves each package the way render.mjs does: next to the scripts, in DEPS_DIR, then NODE_PATH
 NODE_CHECK = r"""
@@ -105,7 +108,8 @@ def check() -> tuple[list[str], list[str]]:
     font = cjk_font_ok()
     row(font if font is not None else None, "中文字型（Noto CJK）",
         "sudo apt-get install fonts-noto-cjk；缺字型時 PDF 中文會變成方框", required=font is not None)
-    row(shutil.which("soffice") is not None or None, "LibreOffice（選用）", "", required=False)
+    soffice = shutil.which("soffice") or any(Path(p).exists() for p in SOFFICE_PATHS)
+    row(bool(soffice) or None, "LibreOffice（選用）", "", required=False)
     row(shutil.which("pandoc") is not None or None, "pandoc（選用）", "", required=False)
     return lines, missing
 
