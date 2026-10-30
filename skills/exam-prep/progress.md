@@ -36,7 +36,8 @@
 
 ## 二、現況
 
-- **最新版本：2.2.1**（2026-10-30，2.2.0 Codex 相容＋2.2.1 Windows 修正，都在 main，尚未發 Release）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`
+- **最新版本：2.2.1**（2026-10-30，2.2.0 Codex 相容＋2.2.1 Windows 修正）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`（2.2.0 沒有單獨發）
+- 這個雲端環境的 git 代理不允許推 tag（HTTP 403），發版改用 GitHub Actions 手動觸發 Release workflow
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
 
