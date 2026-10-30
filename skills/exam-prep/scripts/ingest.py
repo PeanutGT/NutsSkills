@@ -37,6 +37,12 @@ SHEET_MAX = 1568  # long side of a contact sheet; larger images get downscaled b
 IMG_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".heic", ".heif"}
 MATH_ALNUM = re.compile(r"[\U0001D400-\U0001D7FF]")  # 𝐴 𝜆 … : math italic letters from PDF formulas
 MATH_SYM = re.compile(r"[∑∏∫√∞≤≥≠≈±∓×÷∂∇λμσθπαβγδεΣΠΔ⁻¹²³ᵀ→⇒⇔∈∉⊂⊆∪∩]")
+# bold fonts for page labels: Linux, Windows, macOS
+LABEL_FONTS = ["/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+               "C:/Windows/Fonts/arialbd.ttf", "/System/Library/Fonts/Supplemental/Arial Bold.ttf"]
+# LibreOffice is usually not on PATH on Windows and macOS
+SOFFICE_PATHS = ["C:/Program Files/LibreOffice/program/soffice.exe", "C:/Program Files (x86)/LibreOffice/program/soffice.exe",
+                 "/Applications/LibreOffice.app/Contents/MacOS/soffice"]
 
 
 @dataclass
@@ -79,7 +85,12 @@ def visual_reasons(text: str, has_images: bool = False) -> list[str]:
 
 
 def run(cmd: list[str]) -> str:
-    return subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+    # poppler and pandoc write UTF-8; without an explicit encoding Windows would decode with the locale (e.g. cp950)
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=True).stdout
+
+
+def find_soffice() -> str | None:
+    return shutil.which("soffice") or next((p for p in SOFFICE_PATHS if Path(p).exists()), None)
 
 
 # ----------------------------------------------------------------------------- readers
@@ -138,8 +149,9 @@ def read_pptx(src: Source, work: Path):
             reasons.append("含圖片、圖表或嵌入公式物件")
         src.pages.append(Page(i, text, reasons))
     # render via LibreOffice only if some slide needs viewing
-    if any(p.reasons for p in src.pages) and shutil.which("soffice"):
-        subprocess.run(["soffice", "--headless", "--convert-to", "pdf", "--outdir", str(work), str(src.path)],
+    soffice = find_soffice()
+    if any(p.reasons for p in src.pages) and soffice:
+        subprocess.run([soffice, "--headless", "--convert-to", "pdf", "--outdir", str(work), str(src.path)],
                        capture_output=True)
         pdf = work / (src.path.stem + ".pdf")
         if pdf.exists():
@@ -194,10 +206,13 @@ def render_pages(pdf: Path, pages: list[int], work: Path, dpi: int) -> list[tupl
 
 
 def label_font(size=22):
-    for p in ["/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]:
+    for p in LABEL_FONTS:
         if Path(p).exists():
             return ImageFont.truetype(p, size)
-    return ImageFont.load_default()
+    try:
+        return ImageFont.load_default(size)  # Pillow >= 10.1
+    except TypeError:
+        return ImageFont.load_default()
 
 
 def make_sheets(name: str, imgs: list[tuple[int, Image.Image]], outdir: Path) -> list[Path]:
@@ -243,6 +258,7 @@ def main() -> int:
     ap.add_argument("--dpi", type=int, default=72, help="render resolution for pages that need viewing")
     ap.add_argument("--max-visual", type=int, default=40, help="cap on rendered pages per file")
     a = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # the report has symbols a cp950 console cannot print
 
     (a.out / "text").mkdir(parents=True, exist_ok=True)
     (a.out / "sheets").mkdir(parents=True, exist_ok=True)

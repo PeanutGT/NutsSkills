@@ -35,7 +35,7 @@
 
 ## 二、現況
 
-- **最新版本：2.1.0**（2026-10-29），已發布 Release（`exam-prep-v2.0.0`、`exam-prep-v2.1.0`）
+- **最新版本：2.1.1**（2026-10-30，Windows 相容性修正，尚未發 Release）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
 
@@ -43,6 +43,7 @@
 - 1.x：線代（特徵值，英文投影片＋考古題）、機統（手機拍的筆記照片）完整跑過；抓到的問題都已修（選擇題雙正解、考古題配分算錯、標題孤立在頁尾等）
 - 2.0：機統照片 → 題型解題卡／Cornell／分層講義三份 PDF，21 項數字驗算全過；抓到 `pmf_bar` 尾端機率漏算（已加警告與 `highlight_value`）
 - 2.1：`ingest.py`、`preview.py` 單獨實測過（PDF、PPTX、DOCX、照片）
+- 2.1.1：Linux 上用非 UTF-8 語系模擬 Windows：修正前中文 PDF 全部讀取失敗、報告輸出時程式中止；修正後正常。**尚未在真的 Windows 上跑過**
 
 ---
 
@@ -50,14 +51,13 @@
 
 ### 需要驗證
 - [ ] **2.1.0 尚未端到端實跑**：用新流程（ingest → materials.md → 文件）從頭產出一整套，確認 Claude 確實不再重讀原始檔、輸出品質沒有退步。建議用資料結構期中考（Ch1–Ch4）實測
-- [ ] Windows 本機（Claude Code）執行：`ingest.py`／`preview.py` 的標籤字型路徑是 Linux 路徑（有 fallback），poppler 需另裝；確認能跑
+- [ ] Windows 本機（Claude Code）實跑：2.1.1 已修程式碼層面的問題（cp950 解碼、輸出編碼、字型、LibreOffice 路徑）。還要在真機確認：poppler 的 Windows 版能不能開中文檔名、Playwright 自動安裝 Chromium、`render.mjs` 輸出中文 PDF
 
 ### 可做的改進
 - [ ] **ChatGPT／其他平台相容**（使用者問過，尚未決定要不要做）：
   - 把 KaTeX、Mermaid 打包進 skill，免網路也能渲染（zip 約 50 KB → 5 MB）
   - 沒有 Chromium 時改輸出自含 HTML，讓使用者用瀏覽器列印成 PDF
   - README 加相容性表
-- [ ] README 安裝範例的 zip 檔名還寫 `exam-prep-2.0.0.zip`，可改成通用寫法
 - [ ] evals 只有 3 個案例，可加：純文字科目（非理工）、大量投影片（測子代理委派）、英文練習題
 - [ ] description 觸發率尚未用 skill-creator 的 `run_loop.py` 最佳化（縮短後更值得測）
 

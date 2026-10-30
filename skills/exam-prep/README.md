@@ -61,7 +61,8 @@ Claude.ai 上需要開啟**程式碼執行**（Settings → Capabilities）；sk
 - Node.js（渲染用；`katex`、`marked`、`playwright`、`mermaid` 缺少時會自動安裝到 `~/.exam-prep-deps`）
 - Chromium（Playwright 使用）、Noto Sans/Serif CJK TC 字型
 - Python 3 + `sympy`、`scipy`（驗算用）、`matplotlib`（圖表用）
-- `pdftoppm`（poppler，排版檢查用）
+- poppler（`pdftotext`、`pdfinfo`、`pdftoppm`，讀取 PDF 與排版檢查用）：Windows `scoop install poppler` 或 `conda install -c conda-forge poppler`；macOS `brew install poppler`；Linux `apt install poppler-utils`
+- 選用：LibreOffice（PPTX 裡需要看圖的投影片轉圖片）、pandoc（DOCX 轉文字較完整）
 
 ## 檔案
 

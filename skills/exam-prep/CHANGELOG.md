@@ -2,6 +2,20 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [2.1.1] - 2026-10-30
+
+Windows 相容性修正。
+
+### 修正
+- `ingest.py`：在 Windows 繁中環境（cp950）讀不了含中文的 PDF／DOCX——poppler 與 pandoc 輸出 UTF-8，但 Python 預設用系統語系解碼，每份檔案都會變成「讀取失敗」；現在固定以 UTF-8 解碼
+- `ingest.py`、`preview.py`：輸出被導向時（例如 Claude Code 執行指令），報告中的 `↳` 等符號在 cp950 無法輸出，程式會在最後中止；stdout 改為 UTF-8
+- `preview.py`：PDF 資訊同樣固定以 UTF-8 解碼
+
+### 變更
+- 總覽圖的頁碼標籤字型加入 Windows、macOS 的路徑；都找不到時改用 22px 的內建字型（原本是 10px）
+- 找 LibreOffice 時也檢查 Windows、macOS 的預設安裝位置（通常不在 PATH 裡）
+- README 執行需求補上各平台安裝 poppler 的方式
+
 ## [2.1.0] - 2026-10-29
 
 減少 token 用量：原始資料只讀一次、只看真正需要看的頁面、只載入需要的說明。
