@@ -36,7 +36,7 @@
 
 ## 二、現況
 
-- **最新版本：2.2.0**（2026-10-30，Codex 相容，在 `exam-prep-codex` 分支，尚未合併、未發 Release）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`
+- **最新版本：2.2.0**（2026-10-30，Codex 相容，已合併進 main，尚未發 Release）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
 
@@ -55,7 +55,7 @@
 - [ ] Windows 本機（Claude Code）執行：`ingest.py`／`preview.py` 的標籤字型路徑是 Linux 路徑（有 fallback），poppler 需另裝；確認能跑
 
 - [ ] **在真的 Codex 上實跑**：`codex plugin marketplace add` → `install`、`$exam-prep` 觸發、沙箱裡 `setup.py --check`、沙箱外安裝、Chromium 能不能在沙箱內啟動（不行就要核准在沙箱外渲染）
-- [ ] 和 `exam-prep-2.1.1-windows` 分支合併時，版本號與 CHANGELOG 會衝突（兩邊都從 2.1.0 改），要手動整理
+- [ ] `exam-prep-2.1.1-windows` 分支（Windows 中文 PDF 讀取修正）等使用者在 Windows 實測後再合併；它是從 2.1.0 分出來的，合併時要改成 2.2.1 並整理 CHANGELOG
 
 ### 可做的改進
 - [ ] **ChatGPT 網頁版相容**（使用者問過，尚未決定要不要做；Codex 已在 2.2.0 支援）：
