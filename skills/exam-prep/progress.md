@@ -50,12 +50,51 @@
 
 ---
 
+## 交接：下一步（2026-10-31）
+
+上一個工作階段在雲端（Linux）做完 2.2.0／2.2.1 並發了 Release，接下來要在使用者的 **MSI（Windows）** 上用 Claude Code 實測。所有成果都在 main，沒有未合併的工作；`exam-prep-codex`、`exam-prep-2.1.1-windows` 兩個分支已合併，使用者說可以留著。
+
+### 1. Windows 實測（最優先）
+
+在 repo 根目錄依序執行，每一步記下結果：
+
+```bash
+git config user.name                                   # 必須是 PeanutGT
+python skills/exam-prep/scripts/setup.py --check       # 列出缺什麼
+python skills/exam-prep/scripts/setup.py               # 裝 npm 套件、Chromium、Python 套件
+python skills/exam-prep/scripts/ingest.py skills/exam-prep/evals/la-eigen-full-package/files/la_pastexam_2024-2025.pdf --out %TEMP%/ing
+python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋ingest＋preview＋setup --check
+```
+
+（在 Git Bash 裡 `%TEMP%` 改用 `$TEMP`。）
+
+通過標準：
+- `setup.py --check` 不會因為 `✓`／`✗` 符號中止，缺的項目提示看得懂；poppler 用 `scoop install poppler` 或 conda 裝
+- ingest 的 `report.md` 沒有「讀取失敗」，`text/la_pastexam_2024-2025.txt` 第一行是「線性代數 期中考 (2025 Fall) — Eigen 部分」
+- 再拿一份**檔名含中文**的 PDF 測 ingest（要確認 Windows 版 poppler 能開中文路徑；這是 2.2.1 唯一沒辦法在 Linux 模擬的部分）
+- smoke test 產出的 PDF 打開來中文正常、沒有方框（Chromium 在 Windows 會用微軟正黑體）
+- `preview.py` 總覽圖上的頁碼標籤清楚（Windows 用 `arialbd.ttf`）
+
+有問題就修、在 CHANGELOG 加 2.2.2，跑 `python tools/validate_skills.py` 與 smoke test 後再推。
+
+### 2. 從 GitHub 安裝實測
+
+- Claude.ai：Release 的 `exam-prep-2.2.1.zip` 上傳
+- Claude Code：`/plugin marketplace add PeanutGT/NutsSkills` → `/plugin install exam-prep@nutsskills`
+- Codex：`codex plugin marketplace add PeanutGT/NutsSkills` → `codex plugin install exam-prep@nutsskills`，再照下面「需要驗證」的 Codex 項目測
+
+### 3. 還沒收尾的小事
+
+- **Release 說明缺 Codex 的部分**：Release workflow 只擷取 CHANGELOG 的 2.2.1 段，2.2.0 沒單獨發過，所以 `exam-prep-v2.2.1` 頁面只有 Windows 修正。請使用者在 GitHub 編輯 Release，最前面補上 2.2.0（Codex 支援、`setup.py`、Codex 安裝指令）。之後若兩版合發，可以考慮讓 release.yml 擷取「上次 Release 之後的所有段落」
+- 推 tag 的 403 只發生在雲端環境；在本機可以直接 `git tag exam-prep-vX.Y.Z && git push origin exam-prep-vX.Y.Z`
+
+---
+
 ## 三、待辦
 
 ### 需要驗證
 - [ ] **2.1.0 尚未端到端實跑**：用新流程（ingest → materials.md → 文件）從頭產出一整套，確認 Claude 確實不再重讀原始檔、輸出品質沒有退步。建議用資料結構期中考（Ch1–Ch4）實測
-- [ ] Windows 本機（Claude Code）實跑：2.2.1 已修程式碼層面的問題（cp950 解碼、輸出編碼、字型、LibreOffice 路徑）。還要在真機確認：poppler 的 Windows 版能不能開中文檔名、Playwright 自動安裝 Chromium、`render.mjs` 輸出中文 PDF
-
+- [ ] Windows 本機（Claude Code）實跑：步驟見上面「交接：下一步」第 1 節
 - [ ] **在真的 Codex 上實跑**：`codex plugin marketplace add` → `install`、`$exam-prep` 觸發、沙箱裡 `setup.py --check`、沙箱外安裝、Chromium 能不能在沙箱內啟動（不行就要核准在沙箱外渲染）
 
 ### 可做的改進
