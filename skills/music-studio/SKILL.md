@@ -3,7 +3,7 @@ name: music-studio
 description: Create instrumental music and BGM (game loops, video scores, study/work background, personal tracks) locally with ACE-Step 1.5 on the user's NVIDIA GPU, with fully customisable defaults, style library, description lexicon and workflows plus a local dashboard. Use whenever the user wants to make, generate, loop, master or manage background music or a soundtrack, tweak music defaults or styles, fix bad-sounding results, or says 做音樂/配樂/BGM/循環音樂/遊戲音樂/讀書背景音. Also use for music-studio setup or troubleshooting.
 license: Apache-2.0
 metadata:
-  version: "3.1.2"
+  version: "3.2.0"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---
