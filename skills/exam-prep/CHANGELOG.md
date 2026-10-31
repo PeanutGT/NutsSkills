@@ -2,6 +2,20 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [2.2.2] - 2026-10-31
+
+在 Windows 11（Claude Code）上實測後的修正。
+
+### 修正
+- `ingest.py`：Git for Windows 內附 xpdf 版的 `pdftotext`，在 Git Bash 和 PowerShell 裡都排在 poppler 前面。xpdf 預設輸出 Latin-1，中文會整段消失（不會報錯），數學符號也會變亂碼。現在 poppler 工具一律優先取用和 `pdfinfo` 同資料夾的那一份，並明確指定 `-enc UTF-8`
+- `ingest.py`：沒裝 poppler 時，報告寫「找不到 pdfinfo，請安裝 poppler」，不再是看不懂的「[WinError 2] 系統找不到指定的檔案」
+- `setup.py --check`：認出 xpdf 版 `pdftotext` 並標 ✗（原本誤判為 ✓），用和 `ingest.py` 相同的方式找 poppler
+
+### 變更
+- Windows 安裝 poppler 的提示改以 `winget install oschwartz10612.Poppler` 為主（Windows 11 內建 winget），並提醒裝好後要重開終端機
+- smoke test：子程序輸出改以 UTF-8 解碼（原本在 cp950 下讀取執行緒會丟例外）；ingest 多檢查考古題的中文確實有抽出來
+- `tools/validate_skills.py`：在 cp950 主控台印 ✓／✗ 會中止，stdout 改為 UTF-8
+
 ## [2.2.1] - 2026-10-30
 
 Windows 相容性修正。

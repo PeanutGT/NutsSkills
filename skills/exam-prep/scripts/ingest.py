@@ -89,17 +89,25 @@ def run(cmd: list[str]) -> str:
     return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=True).stdout
 
 
+def poppler(tool: str) -> str:
+    """Path to a poppler tool. Git for Windows puts xpdf's pdftotext first on PATH; xpdf drops CJK text and
+    mangles math symbols, so take the copy next to pdfinfo (which Git does not ship) when there is one."""
+    info = shutil.which("pdfinfo")
+    path = (shutil.which(tool, path=str(Path(info).parent)) if info else None) or shutil.which(tool)
+    if not path:
+        raise RuntimeError(f"找不到 {tool}，請安裝 poppler（執行 setup.py --check 看安裝方式）")
+    return path
+
+
 def find_soffice() -> str | None:
     return shutil.which("soffice") or next((p for p in SOFFICE_PATHS if Path(p).exists()), None)
 
 
 # ----------------------------------------------------------------------------- readers
 def pdf_pages_with_images(pdf: Path) -> set[int]:
-    if not shutil.which("pdfimages"):
-        return set()
     try:
-        out = run(["pdfimages", "-list", str(pdf)])
-    except subprocess.CalledProcessError:
+        out = run([poppler("pdfimages"), "-list", str(pdf)])
+    except (RuntimeError, subprocess.CalledProcessError):
         return set()
     pages = set()
     for line in out.splitlines()[2:]:
@@ -112,13 +120,13 @@ def pdf_pages_with_images(pdf: Path) -> set[int]:
 
 
 def read_pdf(src: Source):
-    if not shutil.which("pdftotext"):
-        sys.exit("pdftotext (poppler-utils) is required for PDFs")
-    info = run(["pdfinfo", str(src.path)])
+    info = run([poppler("pdfinfo"), str(src.path)])
     n = int(re.search(r"Pages:\s+(\d+)", info).group(1))
     imgs = pdf_pages_with_images(src.path)
+    pdftotext = poppler("pdftotext")
     for i in range(1, n + 1):
-        text = run(["pdftotext", "-layout", "-f", str(i), "-l", str(i), str(src.path), "-"])
+        # -enc UTF-8 is poppler's default but not xpdf's (Latin-1), in case only xpdf is installed
+        text = run([pdftotext, "-enc", "UTF-8", "-layout", "-f", str(i), "-l", str(i), str(src.path), "-"])
         src.pages.append(Page(i, text, visual_reasons(text, i in imgs)))
     src.render_pdf = src.path
 
@@ -199,7 +207,7 @@ def render_pages(pdf: Path, pages: list[int], work: Path, dpi: int) -> list[tupl
     out = []
     for n in pages:
         prefix = work / f"r{n}"
-        subprocess.run(["pdftoppm", "-r", str(dpi), "-f", str(n), "-l", str(n), "-png", "-singlefile", str(pdf), str(prefix)],
+        subprocess.run([poppler("pdftoppm"), "-r", str(dpi), "-f", str(n), "-l", str(n), "-png", "-singlefile", str(pdf), str(prefix)],
                        check=True, capture_output=True)
         out.append((n, Image.open(f"{prefix}.png").convert("RGB")))
     return out

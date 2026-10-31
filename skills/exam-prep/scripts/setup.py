@@ -55,10 +55,22 @@ console.log(JSON.stringify(out));
 def poppler_hint() -> str:
     system = platform.system()
     if system == "Windows":
-        return "scoop install poppler（或 conda install -c conda-forge poppler），裝好後確認 bin 資料夾在 PATH"
+        return ("winget install oschwartz10612.Poppler（或 scoop install poppler、conda install -c conda-forge poppler），"
+                "裝好後重開終端機讓 PATH 生效")
     if system == "Darwin":
         return "brew install poppler"
     return "sudo apt-get install poppler-utils（或用發行版的套件管理器）"
+
+
+def poppler_path(tool: str) -> str | None:
+    """Resolve a tool the way ingest.py does: next to pdfinfo first, then PATH."""
+    info = shutil.which("pdfinfo")
+    return (shutil.which(tool, path=str(Path(info).parent)) if info else None) or shutil.which(tool)
+
+
+def is_xpdf(path: str) -> bool:
+    r = subprocess.run([path, "-v"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return "Glyph & Cog" in r.stdout + r.stderr and "Poppler" not in r.stdout + r.stderr
 
 
 def node_status() -> dict | None:
@@ -104,7 +116,12 @@ def check() -> tuple[list[str], list[str]]:
         row(importlib.util.find_spec(mod) is not None, f"Python：{pip_name}",
             "執行 setup.py 安裝" if required else "選用，讀 PPTX／DOCX 時需要", required)
     for tool in POPPLER:
-        row(shutil.which(tool) is not None, f"poppler：{tool}", poppler_hint())
+        path = poppler_path(tool)
+        if path and tool == "pdftotext" and is_xpdf(path):
+            row(False, "poppler：pdftotext", f"{path} 是 xpdf 版（Git for Windows 內附），中文會漏掉；請安裝 poppler："
+                + poppler_hint())
+        else:
+            row(path is not None, f"poppler：{tool}", poppler_hint())
     font = cjk_font_ok()
     row(font if font is not None else None, "中文字型（Noto CJK）",
         "sudo apt-get install fonts-noto-cjk；缺字型時 PDF 中文會變成方框", required=font is not None)

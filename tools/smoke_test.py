@@ -34,7 +34,8 @@ def main() -> int:
     for theme in ("modern", "textbook", "cheatsheet"):
         pdf, html = out / f"sample-{theme}.pdf", out / f"sample-{theme}.html"
         r = subprocess.run(["node", str(SKILL / "scripts" / "render.mjs"), str(out / "sample.md"), str(pdf),
-                            "--theme", theme, "--html", str(html)], capture_output=True, text=True)
+                            "--theme", theme, "--html", str(html)], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
         log = r.stdout + r.stderr
         problems = []
         if r.returncode:
@@ -55,15 +56,20 @@ def main() -> int:
     # ingest + preview on the eval inputs and the rendered PDF
     files = sorted((SKILL / "evals").glob("*/files/*"))
     r = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), *map(str, files), "--out", str(out / "ingest")],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     report = out / "ingest" / "report.md"
     ok = r.returncode == 0 and report.exists() and list((out / "ingest" / "sheets").glob("*"))
+    # a wrong pdftotext (e.g. xpdf from Git for Windows) "succeeds" but drops the Chinese text
+    exam = out / "ingest" / "text" / "la_pastexam_2024-2025.txt"
+    if ok and "線性代數" not in exam.read_text(encoding="utf-8"):
+        print("[ingest] Chinese text missing from la_pastexam_2024-2025.txt")
+        ok = False
     print(f"[ingest] {'ok' if ok else 'FAIL'} ({len(files)} files)")
     if not ok:
         print(r.stdout + r.stderr)
         failed = True
     r = subprocess.run([sys.executable, str(SKILL / "scripts" / "preview.py"), str(out / "sample-modern.pdf"), "--out", str(out / "preview")],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     ok = r.returncode == 0 and list((out / "preview").glob("*-overview-*.png"))
     print(f"[preview] {'ok' if ok else 'FAIL'}")
     if not ok:

@@ -36,7 +36,7 @@
 
 ## 二、現況
 
-- **最新版本：2.2.1**（2026-10-30，2.2.0 Codex 相容＋2.2.1 Windows 修正）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`（2.2.0 沒有單獨發）
+- **最新版本：2.2.2**（2026-10-31，Windows 實測修正，**尚未發 Release**）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`（2.2.0 沒有單獨發）
 - 這個雲端環境的 git 代理不允許推 tag（HTTP 403），發版改用 GitHub Actions 手動觸發 Release workflow
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
@@ -46,7 +46,8 @@
 - 2.0：機統照片 → 題型解題卡／Cornell／分層講義三份 PDF，21 項數字驗算全過；抓到 `pmf_bar` 尾端機率漏算（已加警告與 `highlight_value`）
 - 2.1：`ingest.py`、`preview.py` 單獨實測過（PDF、PPTX、DOCX、照片）
 - 2.2：Codex 的規格是讀 `openai/codex` 原始碼確認的（skill 位置 `~/.codex/skills`、`~/.agents/skills`、專案 `.agents/skills`；frontmatter 只讀 `name`（≤64 字）與 `description`，其他欄位略過；會讀 `.claude-plugin/marketplace.json`）。`setup.py` 在全新 HOME 實測過：npm 套件與 Python 套件能裝、Chromium 下載在雲端環境被網路政策擋住（訊息正確）。**尚未在真的 Codex 上跑過**
-- 2.2.1（Windows）：Linux 上用非 UTF-8 語系模擬 Windows：修正前中文 PDF 全部讀取失敗、報告輸出時程式中止；修正後正常。**尚未在真的 Windows 上跑過**
+- 2.2.1（Windows）：Linux 上用非 UTF-8 語系模擬 Windows：修正前中文 PDF 全部讀取失敗、報告輸出時程式中止；修正後正常
+- 2.2.2（Windows 11 實機，MSI，Claude Code，Git Bash＋PowerShell，Python 3.11、Node 24）：`setup.py` 能裝 npm 套件、Chromium、Python 套件，✓／✗ 不會中止；smoke test 全過，三主題 PDF 中文正常（Noto Sans／Serif TC＋微軟正黑體），preview 頁碼標籤清楚；中文檔名＋中文資料夾的 PDF 在兩種 shell 都能 ingest。抓到並修正：Git for Windows 內附 xpdf 版 `pdftotext` 會吃掉中文（不報錯）、缺 poppler 時錯誤訊息看不懂、`validate_skills.py` 與 smoke test 的 cp950 問題。poppler 用 `winget install oschwartz10612.Poppler` 安裝成功（裝好後要開新終端機 PATH 才生效）
 
 ---
 
@@ -54,7 +55,9 @@
 
 上一個工作階段在雲端（Linux）做完 2.2.0／2.2.1 並發了 Release，接下來要在使用者的 **MSI（Windows）** 上用 Claude Code 實測。所有成果都在 main，沒有未合併的工作；`exam-prep-codex`、`exam-prep-2.1.1-windows` 兩個分支已合併，使用者說可以留著。
 
-### 1. Windows 實測（最優先）
+### 1. Windows 實測（2026-10-31 完成，結果見上方實測紀錄 2.2.2）
+
+剩下：推上 main、CI 綠燈後發 `exam-prep-v2.2.2` Release（本機可直接推 tag）。以下保留原步驟供日後重測：
 
 在 repo 根目錄依序執行，每一步記下結果：
 
@@ -94,7 +97,7 @@ python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋inge
 
 ### 需要驗證
 - [ ] **2.1.0 尚未端到端實跑**：用新流程（ingest → materials.md → 文件）從頭產出一整套，確認 Claude 確實不再重讀原始檔、輸出品質沒有退步。建議用資料結構期中考（Ch1–Ch4）實測
-- [ ] Windows 本機（Claude Code）實跑：步驟見上面「交接：下一步」第 1 節
+- [x] Windows 本機（Claude Code）實跑（2026-10-31，修正發為 2.2.2）
 - [ ] **在真的 Codex 上實跑**：`codex plugin marketplace add` → `install`、`$exam-prep` 觸發、沙箱裡 `setup.py --check`、沙箱外安裝、Chromium 能不能在沙箱內啟動（不行就要核准在沙箱外渲染）
 
 ### 可做的改進

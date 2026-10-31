@@ -4,7 +4,7 @@ description: 把講義、投影片、課本、手寫筆記照片、考古題（�
 license: Apache-2.0
 compatibility: 需要可執行程式碼的環境（Claude.ai 需開啟程式碼執行；Claude Code、Codex 可直接使用），並能安裝 npm 與 pip 套件。渲染需要 Node.js 18+ 與 Chromium（Playwright），讀取與檢查需要 poppler，圖表與驗算需要 Python 3（matplotlib、sympy、scipy）。
 metadata:
-  version: "2.2.1"
+  version: "2.2.2"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---

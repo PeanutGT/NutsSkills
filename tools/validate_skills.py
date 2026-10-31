@@ -122,13 +122,15 @@ def check_skill(d: Path) -> list[str]:
         for js in list(d.rglob("*.mjs")) + list(d.rglob("*.js")):
             if "node_modules" in js.parts:
                 continue
-            r = subprocess.run(["node", "--check", str(js)], capture_output=True, text=True)
+            r = subprocess.run(["node", "--check", str(js)], capture_output=True, text=True, encoding="utf-8",
+                               errors="replace")
             if r.returncode:
                 errs.append(f"{name}: {js.relative_to(d)} fails node --check:\n{r.stderr.strip()}")
     return errs
 
 
 def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # ✓ ✗ are not in cp950 (Traditional Chinese Windows)
     only = set(sys.argv[1:])
     dirs = sorted(p for p in SKILLS.iterdir() if p.is_dir() and (not only or p.name in only))
     if not dirs:
