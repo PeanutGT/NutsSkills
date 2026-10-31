@@ -388,7 +388,8 @@ const deck = {
       const canvas = h("canvas", { role: "img", "aria-label": `版本 ${v.index} 波形` });
       const audio = new Audio(); audio.preload = "auto"; audio.src = audioUrl(take.id, v.file);
       const el = h("div", { class: "lane" + (v.index === picked ? " picked" : ""), "data-i": String(i) },
-        h("div", { class: "tagside" }, h("b", {}, `v${v.index}`), h("span", { class: "num" }, `種子 ${v.seed ?? "-"}`)),
+        h("div", { class: "tagside" }, h("b", {}, `v${v.index}`), h("span", { class: "num" }, `種子 ${v.seed ?? "-"}`),
+          (v.qc || []).length ? h("span", { class: "qcflag", title: v.qc.map(issueText).join("\n") }, `⚠ ${v.qc.length} 項提示`) : null),
         h("div", { class: "wavebox" }, canvas));
       el.addEventListener("click", e => {
         const box = canvas.getBoundingClientRect();
@@ -452,6 +453,23 @@ const deck = {
   },
 };
 
+const ISSUE_TEXT = {
+  clipping: i => `${clock(i.at)} 起有削波（爆音）${i.count ? `，共 ${i.count} 處` : ""}`,
+  clicks: i => `${clock(i.at)} 有咔噠聲${i.count > 1 ? `，共 ${i.count} 處` : ""}`,
+  silence: i => `${clock(i.at)}–${clock(i.end)} 中間有一段靜音`,
+  cut_off: i => `結尾像是被切斷（${clock(i.at)} 還在全音量）`,
+  near_silent: () => "幾乎沒有聲音",
+  low_volume: i => `音量偏小（約 ${i.rms_db} dBFS）`,
+};
+const issueText = i => (ISSUE_TEXT[i.code] || (() => i.code))(i);
+function issueList(variants) {
+  const rows = variants.filter(v => (v.qc || []).length).flatMap(v => v.qc.map(i => h("li", {}, `v${v.index}：${issueText(i)}`)));
+  const checked = variants.some(v => Array.isArray(v.qc));
+  if (!checked) return null;
+  return rows.length ? h("div", {}, h("p", { class: "small dim", style: "margin:10px 0 0" }, "自動檢查（啟發式，最後以耳朵為準）："), h("ul", { class: "qc" }, rows))
+    : h("div", { class: "note ok" }, "自動檢查：各版本都沒有發現爆音、咔噠聲、斷尾或靜音");
+}
+
 function renderTake(take, host) {
   const picked = take.annotations?.picked || take.variants[0]?.index;
   const reload = async () => { S.take = take = await api("tracks/" + encodeURIComponent(take.id)); renderTake(take, host); };
@@ -461,10 +479,13 @@ function renderTake(take, host) {
   const activeIndex = () => deck.lanes[deck.active]?.v.index ?? picked;
   const wfSel = h("select", { id: "fin-wf", "aria-label": "後製用途" },
     S.state.workflows.map(w => h("option", { value: w.id, selected: w.id === (spec.workflow || S.state.defaults.workflow) }, nameOf(w))));
+  const loudSel = h("select", { id: "fin-loud", "aria-label": "響度" },
+    h("option", { value: "" }, "依用途的設定"),
+    (S.state.loudness_presets || []).map(p => h("option", { value: p.id }, `${p.label}（${p.lufs} LUFS）`)));
   const finBtn = h("button", { class: "btn go", onclick: () => guard(async () => {
     const v = activeIndex();
     finBtn.disabled = true; finBtn.textContent = `v${v} 後製中…`;
-    try { await api(`tracks/${encodeURIComponent(take.id)}/finalize`, "POST", { variant: v, workflow: wfSel.value, preview: true }); toast(`v${v} 已匯出`); await reload(); }
+    try { await api(`tracks/${encodeURIComponent(take.id)}/finalize`, "POST", { variant: v, workflow: wfSel.value, loudness: loudSel.value || null, preview: true }); toast(`v${v} 已匯出`); await reload(); }
     finally { finBtn.disabled = false; finBtn.textContent = "匯出目前這版"; } }) }, "匯出目前這版");
 
   put(host,
@@ -475,6 +496,7 @@ function renderTake(take, host) {
       h("p", { class: "caption-line" }, spec.caption || ""),
       (take.warnings || []).map(w => h("div", { class: "note" }, w)),
       deckHost,
+      issueList(take.variants || []),
       h("div", { class: "actions" },
         h("button", { class: "btn", onclick: () => patch({ picked: activeIndex() }) }, "選定目前這版"),
         h("button", { class: "btn", onclick: () => refine(take, activeIndex()) }, "用目前這版微調再生"),
@@ -485,7 +507,8 @@ function renderTake(take, host) {
           take.annotations?.favorite ? "♥ 已收藏" : "♡ 收藏"))),
     h("section", { class: "module", "aria-labelledby": "fin-h" },
       h("h2", { id: "fin-h" }, "後製與匯出"),
-      h("div", { class: "row" }, h("div", {}, h("label", { for: "fin-wf" }, "依用途處理（循環、長度、響度、格式）"), wfSel)),
+      h("div", { class: "row" }, h("div", {}, h("label", { for: "fin-wf" }, "依用途處理（循環、長度、響度、格式）"), wfSel),
+        h("div", {}, h("label", { for: "fin-loud" }, "響度"), loudSel)),
       h("div", { class: "actions" }, finBtn),
       (take.finals || []).slice().reverse().map(fin => renderFinal(take, fin))),
     h("section", { class: "module" },
@@ -538,7 +561,8 @@ function renderFinal(take, fin) {
     preview ? h("div", { class: "small dim", style: "margin-top:8px" }, "循環試聽（連播兩次，聽接縫）：",
       h("audio", { controls: true, preload: "none", src: audioUrl(take.id, "final/" + preview), style: "width:100%", "aria-label": "循環試聽" })) : null,
     h("div", { class: "files" }, files.filter(f => !/loop-preview/.test(f)).map(f => h("a", { class: "btn sm", href: audioUrl(take.id, "final/" + f) + "?download=1" }, `下載 ${f.split(".").pop()}`))),
-    (r.qc || []).length ? h("ul", { class: "qc" }, r.qc.map(q => h("li", {}, q))) : h("div", { class: "note ok" }, "品質檢查沒有發現問題"),
+    (r.qc || []).length || (r.issues || []).length ? h("ul", { class: "qc" }, (r.qc || []).map(q => h("li", {}, q)).concat((r.issues || []).map(i => h("li", {}, issueText(i)))))
+      : h("div", { class: "note ok" }, "品質檢查沒有發現問題"),
     (fin.warnings || []).concat(fin.notes || []).map(w => h("p", { class: "small dim" }, w)));
 }
 

@@ -43,6 +43,7 @@ So a preset beats a tier and your explicit request beats everything. `engine_ove
 | `quality.default` | Preset used when a request names none |
 | `quality.presets.<p>` | Any engine parameter; `thinking` needs an LM in the tier |
 | `postprocess.loudness_lufs` | Integrated loudness target (default -16) |
+| `postprocess.loudness_presets` | Named targets picked at export (`video` -14, `game` -16, `background` -18 LUFS, all -1 dBTP); override the workflow's `loudnorm` target. Add your own: `{"label": ..., "lufs": ..., "true_peak_db": ...}` |
 | `postprocess.true_peak_db` | True-peak ceiling (default -1.5) |
 | `postprocess.loop_crossfade` | Seconds folded over the seam when looping (default 2.0) |
 | `postprocess.export_formats` | Used when a workflow has no `export` step |

@@ -140,6 +140,21 @@ class TestMockPipeline(Base):
         self.assertLessEqual(out["report"]["true_peak_db"], -1.0)
         self.assertTrue(any(f.endswith(".ogg") for f in out["files"]))
 
+    def test_every_variant_gets_an_automatic_check(self):
+        res = self.generate(variants=2)
+        take = json.loads(self.sh("library.py", "show", res["id"]).stdout)
+        self.assertTrue(all(isinstance(v.get("qc"), list) for v in take["variants"]))
+
+    def test_loudness_preset_overrides_workflow_target(self):
+        res = self.generate(workflow="game-bgm", variants=1)
+        p = self.sh("postprocess.py", "run", "--take", res["id"], "--workflow", "game-bgm", "--loudness", "video")
+        self.assertEqual(p.returncode, 0, p.stderr)
+        rep = json.loads(p.stdout)["report"]
+        self.assertAlmostEqual(rep["lufs"], -14.0, delta=0.6)
+        self.assertFalse(any("off target" in q for q in rep["qc"]), rep["qc"])
+        bad = self.sh("postprocess.py", "run", "--take", res["id"], "--loudness", "loud")
+        self.assertNotEqual(bad.returncode, 0)
+
     def test_deterministic_seed(self):
         a, b = self.generate(seed=5, variants=1), self.generate(seed=5, variants=1)
         fa = Path(a["dir"]) / a["variants"][0]["file"]; fb = Path(b["dir"]) / b["variants"][0]["file"]
@@ -205,6 +220,45 @@ class TestAceRunner(Base):
         r, ev = self.gen({"FAKE_FAIL": "1"})
         self.assertEqual(ev[-1]["event"], "error")
         self.assertNotEqual(r.returncode, 0)
+
+
+class TestInspect(unittest.TestCase):
+    """The automatic check flags what a listener would notice and stays quiet on ordinary music."""
+    def setUp(self):
+        import numpy as np
+        self.np, self.sr = np, 48000
+        t = np.arange(self.sr * 20) / self.sr
+        tone = 0.3 * np.sin(2 * np.pi * 220 * t) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.5 * t))
+        x = np.stack([tone, tone], 1)
+        x[-self.sr * 2:] *= np.linspace(1, 0, self.sr * 2)[:, None]  # a proper fade-out
+        self.x = x
+
+    def codes(self, x, **kw):
+        import postprocess
+        return [i["code"] for i in postprocess.inspect_audio(x, self.sr, **kw)]
+
+    def test_clean_music_has_no_issues(self):
+        np = self.np
+        drums = self.x * 0.5
+        rng = np.random.default_rng(0)
+        for k in range(36):  # snare-like bursts are transients, not clicks
+            s0, n = int(k * self.sr * 0.5), int(self.sr * 0.15)
+            drums[s0:s0 + n] += (rng.standard_normal(n) * 0.4 * np.exp(-np.arange(n) / (self.sr * 0.03)))[:, None]
+        self.assertEqual(self.codes(self.x), [])
+        self.assertEqual(self.codes(drums), [])
+
+    def test_flags_each_problem(self):
+        np = self.np
+        click = self.x.copy(); click[self.sr * 5] += 0.5
+        gap = self.x.copy(); gap[self.sr * 6:self.sr * 9] = 0
+        cut = self.x[: self.sr * 10]
+        self.assertEqual(self.codes(click), ["clicks"])
+        self.assertEqual(self.codes(gap), ["silence"])
+        self.assertEqual(self.codes(cut), ["cut_off"])
+        self.assertEqual(self.codes(cut, loopable=True), [])
+        self.assertIn("clipping", self.codes(np.clip(self.x * 5, -1, 1)))
+        self.assertEqual(self.codes(self.x * 1e-4), ["near_silent"])
+        self.assertEqual(self.codes(self.x * 0.1), ["low_volume"])
 
 
 class TestPostprocessOps(unittest.TestCase):

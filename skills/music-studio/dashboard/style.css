@@ -139,6 +139,7 @@ summary:hover { color: var(--ink); }
 .lane .tagside { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 0 10px; border-right: 1px solid #2B3027; }
 .lane .tagside b { font-family: var(--font-dial); font-size: 1.35rem; font-weight: 600; line-height: 1; }
 .lane .tagside span { font-size: .7rem; color: var(--ink-dim); }
+.lane .tagside .qcflag { color: var(--amber); }
 .lane.active { background: rgba(229,169,64,.06); }
 .lane.active .tagside b { color: var(--amber); }
 .lane.picked .tagside::after { content: "已選"; font-size: .7rem; color: var(--green); }

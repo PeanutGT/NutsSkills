@@ -76,6 +76,8 @@ def api_state() -> dict:
                        "steps": next((st.get("steps", []) for st in v.get("stages", []) if st.get("id") == "postprocess"), []),
                        "source": v.get("_source")} for k, v in wfs.items()],
         "qualities": list(cfg["quality"]["presets"]),
+        "loudness_presets": [{"id": k, "label": v.get("label") or k, "lufs": v.get("lufs")}
+                             for k, v in cfg["postprocess"].get("loudness_presets", {}).items() if not k.startswith("_")],
         "defaults": {"quality": cfg["quality"].get("default"), "workflow": cfg["workflow"].get("default"),
                      "duration": cfg["generation"].get("duration")},
         "tier_caps": cfg["hardware"]["tiers"].get(tier, {}),
@@ -168,7 +170,7 @@ def api_track(take_id: str) -> dict:
 def api_finalize(take_id: str, body: dict) -> dict:
     try:
         return postprocess.run_for_take(take_id, body.get("variant"), body.get("workflow") or None, body.get("steps"),
-                                        body.get("name") or None, bool(body.get("preview", True)))
+                                        body.get("name") or None, bool(body.get("preview", True)), body.get("loudness") or None)
     except postprocess.PostError as exc:
         raise ApiError(400, str(exc))
 
