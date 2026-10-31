@@ -131,7 +131,7 @@ class Worker:
                 pipe.close()
             except Exception:  # noqa: BLE001
                 pass
-        self.status.update(state="stopped", models_loaded=False, model=None, pid=None)
+        self.status.update(state="stopped", models_loaded=False, model=None, pid=None, vram_free_gb=None)
 
     def unload(self) -> None:
         if self.alive() and self.status["state"] == "idle":
@@ -320,6 +320,9 @@ class JobQueue:
                 job.update(status="failed", error=err)
 
     def _run_ace(self, job: dict, ctx: dict) -> dict:
+        if not self.worker.alive():  # importing torch + ACE-Step takes tens of seconds before the worker can speak
+            self._event(job, {"event": "phase", "name": "loading_models", "pct": 0.01,
+                              "detail": "starting the ACE-Step worker (first job only)"})
         try:
             self.worker.start(ctx["ace_dir"])
         except Exception as exc:  # noqa: BLE001

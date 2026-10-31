@@ -130,7 +130,7 @@ function renderDock() {
   const now = run ? h("div", { class: "now" },
     h("div", { class: "now-top" }, h("b", {}, run.title || run.spec?.title || "未命名"),
       h("span", { class: "num dim" }, clock(elapsed)),
-      run.cancelling ? h("span", { class: "dim small" }, "取消中…") : null,
+      run.cancelling ? h("span", { class: "dim small" }, "取消中…") : run.detail ? h("span", { class: "dim small" }, run.detail) : null,
       run.warnings?.length ? h("span", { class: "small", style: "color:var(--amber)" }, `${run.warnings.length} 則提示`) : null),
     stepList(run),
     h("div", { class: "meter", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(Math.round((run.pct || 0) * 100)), "aria-label": "整體進度" },

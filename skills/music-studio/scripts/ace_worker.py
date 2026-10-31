@@ -346,7 +346,8 @@ def generate(req: dict) -> dict:
     plan = make_plan(req, installed, total_gb, warnings)
     if SESSION.device == "cpu":
         warnings.append("CUDA not available: generating on CPU will be very slow")
-    for w in warnings:
+    inherited = len(req.get("warnings", []))
+    for w in warnings[inherited:]:  # the caller already reported the planning warnings it sent along
         emit("warn", message=w)
     warned = set(warnings)
 
