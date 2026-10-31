@@ -15,7 +15,8 @@ opens the first.
 - **Engine readout** (top right): whether models are loaded, free / total VRAM, a button to free VRAM now.
 - **創作**: describe the track; the "會送給 ACE-Step 的內容" box shows, live, the exact caption tags (yours are outlined in amber), BPM, key, model, steps, LM and quantisation, and lets you edit the caption by hand. Submitting more than once queues.
 - **Comparison deck**: all variants of a take stacked on one bar-line ruler with one playhead. Space plays/pauses, number keys switch variant at the same position, arrows seek 5 s, clicking a waveform seeks there. "選定目前這版", "用目前這版微調再生" (same seed, edit one tag), rating, favourite.
-- **後製與匯出**: runs the chosen workflow's steps on the variant you are listening to; shows loudness, true peak, length, loop seam (for loops), a loop preview and download buttons.
+- **Automatic check**: under the deck, the issues found in each variant when it was generated (clipping, clicks, cut-off ending, a silent gap, near silence, low volume) with their times; a variant with issues shows ⚠ in its lane.
+- **後製與匯出**: runs the chosen workflow's steps on the variant you are listening to. 響度 picks a loudness preset (影片平台 -14, 遊戲 BGM -16, 背景／讀書 -18 LUFS) instead of the workflow's own target. Shows loudness, true peak, length, loop seam (for loops), the automatic check of the finished file, a loop preview and download buttons.
 - **實際使用的設定**: what really ran (model, steps, LM, quantisation, DiT offload, CPU-decode fallback, settings your ACE-Step build ignored).
 - **Queue dock** (bottom): the running job's phases (載入模型 / 編碼提示 / 生成 / 解碼音訊 / 寫檔) with elapsed time and cancel; queued jobs with their own cancel; the last finished jobs (click to open).
 - **資料庫**, **設定**: library with search/favourites; common settings and the style editor (writes only to your workspace).

@@ -2,6 +2,7 @@
 
     postprocess.py analyze FILE
     postprocess.py run --take ID [--variant N] [--workflow ID] [--steps steps.json] [--name NAME] [--preview]
+                       [--loudness video|game|background|-14]
     postprocess.py op OPNAME IN OUT [--param key=value ...]
 
 Design: audio is decoded once with ffmpeg into float32 numpy, processed in
@@ -157,13 +158,18 @@ def analyze_array(x: np.ndarray, sr: int, path: Path | None, cfg: dict, lufs_tar
     return out
 
 
-def qc(report: dict, cfg: dict, expected_duration: float | None = None, looped: bool = False) -> list[str]:
+def qc(report: dict, cfg: dict, expected_duration: float | None = None, looped: bool = False,
+       lufs_target: float | None = None, tp_target: float | None = None) -> list[str]:
     pp = cfg["postprocess"]
     notes: list[str] = []
-    if report.get("lufs") is not None and abs(report["lufs"] - pp["loudness_lufs"]) > 1.0:
-        notes.append(f"loudness {report['lufs']:.1f} LUFS is off target {pp['loudness_lufs']}")
-    if report.get("true_peak_db") is not None and report["true_peak_db"] > pp["true_peak_db"] + 0.2:
-        notes.append(f"true peak {report['true_peak_db']:.1f} dB above ceiling {pp['true_peak_db']}")
+    if lufs_target is None:
+        lufs_target = pp["loudness_lufs"]
+    if tp_target is None:
+        tp_target = pp["true_peak_db"]
+    if report.get("lufs") is not None and abs(report["lufs"] - lufs_target) > 1.0:
+        notes.append(f"loudness {report['lufs']:.1f} LUFS is off target {lufs_target}")
+    if report.get("true_peak_db") is not None and report["true_peak_db"] > tp_target + 0.2:
+        notes.append(f"true peak {report['true_peak_db']:.1f} dB above ceiling {tp_target}")
     if report.get("clipped_samples", 0) > 0:
         notes.append(f"{report['clipped_samples']} clipped samples")
     if (report.get("head_silence_s") or 0) > 1.0:
@@ -181,6 +187,79 @@ def qc(report: dict, cfg: dict, expected_duration: float | None = None, looped: 
         if seam["seam_vs_typical"] > 4:
             notes.append(f"loop seam changes level {seam['seam_vs_typical']}x more than the music does; audition it")
     return notes
+
+
+def inspect_audio(x: np.ndarray, sr: int, loopable: bool = False) -> list[dict]:
+    """Automatic check of a freshly generated variant. Returns issues with a time in seconds:
+    clipping, clicks, silence (an interior gap >= 2 s), cut_off (still at full level in the last
+    0.1 s), near_silent, low_volume. Heuristics tuned to flag what a listener would notice; the
+    ear decides. Loopable takes skip cut_off: they are meant to keep going."""
+    issues: list[dict] = []
+    if not len(x):
+        return [{"code": "near_silent", "at": 0.0}]
+    peak = float(np.max(np.abs(x)))
+    if peak < 10 ** (-40 / 20):
+        return [{"code": "near_silent", "at": 0.0}]
+
+    hot = np.abs(x) >= 0.999  # runs of >= 3 samples pinned at full scale, per channel
+    runs, first = 0, None
+    for ch in range(x.shape[1]):
+        h = hot[:, ch].astype(np.int8)
+        starts = np.nonzero(np.diff(np.concatenate([[0], h])) == 1)[0]
+        ends = np.nonzero(np.diff(np.concatenate([h, [0]])) == -1)[0]
+        long = starts[(ends - starts + 1) >= 3]
+        runs += len(long)
+        if len(long):
+            first = min(first if first is not None else len(x), int(long[0]))
+    if runs:
+        issues.append({"code": "clipping", "at": round(float(first) / sr, 2), "count": int(runs)})
+
+    mono = x.mean(axis=1)
+    frame = max(1, sr // 1000)  # 1 ms
+    d2 = np.abs(np.diff(mono, n=2))
+    nf = len(d2) // frame
+    if nf > 60:
+        fm = d2[: nf * frame].reshape(nf, frame).max(axis=1)
+        med = np.median(np.lib.stride_tricks.sliding_window_view(np.pad(fm, 25, mode="edge"), 51), axis=1)
+        med = np.maximum(med, 1e-6)
+        prev = np.concatenate([np.full(3, np.inf), fm[:-3]])
+        nxt = np.concatenate([fm[3:], np.full(3, np.inf)])
+        # a click: a 1 ms spike 10x the surrounding 50 ms, gone again 3 ms either side
+        hit = (fm > 10 * med) & (fm > 0.05) & (prev < 3 * med) & (nxt < 3 * med)
+        idx = np.nonzero(hit)[0]
+        if len(idx):
+            events = int(1 + np.sum(np.diff(idx) > 5))  # neighbouring frames are one click
+            issues.append({"code": "clicks", "at": round(float(idx[0] * frame / sr), 2), "count": events})
+
+    win = max(1, sr // 10)  # 100 ms
+    nw = len(mono) // win
+    if nw >= 5:
+        rms = np.sqrt(np.mean(mono[: nw * win].reshape(nw, win) ** 2, axis=1))
+        db = 20 * np.log10(rms + 1e-9)
+        quiet = db < -60
+        i = 0
+        while i < nw:
+            if quiet[i]:
+                j = i
+                while j < nw and quiet[j]:
+                    j += 1
+                if i > 0 and j < nw and (j - i) * 0.1 >= 2.0:
+                    issues.append({"code": "silence", "at": round(i * 0.1, 2), "end": round(j * 0.1, 2)})
+                    break
+                i = j
+            else:
+                i += 1
+        ref = float(np.median(db[~quiet])) if np.any(~quiet) else -120.0
+        if not loopable and db[-1] > ref - 6:
+            issues.append({"code": "cut_off", "at": round(len(mono) / sr - 0.1, 2)})
+        if ref < -32:
+            issues.append({"code": "low_volume", "at": 0.0, "rms_db": round(ref, 1)})
+    return issues
+
+
+def inspect_file(path: Path, cfg: dict, loopable: bool = False) -> list[dict]:
+    sr = int(cfg["postprocess"].get("sample_rate", SR_DEFAULT))
+    return inspect_audio(decode(path, cfg, sr), sr, loopable)
 
 
 # --------------------------------------------------------------------------- operations
@@ -276,6 +355,7 @@ def op_loudnorm(x, sr, p, ctx):
     cfg = ctx["cfg"]
     target = float(p.get("target_lufs", cfg["postprocess"]["loudness_lufs"]))
     tp = float(p.get("true_peak_db", cfg["postprocess"]["true_peak_db"]))
+    ctx["lufs_target"], ctx["tp_target"] = target, tp  # the QC report checks against what was asked for
     with tempfile.TemporaryDirectory(prefix="msnorm_") as tmp:
         src, dst = Path(tmp) / "in.wav", Path(tmp) / "out.wav"
         encode(x, sr, src, cfg, ["-c:a", "pcm_f32le"])
@@ -317,9 +397,28 @@ def export_files(x, sr, out_dir: Path, base: str, formats: list[str], cfg: dict,
     return files
 
 
+def resolve_loudness(cfg: dict, value) -> dict | None:
+    """A preset name from postprocess.loudness_presets, or a number in LUFS -> loudnorm parameters."""
+    if value in (None, ""):
+        return None
+    presets = {k: v for k, v in cfg["postprocess"].get("loudness_presets", {}).items() if not k.startswith("_")}
+    if str(value) in presets:
+        p = presets[str(value)]
+        return {"target_lufs": float(p["lufs"]), "true_peak_db": float(p.get("true_peak_db", cfg["postprocess"]["true_peak_db"]))}
+    try:
+        return {"target_lufs": float(value), "true_peak_db": float(cfg["postprocess"]["true_peak_db"])}
+    except (TypeError, ValueError):
+        raise PostError(f"unknown loudness '{value}'. Presets: {', '.join(presets)}; or a number such as -14")
+
+
 def run_steps(src: Path, steps: list[dict], out_dir: Path, base: str, cfg: dict, *,
-              spec: dict | None = None, preview: bool = False) -> dict:
+              spec: dict | None = None, preview: bool = False, loudness: dict | None = None) -> dict:
     spec = spec or {}
+    if loudness:  # a chosen preset wins over the workflow's own target; add the step if it had none
+        steps = [{**st, **loudness} if st.get("op") == "loudnorm" else st for st in steps]
+        if not any(st.get("op") == "loudnorm" for st in steps):
+            at = next((i for i, st in enumerate(steps) if st.get("op") == "export"), len(steps))
+            steps = steps[:at] + [{"op": "loudnorm", **loudness}] + steps[at:]
     sr = int(cfg["postprocess"].get("sample_rate", SR_DEFAULT))
     x = decode(src, cfg, sr)
     ctx = {"cfg": cfg, "bpm": spec.get("bpm"), "duration": spec.get("duration"),
@@ -350,8 +449,12 @@ def run_steps(src: Path, steps: list[dict], out_dir: Path, base: str, cfg: dict,
 
     first = out_dir / files[0]
     pp = cfg["postprocess"]
-    report = analyze_array(x, sr, first, cfg, pp["loudness_lufs"], pp["true_peak_db"], bar=_bar_samples(ctx, sr))
-    report["qc"] = qc(report, cfg, ctx["duration"] if "fit" in applied else None, looped=ctx["loop"])
+    lufs = ctx.get("lufs_target", pp["loudness_lufs"])
+    tp = ctx.get("tp_target", pp["true_peak_db"])
+    report = analyze_array(x, sr, first, cfg, lufs, tp, bar=_bar_samples(ctx, sr))
+    report["qc"] = qc(report, cfg, ctx["duration"] if "fit" in applied else None, looped=ctx["loop"],
+                      lufs_target=lufs if "loudnorm" in applied else None, tp_target=tp)
+    report["issues"] = inspect_audio(x, sr, loopable=ctx["loop"] or bool(spec.get("loopable")))
     return {"files": files, "applied": applied, "notes": ctx["notes"], "warnings": ctx["warnings"], "report": report}
 
 
@@ -364,7 +467,7 @@ def workflow_steps(workflow: dict | None, cfg: dict) -> list[dict]:
 
 
 def run_for_take(take_id: str, variant: int | None, workflow_id: str | None, steps: list[dict] | None,
-                 name: str | None, preview: bool) -> dict:
+                 name: str | None, preview: bool, loudness=None) -> dict:
     ws = workspace_dir()
     cfg, _ = msconfig.load_config(ws)
     take = library.get_take(take_id, ws)
@@ -382,7 +485,8 @@ def run_for_take(take_id: str, variant: int | None, workflow_id: str | None, ste
         steps = workflow_steps(wf, cfg)
     base = name or f"{library.safe_name(take.get('title') or take_id)}_v{variant}"
     out_dir = Path(take["dir"]) / "final"
-    result = run_steps(Path(take["dir"]) / match["file"], steps, out_dir, base, cfg, spec=spec, preview=preview)
+    result = run_steps(Path(take["dir"]) / match["file"], steps, out_dir, base, cfg, spec=spec, preview=preview,
+                       loudness=resolve_loudness(cfg, loudness))
     record = {"variant": int(variant), "base": base, "created": time.strftime("%Y-%m-%dT%H:%M:%S"), **result}
     finals = read_json(Path(take["dir"]) / "final.json", []) or []
     finals = [f for f in finals if f.get("base") != base] + [record]
@@ -404,6 +508,7 @@ def main(argv=None) -> int:
     r.add_argument("--steps", help="JSON file with a list of steps (overrides the workflow)")
     r.add_argument("--name")
     r.add_argument("--preview", action="store_true", help="also write a 2x loop preview")
+    r.add_argument("--loudness", help="preset from postprocess.loudness_presets (video, game, background) or LUFS, e.g. -14")
     o = sub.add_parser("op")
     o.add_argument("name", choices=[k for k in OPS if k != "export"])
     o.add_argument("input"); o.add_argument("output")
@@ -420,10 +525,11 @@ def main(argv=None) -> int:
             bar = int(round(60.0 / args.bpm * args.beats * sr)) if args.bpm else None
             rep = analyze_array(x, sr, path, cfg, pp["loudness_lufs"], pp["true_peak_db"], bar=bar)
             rep["qc"] = qc(rep, cfg, looped=bool(args.bpm))
+            rep["issues"] = inspect_audio(x, sr, loopable=bool(args.bpm))
             print_json(rep)
         elif args.cmd == "run":
             steps = json.loads(Path(args.steps).read_text(encoding="utf-8")) if args.steps else None
-            print_json(run_for_take(args.take, args.variant, args.workflow, steps, args.name, args.preview))
+            print_json(run_for_take(args.take, args.variant, args.workflow, steps, args.name, args.preview, args.loudness))
         elif args.cmd == "op":
             sr = int(cfg["postprocess"].get("sample_rate", SR_DEFAULT))
             params = {}

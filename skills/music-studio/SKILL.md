@@ -3,7 +3,7 @@ name: music-studio
 description: Create instrumental music and BGM (game loops, video scores, study/work background, personal tracks) locally with ACE-Step 1.5 on the user's NVIDIA GPU, with fully customisable defaults, style library, description lexicon and workflows plus a local dashboard. Use whenever the user wants to make, generate, loop, master or manage background music or a soundtrack, tweak music defaults or styles, fix bad-sounding results, or says 做音樂/配樂/BGM/循環音樂/遊戲音樂/讀書背景音. Also use for music-studio setup or troubleshooting.
 license: Apache-2.0
 metadata:
-  version: "3.2.0"
+  version: "3.3.0"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---
@@ -46,7 +46,8 @@ Save the spec and run `python scripts/msclient.py generate --spec spec.json` (`-
 
 ## 5. Audition -> refine -> finish
 - Variants are `v1`, `v2`... in the take folder / dashboard. Iterate by changing **one** thing and keeping the seed of the liked variant (dashboard: 以這版為基礎微調再生). Draft on `draft`/`standard`; re-render the keeper on `high` with the same seed.
-- Finish: `python scripts/postprocess.py run --take ID [--variant N] [--workflow W] [--preview]`; explain `report.qc` in plain words. Loops: if the seam is flagged, offer the loop preview or regenerate with "steady, repetitive, no build".
+- Every variant is checked automatically when it is written: `variants[].qc` in the take (clipping, clicks, cut_off, silence, near_silent, low_volume, each with a time). Mention any issue in one line with its time; it is a heuristic, the ear decides.
+- Finish: `python scripts/postprocess.py run --take ID [--variant N] [--workflow W] [--loudness video|game|background|-14] [--preview]`; `--loudness` overrides the workflow's target (video -14, game -16, background -18 LUFS). Explain `report.qc` and `report.issues` in plain words. Loops: if the seam is flagged, offer the loop preview or regenerate with "steady, repetitive, no build".
 - Library: `python scripts/library.py list|show|annotate ID rating=4 favorite=true notes=...|trash ID`.
 
 ## When the person says it sounds bad

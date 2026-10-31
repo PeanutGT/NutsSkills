@@ -96,6 +96,12 @@
     "_doc": "Targets used by the post-processing steps and the QC report.",
     "loudness_lufs": -16.0,
     "true_peak_db": -1.5,
+    "loudness_presets": {
+      "_doc": "Pick one when exporting (dashboard 響度, or postprocess.py run --loudness NAME) to override the workflow's own target.",
+      "video": {"label": "影片平台（YouTube 等）", "lufs": -14.0, "true_peak_db": -1.0},
+      "game": {"label": "遊戲 BGM", "lufs": -16.0, "true_peak_db": -1.0},
+      "background": {"label": "背景／讀書音樂", "lufs": -18.0, "true_peak_db": -1.0}
+    },
     "loop_crossfade": 2.0,
     "export_formats": [
       "flac"

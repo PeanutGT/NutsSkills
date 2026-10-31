@@ -121,6 +121,13 @@ def finish(ctx: dict, result: dict) -> dict:
                     v["file"] = dst.name
                 except (subprocess.CalledProcessError, OSError) as exc:
                     warnings.append(f"could not convert mock audio to {want}: {exc}")
+    try:  # automatic check of every variant; a failure here never loses the take
+        import postprocess
+        loopable = bool(ctx["spec"].get("loopable"))
+        for v in variants:
+            v["qc"] = postprocess.inspect_file(out_dir / v["file"], cfg, loopable)
+    except Exception as exc:  # noqa: BLE001
+        warnings.append(f"automatic audio check skipped: {exc}")
     meta = {"id": ctx["take_id"], "title": ctx["title"], "spec": ctx["spec"], "engine": ctx["engine"],
             "tier": ctx["tier"], "quality": ctx["quality"], "params": ctx["params"], "warnings": warnings,
             "effective": result.get("effective"), "lm_metadata": result.get("lm_metadata"),
