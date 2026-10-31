@@ -2,6 +2,8 @@
 
 Open the take's **「實際使用的設定」** panel in the dashboard (or `python scripts/library.py show ID` -> `effective`, `warnings`). Most "bad quality" is a setting that silently did not apply.
 
+Both ways of running a job (the server, used by the dashboard and `msclient.py`, and the direct `engine.py generate`) record the same `effective` / `warnings`. The server path can also change settings between jobs: after a CPU decode it turns on DiT offload and caps the batch at 1 for the next job, and an OOM is retried once in the same job with the same changes; both are listed in `warnings`. When comparing two takes, check that panel before blaming the prompt.
+
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Does not sound like what you described | Your words never reached the caption (older versions), a style fought your description, or no LM ("thinking") | Look at the **caption preview** before generating; use style `from-description`; make sure the panel shows a language model; keep <= 12 tags; say what to omit as `no percussion` |
