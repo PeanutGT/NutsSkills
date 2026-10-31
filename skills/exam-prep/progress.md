@@ -36,7 +36,7 @@
 
 ## 二、現況
 
-- **最新版本：2.3.0**（2026-10-31，整本課本先看目錄再選範圍）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`（2.2.0 沒有單獨發）
+- **最新版本：2.3.0**（2026-10-31，整本課本先看目錄再選範圍）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`、`exam-prep-v2.3.0`（2.2.0 沒有單獨發）
 - 這個雲端環境的 git 代理不允許推 tag（HTTP 403），發版改用 GitHub Actions 手動觸發 Release workflow
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
@@ -82,7 +82,7 @@ python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋inge
 
 ### 2. 從 GitHub 安裝實測
 
-- Claude.ai：Release 的 `exam-prep-2.2.2.zip` 上傳（**使用者自己做**；2026-10-31 時這台電腦從 Claude.ai 同步下來的 exam-prep 還是 2.0.0）
+- Claude.ai：Release 的 `exam-prep-2.3.0.zip` 上傳（**使用者自己做**；2026-10-31 時這台電腦從 Claude.ai 同步下來的 exam-prep 還是 2.0.0）
 - Claude Code：**2026-10-31 在 Windows 完成**。用桌面版內建的 `claude.exe plugin marketplace add PeanutGT/NutsSkills` → `plugin install exam-prep@nutsskills` 安裝成功，`plugin details` 顯示 skill 常駐約 220 tokens、觸發時約 4.2k。發現：
   - 版本顯示成 commit hash（`2e917803f8dc`），因為 marketplace.json 的 plugin 條目沒有 `version`。加了之後每次發版都要記得一起改，否則 Claude Code 不會更新
   - `source: "./"` 會把整個 repo（含 music-studio、docs 圖片、evals）複製進 plugin 快取，只是多佔空間，不影響使用
