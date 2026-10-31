@@ -4,7 +4,7 @@ description: 把講義、投影片、課本、手寫筆記照片、考古題（�
 license: Apache-2.0
 compatibility: 需要可執行程式碼的環境（Claude.ai 需開啟程式碼執行；Claude Code、Codex 可直接使用），並能安裝 npm 與 pip 套件。渲染需要 Node.js 18+ 與 Chromium（Playwright），讀取與檢查需要 poppler，圖表與驗算需要 Python 3（matplotlib、sympy、scipy）。
 metadata:
-  version: "2.2.2"
+  version: "2.3.0"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---
@@ -47,6 +47,7 @@ python <skill-dir>/scripts/setup.py --check   # 只檢查，不安裝，離線�
 - **能派出子代理的環境**，資料超過約 30 頁或要看的總覽圖超過 8 張時，把這一步交給子代理，只拿回 `materials.md` 的路徑與摘要（做法見 reading-inputs.md 第 3 節）；不能派就自己做
 - 資料在 Google Drive（貼了 `drive.google.com`／`docs.google.com` 連結，或說「在我雲端的某資料夾」）：用 Google Drive 連接器，見 reading-inputs.md 的 Drive 一節
 - 先讀完再問問題，因為「範圍」的選項應該是資料裡真的有的章節
+- **例外：整本課本**（ingest 報告標「整本書」，預設超過 150 頁）不會抽全文，只給目錄。先用目錄裡的章名問範圍（第 2 步第 1 題），再用 `"課本.pdf:起-迄"` 只讀選定的章節；講義、考古題照常先讀完。整本書通常是講義的參考書，範圍可依講義已涵蓋的章節推薦
 
 ### 2. 詢問使用者
 

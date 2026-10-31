@@ -36,7 +36,7 @@
 
 ## 二、現況
 
-- **最新版本：2.2.2**（2026-10-31，Windows 實測修正）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`（2.2.0 沒有單獨發）
+- **最新版本：2.3.0**（2026-10-31，整本課本先看目錄再選範圍）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`（2.2.0 沒有單獨發）
 - 這個雲端環境的 git 代理不允許推 tag（HTTP 403），發版改用 GitHub Actions 手動觸發 Release workflow
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
@@ -82,9 +82,16 @@ python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋inge
 
 ### 2. 從 GitHub 安裝實測
 
-- Claude.ai：Release 的 `exam-prep-2.2.1.zip` 上傳
-- Claude Code：`/plugin marketplace add PeanutGT/NutsSkills` → `/plugin install exam-prep@nutsskills`
-- Codex：`codex plugin marketplace add PeanutGT/NutsSkills` → `codex plugin install exam-prep@nutsskills`，再照下面「需要驗證」的 Codex 項目測
+- Claude.ai：Release 的 `exam-prep-2.2.2.zip` 上傳（**使用者自己做**；2026-10-31 時這台電腦從 Claude.ai 同步下來的 exam-prep 還是 2.0.0）
+- Claude Code：**2026-10-31 在 Windows 完成**。用桌面版內建的 `claude.exe plugin marketplace add PeanutGT/NutsSkills` → `plugin install exam-prep@nutsskills` 安裝成功，`plugin details` 顯示 skill 常駐約 220 tokens、觸發時約 4.2k。發現：
+  - 版本顯示成 commit hash（`2e917803f8dc`），因為 marketplace.json 的 plugin 條目沒有 `version`。加了之後每次發版都要記得一起改，否則 Claude Code 不會更新
+  - `source: "./"` 會把整個 repo（含 music-studio、docs 圖片、evals）複製進 plugin 快取，只是多佔空間，不影響使用
+  - 已安裝的 plugin 要開**新的**工作階段才會出現在技能清單；尚未在新工作階段確認會自動觸發
+- 真實課程資料 ingest 實測（使用者私人提供的 `test-material/`，**有版權，只在本機，已用 `.git/info/exclude` 排除，不可 commit 或引用內容**）：中文投影片 PDF、英文投影片 PDF、PPTX、DOCX、21 張實驗照片、1345 頁原文課本都能讀，沒有亂碼。發現：
+  - `.ppt`（舊版 PowerPoint）不支援，報告寫「請手動處理」；沒有 LibreOffice 時無解
+  - 同名的 `.ppt`／`.pptx`／`.docx` 與 `.pdf` 會重複讀，ingest 不會提醒
+  - **整本課本**：1345 頁 80 秒讀完、只有 26 頁需要看圖，但抽出 234 萬字（約 70 萬 tokens），流程「先讀完再問範圍」與子代理（門檻 30 頁）都無法處理；ingest 也沒有只讀部分頁數的選項
+- Codex：這台電腦沒裝 Codex，未測。`codex plugin marketplace add PeanutGT/NutsSkills` → `codex plugin install exam-prep@nutsskills`，再照下面「需要驗證」的 Codex 項目測
 
 ### 3. 還沒收尾的小事
 
@@ -101,6 +108,10 @@ python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋inge
 - [ ] **在真的 Codex 上實跑**：`codex plugin marketplace add` → `install`、`$exam-prep` 觸發、沙箱裡 `setup.py --check`、沙箱外安裝、Chromium 能不能在沙箱內啟動（不行就要核准在沙箱外渲染）
 
 ### 可做的改進
+- [x] **整本課本**（2.3.0）：超過 150 頁只給書籤目錄，`book.pdf:120-180` 只讀選定頁，SKILL.md 改為先問範圍。尚未在完整產出流程中實測（模型是否真的照目錄問範圍）
+- [ ] render.mjs 產出的 PDF 沒有書籤；Playwright 的 `page.pdf` 有 `outline`／`tagged` 選項，加了之後講義在 PDF 閱讀器裡有章節側欄
+- [ ] `.ppt`／`.doc` 舊格式：有 LibreOffice 時先轉 PDF 再讀；同名檔案（`.pptx` 與 `.pdf`）在報告中提醒只需讀一份
+- [ ] marketplace.json 的 plugin 條目加 `version`，並寫進發版流程
 - [ ] **ChatGPT 網頁版相容**（使用者問過，尚未決定要不要做；Codex 已在 2.2.0 支援）：
   - 把 KaTeX、Mermaid 打包進 skill，免網路也能渲染（zip 約 50 KB → 5 MB）
   - 沒有 Chromium 時改輸出自含 HTML，讓使用者用瀏覽器列印成 PDF

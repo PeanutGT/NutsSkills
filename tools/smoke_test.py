@@ -68,6 +68,18 @@ def main() -> int:
     if not ok:
         print(r.stdout + r.stderr)
         failed = True
+    # whole-book mode (threshold lowered so a 5-page PDF counts as a book) and reading a page range
+    slides = next(f for f in files if f.name == "la_slides_ch5.pdf")
+    r = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), str(slides), f"{slides}:2-3", "--book-pages", "2",
+                        "--out", str(out / "ingest-book")], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    text = out / "ingest-book" / "text"
+    outline, part = text / "la_slides_ch5-outline.md", text / "la_slides_ch5_p2-3.txt"
+    ok = (r.returncode == 0 and outline.exists() and not (text / "la_slides_ch5.txt").exists() and part.exists()
+          and "p.2 ===" in part.read_text(encoding="utf-8") and "p.1 ===" not in part.read_text(encoding="utf-8"))
+    print(f"[ingest book/range] {'ok' if ok else 'FAIL'}")
+    if not ok:
+        print(r.stdout + r.stderr)
+        failed = True
     r = subprocess.run([sys.executable, str(SKILL / "scripts" / "preview.py"), str(out / "sample-modern.pdf"), "--out", str(out / "preview")],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
     ok = r.returncode == 0 and list((out / "preview").glob("*-overview-*.png"))

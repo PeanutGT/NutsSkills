@@ -8,10 +8,15 @@ not on every page.
 
 Usage:
     python ingest.py slides.pdf ch3.pptx notes.jpg exam2025.pdf --out ingest/
+    python ingest.py "textbook.pdf:120-180,201-230" --out ingest/     only these PDF pages (PDF numbering, not printed)
+
+A PDF longer than --book-pages (a whole textbook) is not extracted when no pages are given: the report points to its
+bookmarks with page ranges instead, so the scope can be chosen first and only those chapters read with "file.pdf:a-b".
 
 Writes into --out:
     report.md              what was found, which pages to view, and what to read next   <- read this first
     text/<file>.txt        extracted text with "=== <file> p.N ===" page markers
+    text/<file>-outline.md table of contents of a whole book (instead of its text)
     sheets/<file>-K.png    contact sheets of the pages that need viewing (2x2 slides or 2x1 portrait pages)
 
 Supported: .pdf .pptx .docx .md .txt .png .jpg .jpeg .webp .heic(if Pillow can open it).
@@ -25,6 +30,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -59,6 +65,10 @@ class Source:
     pages: list[Page] = field(default_factory=list)
     note: str = ""
     render_pdf: Path | None = None  # PDF used to render pages that need viewing
+    wanted: list[int] | None = None  # pages asked for with "file.pdf:a-b"; None = all
+    spec: str = ""                  # those pages as written, for the report
+    outline: str = ""               # set instead of pages for a whole book
+    pages_total: int = 0            # page count of that book
     image: Path | None = None       # for photos
 
 
@@ -119,12 +129,55 @@ def pdf_pages_with_images(pdf: Path) -> set[int]:
     return pages
 
 
-def read_pdf(src: Source):
+def pdf_outline(pdf: Path, n: int) -> str:
+    """Bookmarks as a Markdown table with each heading's page range; without bookmarks, the text of the first
+    pages, where the printed table of contents usually is."""
+    try:
+        xml = run([poppler("pdftohtml"), "-xml", "-i", "-q", "-f", "1", "-l", "1", "-stdout", str(pdf)])
+        root = ET.fromstring(re.sub(r"<!DOCTYPE[^>]*>", "", xml))
+    except (RuntimeError, subprocess.CalledProcessError, ET.ParseError):
+        root = None
+    items: list[tuple[int, int, str]] = []  # (level, page, title)
+
+    def walk(node, level):
+        for child in node:
+            if child.tag == "item" and child.get("page", "").isdigit():
+                items.append((level, int(child.get("page")), " ".join((child.text or "").split())))
+            elif child.tag == "outline":
+                walk(child, level + 1)
+
+    outline = root.find("outline") if root is not None else None
+    if outline is not None:
+        walk(outline, 1)
+    if not items:
+        first = min(n, 30)
+        text = run([poppler("pdftotext"), "-enc", "UTF-8", "-layout", "-f", "1", "-l", str(first), str(pdf), "-"])
+        return (f"這份 PDF 沒有書籤，以下是前 {first} 頁的文字，目錄通常在這裡。目錄上印的是書本頁碼，和 PDF 頁碼"
+                f"通常差一個固定值：抽一頁（`pdftotext -f 40 -l 40 檔案.pdf -`）對照章名就能算出來。\n\n{text}")
+    lines = ["| 層級 | 標題 | PDF 頁碼 |", "|---|---|---|"]
+    for k, (level, page, title) in enumerate(items):
+        if level > 2:
+            continue
+        # a heading runs until the next heading at the same or a higher level
+        end = next((pg for lv, pg, _ in items[k + 1:] if lv <= level), n + 1) - 1
+        span = f"{page}-{end}" if end > page else str(page)
+        lines.append(f"| {level} | {'　' * (level - 1)}{title} | {span} |")
+    return "\n".join(lines)
+
+
+def read_pdf(src: Source, book_pages: int, name: str):
     info = run([poppler("pdfinfo"), str(src.path)])
     n = int(re.search(r"Pages:\s+(\d+)", info).group(1))
+    if src.wanted is None and n > book_pages:
+        src.outline, src.pages_total = pdf_outline(src.path, n), n
+        src.note = (f"整本書（{n} 頁），沒有抽全文。先用 `text/{name}-outline.md` 的目錄問使用者範圍，"
+                    f"再用 `\"{src.path}:起-迄\"`（PDF 頁碼，可用逗號接多段）只讀選定的頁")
+        return
+    if src.wanted and src.wanted[-1] > n:
+        src.note = f"這份 PDF 只有 {n} 頁，超出的頁碼已略過"
     imgs = pdf_pages_with_images(src.path)
     pdftotext = poppler("pdftotext")
-    for i in range(1, n + 1):
+    for i in (pg for pg in (src.wanted or range(1, n + 1)) if 1 <= pg <= n):
         # -enc UTF-8 is poppler's default but not xpdf's (Latin-1), in case only xpdf is installed
         text = run([pdftotext, "-enc", "UTF-8", "-layout", "-f", str(i), "-l", str(i), str(src.path), "-"])
         src.pages.append(Page(i, text, visual_reasons(text, i in imgs)))
@@ -259,12 +312,26 @@ def safe(name: str) -> str:
     return re.sub(r"[^\w一-鿿.-]+", "_", name)
 
 
+def parse_target(arg: str) -> tuple[Path, list[int] | None, str]:
+    """'book.pdf:120-180,200' -> (path, pages, '120-180,200'). An existing path wins, so 'D:/x.pdf' stays a path."""
+    m = re.fullmatch(r"(.+):(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*)", arg)
+    if Path(arg).exists() or not m:
+        return Path(arg), None, ""
+    pages: list[int] = []
+    for part in m.group(2).split(","):
+        lo, _, hi = part.partition("-")
+        pages += range(int(lo), int(hi or lo) + 1)
+    return Path(m.group(1)), sorted(set(pages)), m.group(2)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("files", nargs="+", type=Path)
+    ap.add_argument("files", nargs="+", help='files; "file.pdf:120-180,200" reads only those PDF pages')
     ap.add_argument("--out", type=Path, default=Path("ingest"))
     ap.add_argument("--dpi", type=int, default=72, help="render resolution for pages that need viewing")
     ap.add_argument("--max-visual", type=int, default=40, help="cap on rendered pages per file")
+    ap.add_argument("--book-pages", type=int, default=150,
+                    help="a PDF longer than this, given without pages, is treated as a whole book (outline only)")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # the report has symbols a cp950 console cannot print
 
@@ -273,15 +340,19 @@ def main() -> int:
     work = Path(tempfile.mkdtemp(prefix="ingest-"))
     sources: list[Source] = []
 
-    for f in a.files:
+    names: list[str] = []
+    for arg in a.files:
+        f, wanted, spec = parse_target(arg)
         if not f.exists():
             print(f"skip (not found): {f}", file=sys.stderr)
             continue
         ext = f.suffix.lower()
-        src = Source(f, ext.lstrip("."))
+        src = Source(f, ext.lstrip("."), wanted=wanted, spec=spec)
+        # the range goes into the name: the same book may be given twice with different chapters
+        name = safe(f.stem) + (f"_p{spec.replace(',', '_')}" if spec else "")
         try:
             if ext == ".pdf":
-                read_pdf(src)
+                read_pdf(src, a.book_pages, name)
             elif ext == ".pptx":
                 read_pptx(src, work)
             elif ext == ".docx":
@@ -294,15 +365,23 @@ def main() -> int:
                 src.note = f"不支援的格式 {ext}，請手動處理"
         except Exception as e:  # noqa: BLE001
             src.note = f"讀取失敗：{e}"
+        if wanted is not None and ext != ".pdf":
+            src.pages = [pg for pg in src.pages if pg.n in wanted]
         sources.append(src)
+        names.append(name)
 
     lines = ["# Ingest report", "",
              "先讀這份報告，再依序：① 讀 `text/` 的文字 ② **只看**下表列出的 sheets ③ 寫 `materials.md`。",
              "沒列在 sheets 的頁面，文字層已足夠，不需要再看圖。", "",
              "| 檔案 | 類型 | 頁數 | 文字字數 | 需要看圖的頁 | sheets |", "|---|---|---|---|---|---|"]
     total_sheets = 0
-    for src in sources:
-        name = safe(src.path.stem)
+    for src, name in zip(sources, names):
+        if src.outline:
+            (a.out / "text" / f"{name}-outline.md").write_text(
+                f"# {src.path.name} 目錄（共 {src.pages_total} 頁）\n\n{src.outline}\n", encoding="utf-8")
+            lines.append(f"| {src.path.name} | 整本書 | {src.pages_total} | — | — | — |")
+            lines.append(f"| ↳ 注意 | {src.note} | | | | |")
+            continue
         if src.pages:
             body = "\n\n".join(f"=== {src.path.name} p.{p.n} ===\n{p.text.strip()}" for p in src.pages)
             (a.out / "text" / f"{name}.txt").write_text(body + "\n", encoding="utf-8")
@@ -321,7 +400,8 @@ def main() -> int:
         chars = sum(len(re.sub(r"\s", "", p.text)) for p in src.pages)
         vis = ", ".join(str(p.n) for p in visual) or "—"
         sh = ", ".join(f"`sheets/{s.name}`" for s in sheets) or "—"
-        lines.append(f"| {src.path.name} | {src.kind} | {len(src.pages)} | {chars} | {vis} | {sh} |")
+        span = f"（p.{src.spec}）" if src.spec else ""
+        lines.append(f"| {src.path.name}{span} | {src.kind} | {len(src.pages)} | {chars} | {vis} | {sh} |")
         if src.note:
             lines.append(f"| ↳ 注意 | {src.note} | | | | |")
 

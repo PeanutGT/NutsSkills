@@ -2,6 +2,18 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [2.3.0] - 2026-10-31
+
+整本課本不再整本讀進來。
+
+### 新增
+- `ingest.py`：超過 150 頁的 PDF（`--book-pages` 可調）當成整本書，不抽全文，改寫 `text/<檔名>-outline.md`：由 PDF 書籤整理的目錄，每章附 PDF 頁碼範圍；沒有書籤時給前 30 頁的文字（印出來的目錄通常在這裡）。實測一本 1,345 頁的課本：原本 80 秒、抽出約 230 萬字（約 70 萬 tokens），現在幾秒內完成、目錄約 20 KB
+- `ingest.py`：`"檔案.pdf:起-迄,起-迄"` 只讀指定頁（PDF 頁碼），PPTX 也適用；輸出檔名帶範圍，同一本書可分段讀。超出總頁數時報告會提醒
+
+### 變更
+- SKILL.md、reading-inputs.md：「先讀完再問範圍」對整本課本改為先用目錄問範圍，再只讀選定章節
+- smoke test 加測整本書模式與範圍讀取
+
 ## [2.2.2] - 2026-10-31
 
 在 Windows 11（Claude Code）上實測後的修正。
