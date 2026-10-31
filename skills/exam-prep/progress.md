@@ -36,7 +36,7 @@
 
 ## 二、現況
 
-- **最新版本：2.2.2**（2026-10-31，Windows 實測修正，**尚未發 Release**）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`（2.2.0 沒有單獨發）
+- **最新版本：2.2.2**（2026-10-31，Windows 實測修正）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`（2.2.0 沒有單獨發）
 - 這個雲端環境的 git 代理不允許推 tag（HTTP 403），發版改用 GitHub Actions 手動觸發 Release workflow
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
@@ -57,7 +57,7 @@
 
 ### 1. Windows 實測（2026-10-31 完成，結果見上方實測紀錄 2.2.2）
 
-剩下：推上 main、CI 綠燈後發 `exam-prep-v2.2.2` Release（本機可直接推 tag）。以下保留原步驟供日後重測：
+已發 `exam-prep-v2.2.2` Release（本機推 tag 正常）。以下保留原步驟供日後重測：
 
 在 repo 根目錄依序執行，每一步記下結果：
 
