@@ -260,6 +260,16 @@ class TestInspect(unittest.TestCase):
         self.assertEqual(self.codes(self.x * 1e-4), ["near_silent"])
         self.assertEqual(self.codes(self.x * 0.1), ["low_volume"])
 
+    def test_tail_silence_with_faint_noise_is_not_mid_silence(self):
+        np = self.np
+        rng = np.random.default_rng(1)
+        tail = self.x.copy(); tail[self.sr * 16:] = 0  # music ends at 16 s, silent to 20 s
+        tail[-self.sr // 3:] += (rng.standard_normal(self.sr // 3) * 3e-4)[:, None]  # ~-70 dB hiss, last 0.33 s
+        tail[-self.sr // 5:] += (rng.standard_normal(self.sr // 5) * 1e-3)[:, None]  # ~-60 dB floor, last 0.2 s
+        self.assertNotIn("silence", self.codes(tail))
+        gap = tail.copy(); gap[self.sr * 18:self.sr * 19] = self.x[self.sr * 2:self.sr * 3]  # real music after the gap
+        self.assertIn("silence", self.codes(gap))
+
 
 class TestPostprocessOps(unittest.TestCase):
     def test_loop_seam_metrics_clean_for_periodic_signal(self):
