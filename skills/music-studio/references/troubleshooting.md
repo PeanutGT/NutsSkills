@@ -2,6 +2,20 @@
 
 Bad-sounding results: read `quality.md` first. Start with `python scripts/engine.py check` - it reports ffmpeg, GPU, tier, ACE-Step install, installed checkpoints and config problems in one JSON.
 
+## Two ways a job runs
+
+| | Through the server (default) | Direct (fallback) |
+|---|---|---|
+| Started by | the dashboard, or `python scripts/msclient.py generate --spec spec.json` | `python scripts/engine.py generate --spec spec.json` |
+| Models | stay loaded in a worker between jobs; unloaded after `engine_idle_unload_minutes` (10) idle or `msclient.py unload` | loaded and freed on every run |
+| Cancel | dashboard 取消 or `msclient.py cancel JOB`: kills the worker, frees VRAM, moves the partial take to `<workspace>\trash` | close the window (Ctrl+C) |
+| Where to look | dashboard job log; `<workspace>\server.log`; `<workspace>\jobs.json` (queue + history); `msclient.py status` | the terminal; stderr has everything ACE-Step prints |
+| CPU decode | `warn` with code `cpu_decode` as soon as it happens; the next job is tightened automatically | the same line in the terminal, nothing tightened |
+
+Use the direct path only when the server will not start, or to tell a server problem from an ACE-Step problem: if a spec fails direct too, the cause is ACE-Step or the models, not the server.
+
+## Symptoms
+
 | Symptom | Cause / fix |
 |---|---|
 | `ffmpeg not found` | `winget install Gyan.FFmpeg`, then **open a new terminal** so PATH refreshes. Or set `ffmpeg` / `ffprobe` to full paths in your config. |
@@ -14,6 +28,10 @@ Bad-sounding results: read `quality.md` first. Start with `python scripts/engine
 | First generation takes a minute | Models load into VRAM on first use; later runs in the same minute-scale are faster. |
 | LM ("thinking") does not load | The runner tries `pt` then `vllm` and continues **without** thinking, with a warning. vLLM is generally not available on native Windows; `pt` is the default for that reason. |
 | "this ACE-Step version ignores: ..." (stderr) | Harmless. A parameter in this skill is not known to your ACE-Step build, so it was dropped instead of crashing. If a setting seems to have no effect, check this line. |
+| Server will not start / `the server did not start` | Read `<workspace>\server.log`. A `server.json` left by a crash is ignored when nothing answers at its URL; only one server runs per workspace. |
+| Job shows `failed: interrupted` | The server was closed while it ran. Run it again; models reload on the first job. |
+| No progress for 4 minutes (stall warning) | Usually a CPU decode or the first model download. Check the job log for `auto-enabling CPU VAE decode`; cancel and see the CPU-decode row below if so. |
+| Cancel did not free the GPU | The worker should exit within seconds. Check Task Manager for a leftover `python.exe` from ACE-Step's `.venv`, end it, and report it (this is a bug). |
 | Dashboard port busy | The server takes a free port automatically and prints the URL (also in `<workspace>\server.json`). To pin one: `dashboard.port`. |
 | Audio will not play in the dashboard | Browsers play flac, wav, mp3 and ogg. If a codec fails, set `generation.audio_format` to `wav` or `mp3`. |
 | Loop clicks or "jumps" | See the loop section in `use-cases.md`; usually the tempo drifted or the track has an intro/outro. Regenerate with "steady, repetitive" and no build, or set `crossfade` longer (4 s). |
@@ -25,4 +43,4 @@ Bad-sounding results: read `quality.md` first. Start with `python scripts/engine
 
 ## Logs
 
-Everything the engines print besides JSON goes to **stderr**; run the command in a terminal to see it, or look at the dashboard's job log panel.
+Direct path: everything the engines print besides JSON goes to **stderr**; run the command in a terminal to see it. Server path: the dashboard's job log panel keeps the last 400 lines per job; `server.log` and `jobs.json` are in the workspace.

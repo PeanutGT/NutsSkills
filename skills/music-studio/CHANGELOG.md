@@ -2,6 +2,12 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [3.1.2] - 2026-10-31
+
+### 變更
+- `troubleshooting.md` 說明「透過伺服器」與「直接執行」兩種路徑的差別（模型常駐、取消、log 位置、CPU 解碼處理），並補上伺服器啟動失敗、`interrupted`、四分鐘無進度、取消後顯存沒釋放等狀況
+- `quality.md` 說明伺服器在 CPU 解碼或 OOM 後會自動調整下一首的設定
+
 ## [3.1.1] - 2026-10-29
 
 ### 修正
