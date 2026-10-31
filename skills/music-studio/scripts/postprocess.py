@@ -237,19 +237,21 @@ def inspect_audio(x: np.ndarray, sr: int, loopable: bool = False) -> list[dict]:
         rms = np.sqrt(np.mean(mono[: nw * win].reshape(nw, win) ** 2, axis=1))
         db = 20 * np.log10(rms + 1e-9)
         quiet = db < -60
+        ref = float(np.median(db[~quiet])) if np.any(~quiet) else -120.0
         i = 0
         while i < nw:
             if quiet[i]:
                 j = i
                 while j < nw and quiet[j]:
                     j += 1
-                if i > 0 and j < nw and (j - i) * 0.1 >= 2.0:
+                # a gap followed only by faint noise floor up to the end is tail silence, not mid-track
+                tail = j >= nw or float(np.max(db[j:])) < ref - 24
+                if i > 0 and not tail and (j - i) * 0.1 >= 2.0:
                     issues.append({"code": "silence", "at": round(i * 0.1, 2), "end": round(j * 0.1, 2)})
                     break
                 i = j
             else:
                 i += 1
-        ref = float(np.median(db[~quiet])) if np.any(~quiet) else -120.0
         if not loopable and db[-1] > ref - 6:
             issues.append({"code": "cut_off", "at": round(len(mono) / sr - 0.1, 2)})
         if ref < -32:
