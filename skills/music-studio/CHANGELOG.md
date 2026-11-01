@@ -6,6 +6,7 @@
 
 ### 變更
 - 4GB 以下（low tier）不再預設 int8 量化：同 seed 對照，int8 版有破碎音質，關掉後 Peanut 聽起來明顯變好；RTX 3050 4GB 一首 60 秒約 35-65 秒（int8 約 20 秒），沒有爆顯存、沒有掉 CPU 解碼。真的爆顯存時可用 `msconfig.py set hardware.tiers.low.quantization int8_weight_only` 改回
+- `war-requiem` caption 改用具體音色（大提琴獨奏、連奏弦樂、柔和法國號、慢行軍鼓、定音鼓滾奏）取代樂理詞：4GB 沒有 LM 時模型看不懂 i-iv-V7、pp to mf，原版聽起來不像樂器；新版同 seed 試聽 Peanut 覺得「還可以」
 
 ## [3.4.0] - 2026-11-01
 
