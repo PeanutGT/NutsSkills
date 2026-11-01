@@ -9,14 +9,14 @@ The **automatic check** (shown under the comparison deck, `variants[].qc` in the
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Does not sound like what you described | Your words never reached the caption (older versions), a style fought your description, or no LM ("thinking") | Look at the **caption preview** before generating; use style `from-description`; make sure the panel shows a language model; keep <= 12 tags; say what to omit as `no percussion` |
-| Rough / noisy / metallic | int8 quantization (`low` tier only should use it), too few steps for a non-turbo model, very long duration | `msconfig.py show` -> `hardware.tiers.<tier>.quantization` should be `null` on 6 GB+ cards; keep turbo at 8 steps, sft/base at 32-64; generate <= 120 s |
+| Rough / noisy / metallic / broken | int8 quantization (no tier uses it by default since 3.4.1), too few steps for a non-turbo model, very long duration | `msconfig.py show` -> `hardware.tiers.<tier>.quantization` should be `null`; keep turbo at 8 steps, sft/base at 32-64; generate <= 120 s |
 | Structure wanders, tempo drifts, odd endings | Duration too long for the model; a big BPM/key conflict with the caption | 30-120 s, then loop. Give BPM and key once and do not contradict them in the caption |
 | "high"/"max" sounds the same as "standard" | `acestep-v15-sft` is not installed, so they fell back to turbo (a warning says so) | `python scripts/engine.py models --download acestep-v15-sft` |
 | A setting seems ignored | Your ACE-Step build does not know it (panel lists "ignored settings") | Update ACE-Step (`git pull`, `uv sync`) or drop the setting |
 | Same prompt, every variant different | Normal: each variant has its own seed | Keep the seed of the one you like and change ONE tag ("以這版為基礎微調再生") |
 
 ## Tier expectations
-- **low (<6 GB)**: turbo 2B, no LM, int8. Fast and usable for ideas; caption adherence is the weakest here - write precise tags yourself.
+- **low (<6 GB)**: turbo 2B, no LM, no quantization (DiT offloaded between phases; ~35-65 s per 60 s track on a 3050 4GB). Fast and usable for ideas; caption adherence is the weakest here - write precise tags yourself.
 - **mid (6-12 GB)**: turbo 2B + LM 0.6B, no quantization. The sweet spot for most cards.
 - **high (12-20 GB)**: turbo + LM 1.7B; **ultra (20 GB+)**: XL turbo + LM 4B.
 - Quality `high`/`max`: sft model, 50-64 steps; 5-8x slower than `standard`, better detail and coherence.
