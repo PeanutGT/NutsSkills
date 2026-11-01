@@ -2,7 +2,7 @@
   "id": "rpg-battle",
   "name": "Battle Theme (RPG)",
   "description": "Driving orchestral combat music.",
-  "caption": "epic orchestral battle music, instrumental, driving strings ostinato, brass stabs, taiko drums, intense, fast, dramatic, cinematic action",
+  "caption": "orchestral battle music, instrumental, driving strings ostinato in sixteenths, brass stabs on off-beats, taiko drums, harmonic minor, i-bVI-bVII progression, syncopated accents, fast tempo, ff dynamics, repeating 8-bar phrases",
   "avoid": "vocals, slow sections, long quiet intros",
   "bpm": [
     140,
@@ -25,5 +25,17 @@
     "game"
   ],
   "name_zh": "RPG 戰鬥",
-  "description_zh": "管弦加打擊的戰鬥音樂，緊湊有推進力。"
+  "description_zh": "管弦加打擊的戰鬥音樂，緊湊有推進力。",
+  "instruments": {
+    "suggest": [
+      "strings",
+      "trumpet",
+      "taiko"
+    ],
+    "avoid": [
+      "synth-pad",
+      "ukulele",
+      "music-box"
+    ]
+  }
 }

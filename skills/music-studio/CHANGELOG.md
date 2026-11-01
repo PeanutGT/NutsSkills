@@ -2,6 +2,19 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [3.4.0] - 2026-11-01
+
+### 新增
+- 風格可以指定樂器：每個風格有建議樂器（`instruments.suggest`）與要避開的樂器（`instruments.avoid`），避開的樂器會從風格與情緒標籤中拿掉；建議的樂器 caption 裡沒有時會補上
+- 自己指定樂器：`msconfig.py plan --instruments erhu,guzheng`（取代風格的建議）、`--avoid-instruments drums`；描述裡講到的樂器永遠優先，風格原本會避開時附提醒。`msconfig.py instruments [--style S]` 列出可用的樂器 id
+- 儀表板「樂器」晶片：依風格預先標好 ✓／✕，點一下切換 使用 → 避免 → 不指定；「會送給 ACE-Step 的內容」多一列「樂器」
+- 新風格 `war-requiem`（戰爭安魂曲）：大提琴、低音弦樂、悶住的軍鼓、法國號，避開合成器與 drone，給戰敗／戰爭／犧牲的場景
+- 詞庫新增樂器：法國號、定音鼓、軍鼓、低音弦樂、雙簧管、單簧管、手風琴、曼陀林、琵琶、持續低音（drone）；新增「犧牲」「悲壯」
+- `msconfig.py validate` 檢查風格裡的樂器 id 是否存在
+
+### 變更
+- 內建風格的 caption 改用樂理描述，不再堆模糊形容詞（warm、dreamy、epic 感受詞等）：寫明調式、和弦語彙與進行、節奏型、織體與音域、力度、樂器與演奏法，例如 lo-fi 改成「Dorian mode, minor seventh and ninth chords, swung boom bap drums」。感受交給情緒選項。測試會擋下內建風格裡的模糊詞（`msconfig.VAGUE_WORDS`），撰寫指南同步更新
+
 ## [3.3.1] - 2026-10-31
 
 ### 修正

@@ -66,7 +66,7 @@ def api_state() -> dict:
     return {
         "workspace": str(ws), "engine": cfg.get("engine"), "tier": tier, "gpu": info,
         "problems": msconfig.validate(ws),
-        "styles": [{"id": k, **{f: v.get(f) for f in ("name", "description", "caption", "bpm", "keys", "duration", "tags", "name_zh", "description_zh")},
+        "styles": [{"id": k, **{f: v.get(f) for f in ("name", "description", "caption", "bpm", "keys", "duration", "tags", "name_zh", "description_zh", "instruments")},
                     "source": v.get("_source")} for k, v in styles.items()],
         "moods": [{"id": k, "caption": v.get("caption"), "label_zh": v.get("label_zh"), "bpm_delta": v.get("bpm_delta", 0), "source": v.get("_source")}
                   for k, v in moods.items()],
@@ -75,6 +75,8 @@ def api_state() -> dict:
                        "defaults": v.get("defaults", {}), "stages": v.get("stages", []),
                        "steps": next((st.get("steps", []) for st in v.get("stages", []) if st.get("id") == "postprocess"), []),
                        "source": v.get("_source")} for k, v in wfs.items()],
+        "instruments": [{"id": k, "label": msconfig.instrument_label(k, v), "tags": v["tags"]}
+                        for k, v in msconfig.instrument_catalog(msconfig.load_lexicon(ws)).items()],
         "qualities": list(cfg["quality"]["presets"]),
         "loudness_presets": [{"id": k, "label": v.get("label") or k, "lufs": v.get("lufs")}
                              for k, v in cfg["postprocess"].get("loudness_presets", {}).items() if not k.startswith("_")],
@@ -91,6 +93,10 @@ def _spec_from_body(body: dict) -> dict:
     if not body.get("style"):
         raise ApiError(400, "style is required")
 
+    def ids(key):
+        v = body.get(key)
+        return None if v is None else [str(i)[:40] for i in v][:40] if isinstance(v, list) else None
+
     def num(key, cast):
         v = body.get(key)
         return cast(v) if v not in (None, "") else None
@@ -103,7 +109,8 @@ def _spec_from_body(body: dict) -> dict:
             variants=num("variants", int), quality=(body.get("quality") or None),
             workflow=(body.get("workflow") or None), seed=num("seed", int),
             caption_extra=str(body.get("caption_extra") or "")[:1000], workflows=msconfig.load_workflows(ws),
-            lexicon=msconfig.load_lexicon(ws), caption_override=(str(body.get("caption") or "")[:1000] or None))
+            lexicon=msconfig.load_lexicon(ws), caption_override=(str(body.get("caption") or "")[:1000] or None),
+            instruments=ids("instruments"), avoid_instruments=ids("avoid_instruments") or [])
     except KeyError as exc:
         raise ApiError(400, str(exc.args[0]))
     except (TypeError, ValueError) as exc:

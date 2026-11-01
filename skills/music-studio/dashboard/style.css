@@ -209,3 +209,12 @@ code { font-family: Consolas, ui-monospace, monospace; background: var(--well); 
   .led.busy { animation: pulse 1.6s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity: .45; } }
 }
+
+/* instrument chips: neutral / use / avoid */
+.instr summary { cursor: pointer; margin-top: 10px; }
+.ichips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.ichip { font: inherit; font-size: .82rem; min-height: 32px; padding: 0 10px; border-radius: 6px; cursor: pointer;
+  background: transparent; color: var(--ink-dim); border: 1px solid var(--rail); }
+.ichip.use { color: inherit; border-color: var(--green); }
+.ichip.avoid { color: var(--ink-dim); border-style: dashed; text-decoration: line-through; }
+.ichip:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }

@@ -2,7 +2,7 @@
   "id": "lofi",
   "name": "Lo-fi Chill",
   "description": "Warm, dusty lo-fi hip hop for studying, working or relaxing.",
-  "caption": "lo-fi hip hop, instrumental, mellow, warm Rhodes piano, dusty vinyl crackle, laid-back boom bap drums, soft bass, tape saturation, relaxing",
+  "caption": "lo-fi hip hop, instrumental, Rhodes piano, minor seventh and ninth chords, Dorian mode, four-chord loop, swung boom bap drums, behind-the-beat groove, soft bass, vinyl crackle, tape saturation, low-pass filtered",
   "avoid": "vocals, harsh highs, busy drum fills, sudden dynamic changes",
   "bpm": [
     70,
@@ -28,5 +28,16 @@
   ],
   "notes": "Very loop-friendly: repeating 4-8 bar patterns. Good default for background use.",
   "name_zh": "Lo-fi 放鬆",
-  "description_zh": "溫暖、帶黑膠雜訊的 lo-fi 嘻哈，讀書、工作、放空都適合。"
+  "description_zh": "溫暖、帶黑膠雜訊的 lo-fi 嘻哈，讀書、工作、放空都適合。",
+  "instruments": {
+    "suggest": [
+      "rhodes",
+      "drums",
+      "bass"
+    ],
+    "avoid": [
+      "guitar-electric",
+      "trumpet"
+    ]
+  }
 }

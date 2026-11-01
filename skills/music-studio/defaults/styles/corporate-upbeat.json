@@ -2,7 +2,7 @@
   "id": "corporate-upbeat",
   "name": "Corporate Upbeat",
   "description": "Bright, positive background music for product and explainer videos.",
-  "caption": "upbeat corporate background music, instrumental, bright acoustic guitar, claps, light piano, positive, motivational, clean modern",
+  "caption": "corporate pop, instrumental, strummed acoustic guitar in sixteenths, staccato piano chords, handclaps on 2 and 4, major key, I-V-vi-IV progression, four-on-the-floor kick, clean modern production",
   "avoid": "vocals, dark tones, heavy bass",
   "bpm": [
     100,
@@ -24,5 +24,16 @@
     "video"
   ],
   "name_zh": "簡報・產品",
-  "description_zh": "乾淨、正向的產品影片配樂。"
+  "description_zh": "乾淨、正向的產品影片配樂。",
+  "instruments": {
+    "suggest": [
+      "guitar-acoustic",
+      "piano"
+    ],
+    "avoid": [
+      "drone",
+      "organ",
+      "guitar-electric"
+    ]
+  }
 }

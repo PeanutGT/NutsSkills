@@ -2,7 +2,7 @@
   "id": "acoustic-folk",
   "name": "Acoustic Folk",
   "description": "Cozy fingerpicked folk.",
-  "caption": "acoustic folk, instrumental, fingerpicked guitar, warm, light percussion, mandolin, cozy, organic",
+  "caption": "acoustic folk, instrumental, fingerpicked steel-string acoustic guitar, mandolin countermelody, diatonic major key, I-IV-V and vi chords, straight eighth-note groove, light hand percussion on 2 and 4, open-string voicings, dry close-mic recording",
   "avoid": "electronic sounds, distortion",
   "bpm": [
     85,
@@ -26,5 +26,16 @@
     "video"
   ],
   "name_zh": "木吉他民謠",
-  "description_zh": "溫暖的指彈木吉他。"
+  "description_zh": "溫暖的指彈木吉他。",
+  "instruments": {
+    "suggest": [
+      "guitar-acoustic",
+      "mandolin"
+    ],
+    "avoid": [
+      "synth",
+      "synth-pad",
+      "guitar-electric"
+    ]
+  }
 }

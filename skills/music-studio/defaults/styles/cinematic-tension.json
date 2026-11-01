@@ -2,7 +2,7 @@
   "id": "cinematic-tension",
   "name": "Cinematic Tension",
   "description": "Thriller underscore with rising unease.",
-  "caption": "cinematic suspense, instrumental, low pulsing synth, ticking percussion, dissonant strings, rising tension, thriller underscore",
+  "caption": "cinematic suspense underscore, instrumental, low synth ostinato on one repeated note, ticking percussion in sixteenth notes, dissonant strings, minor-second clusters and tritones, unresolved harmony over a bass pedal, gradual crescendo, high violin harmonics",
   "avoid": "resolved happy harmony, vocals",
   "bpm": [
     90,
@@ -25,5 +25,16 @@
     "game"
   ],
   "name_zh": "電影感・緊張",
-  "description_zh": "懸疑、壓迫感的場景配樂。"
+  "description_zh": "懸疑、壓迫感的場景配樂。",
+  "instruments": {
+    "suggest": [
+      "synth",
+      "strings"
+    ],
+    "avoid": [
+      "ukulele",
+      "guitar-acoustic",
+      "music-box"
+    ]
+  }
 }

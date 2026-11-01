@@ -2,7 +2,7 @@
   "id": "dungeon-ambient",
   "name": "Dark Dungeon",
   "description": "Eerie drones and sparse textures for tense exploration.",
-  "caption": "dark ambient, instrumental, low drones, eerie textures, distant metallic hits, sparse, tense atmosphere, horror game, subterranean",
+  "caption": "dark ambient, instrumental, low drone on the tonic, Phrygian mode, tritone intervals and cluster chords, no fixed pulse, sparse metallic percussion hits, bowed metal textures, very soft dynamics, long cavernous reverb",
   "avoid": "melody, steady beat, bright tones",
   "bpm": null,
   "keys": [
@@ -22,5 +22,16 @@
     "video"
   ],
   "name_zh": "地下城",
-  "description_zh": "陰暗、迴響的探索氛圍。"
+  "description_zh": "陰暗、迴響的探索氛圍。",
+  "instruments": {
+    "suggest": [
+      "drone"
+    ],
+    "avoid": [
+      "ukulele",
+      "marimba",
+      "sax",
+      "accordion"
+    ]
+  }
 }

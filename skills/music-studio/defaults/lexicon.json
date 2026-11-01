@@ -1,5 +1,5 @@
 {
- "_doc": "Maps words in your plain-language description to English caption tags. 'match' = words to look for (Chinese or English, case-insensitive), 'tags' = what is added, 'bpm_delta' nudges the style's tempo. Add or override entries in <workspace>/lexicon.json (same shape; set \"tags\": \"\" to disable a built-in entry).",
+ "_doc": "Maps words in your plain-language description to English caption tags. 'match' = words to look for (Chinese or English, case-insensitive), 'tags' = what is added, 'bpm_delta' nudges the style's tempo. Add or override entries in <workspace>/lexicon.json (same shape; set \"tags\": \"\" to disable a built-in entry). Entries with group 'instrument' are also the ids that styles list under instruments.suggest / instruments.avoid and that the dashboard offers as instrument chips; their English 'match' words are used to spot that instrument inside style tags.",
  "piano": {
   "match": [
    "鋼琴",
@@ -27,7 +27,8 @@
   ],
   "tags": "warm Rhodes electric piano",
   "group": "instrument",
-  "bpm_delta": 0
+  "bpm_delta": 0,
+  "label_zh": "電鋼琴"
  },
  "guitar-acoustic": {
   "match": [
@@ -281,6 +282,104 @@
    "ukulele"
   ],
   "tags": "ukulele",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "french-horn": {
+  "match": [
+   "法國號",
+   "圓號",
+   "french horn",
+   "horn"
+  ],
+  "tags": "mournful French horn",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "timpani": {
+  "match": [
+   "定音鼓",
+   "timpani"
+  ],
+  "tags": "rolling timpani",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "snare": {
+  "match": [
+   "軍鼓",
+   "小鼓",
+   "snare"
+  ],
+  "tags": "muffled military snare",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "low-strings": {
+  "match": [
+   "低音弦樂",
+   "低音提琴",
+   "double bass",
+   "contrabass",
+   "low strings"
+  ],
+  "tags": "low strings, double bass",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "oboe": {
+  "match": [
+   "雙簧管",
+   "oboe"
+  ],
+  "tags": "plaintive oboe",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "clarinet": {
+  "match": [
+   "單簧管",
+   "豎笛",
+   "clarinet"
+  ],
+  "tags": "soft clarinet",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "accordion": {
+  "match": [
+   "手風琴",
+   "accordion"
+  ],
+  "tags": "accordion",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "mandolin": {
+  "match": [
+   "曼陀林",
+   "mandolin"
+  ],
+  "tags": "mandolin",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "pipa": {
+  "match": [
+   "琵琶",
+   "pipa"
+  ],
+  "tags": "pipa",
+  "group": "instrument",
+  "bpm_delta": 0
+ },
+ "drone": {
+  "match": [
+   "持續低音",
+   "低鳴",
+   "drone"
+  ],
+  "tags": "low drone",
   "group": "instrument",
   "bpm_delta": 0
  },
@@ -1204,6 +1303,26 @@
   "tags": "wistful, regretful",
   "group": "mood",
   "bpm_delta": -4
+ },
+ "sacrifice": {
+  "match": [
+   "犧牲",
+   "殉",
+   "sacrifice"
+  ],
+  "tags": "elegiac, solemn sacrifice",
+  "group": "mood",
+  "bpm_delta": -6
+ },
+ "tragic-heroic": {
+  "match": [
+   "悲壯",
+   "壯烈",
+   "heroic tragedy"
+  ],
+  "tags": "tragic heroism, noble sorrow",
+  "group": "mood",
+  "bpm_delta": -2
  },
  "game": {
   "match": [

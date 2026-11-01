@@ -2,7 +2,7 @@
   "id": "ambient-focus",
   "name": "Ambient Focus",
   "description": "Slow evolving pads with no beat; stays out of the way for deep work.",
-  "caption": "ambient, instrumental, evolving soft synth pads, gentle drone, slow, spacious reverb, minimal, no percussion, calm, deep focus",
+  "caption": "ambient, instrumental, sustained synth pads, low drone on the tonic, Lydian mode and major seventh chords, slow harmonic rhythm with one chord per 8 bars, no percussion, no fixed pulse, minimal stepwise melody, soft dynamics pp to mp, long reverb tail",
   "avoid": "drums, melody hooks, sudden changes",
   "bpm": null,
   "keys": [
@@ -24,5 +24,16 @@
   ],
   "notes": "No tempo grid, so bar-snapped loops are not possible; rely on the crossfade loop.",
   "name_zh": "專注氛圍",
-  "description_zh": "緩慢變化的氛圍音樂，不搶注意力。"
+  "description_zh": "緩慢變化的氛圍音樂，不搶注意力。",
+  "instruments": {
+    "suggest": [
+      "synth-pad",
+      "drone"
+    ],
+    "avoid": [
+      "drums",
+      "taiko",
+      "snare"
+    ]
+  }
 }

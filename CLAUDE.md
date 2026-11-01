@@ -12,7 +12,7 @@ PeanutGT（曹萬生）的 Claude Skills 合集，公開於 https://github.com/P
 
 ## 規則（使用者明確要求）
 
-- **git commit 作者只有使用者**：`PeanutGT <peanutgttw@gmail.com>`。不加 `Co-Authored-By`、不加任何 Claude／session 連結的 trailer 行。commit 前確認 `git config user.name` / `user.email`
+- **git commit 作者只有使用者**：`PeanutGT <55914825+PeanutGT@users.noreply.github.com>`（GitHub noreply 信箱，2026-11-01 起；不要用 gmail）。不加 `Co-Authored-By`、不加任何 Claude／session 連結的 trailer 行。commit 前確認 `git config user.name` / `user.email`
 - 授權 Apache-2.0；每個 SKILL.md frontmatter 要有 `license: Apache-2.0`
 - 不要在 issue、範例或測試檔中放有版權的課程講義或考卷
 

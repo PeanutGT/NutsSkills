@@ -1,0 +1,45 @@
+{
+  "id": "war-requiem",
+  "name": "War Requiem",
+  "description": "Mournful orchestral music for defeat, war and sacrifice.",
+  "caption": "orchestral requiem, instrumental, cello melody, low strings, muffled military snare, distant French horn, natural minor, i-iv-V7 cadences, slow harmonic rhythm, funeral march rhythm, pp to mf dynamics, large hall",
+  "avoid": "synths, electronic pads, upbeat rhythm",
+  "instruments": {
+    "suggest": [
+      "cello",
+      "low-strings",
+      "snare",
+      "french-horn"
+    ],
+    "avoid": [
+      "synth",
+      "synth-pad",
+      "drone",
+      "arp",
+      "ukulele"
+    ]
+  },
+  "bpm": [
+    56,
+    72
+  ],
+  "keys": [
+    "D minor",
+    "C minor",
+    "G minor",
+    "B-flat minor"
+  ],
+  "time_signature": "4",
+  "duration": {
+    "min": 30,
+    "default": 90,
+    "max": 240
+  },
+  "loopable": true,
+  "tags": [
+    "game",
+    "video"
+  ],
+  "name_zh": "戰爭安魂曲",
+  "description_zh": "戰敗、犧牲、悲壯：大提琴、低音弦樂、悶住的軍鼓、法國號，沒有合成器。"
+}
