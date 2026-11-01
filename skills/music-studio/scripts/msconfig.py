@@ -11,6 +11,7 @@ CLI:
     msconfig.py show [--explain]         effective config (+ where each value came from)
     msconfig.py tier                     detected GPU, tier and resolved params per preset
     msconfig.py styles|moods|workflows   list the libraries
+    msconfig.py instruments [--style S]  instrument ids (+ what a style suggests / avoids)
     msconfig.py plan --style S [...]     build a track spec (JSON) from a style + moods
     msconfig.py set KEY VALUE            write a workspace override (dotted key, JSON value)
     msconfig.py unset KEY                remove a workspace override
@@ -288,6 +289,68 @@ def _tags(text: str) -> list[str]:
     return [t.strip() for t in (text or "").split(",") if t.strip()]
 
 
+# Character words that describe a feeling rather than something a player could perform. Built-in style
+# captions avoid them (tests enforce it): styles are written in music-theory terms - mode, chord vocabulary,
+# progression, rhythm, texture, register, dynamics, instruments and playing technique. Moods and the lexicon
+# are where feelings belong.
+VAGUE_WORDS = ("warm", "cozy", "dreamy", "emotional", "heartfelt", "beautiful", "gentle", "peaceful", "calm",
+               "relaxing", "relaxed", "mellow", "organic", "atmospheric", "powerful", "heroic", "intense", "dramatic",
+               "positive", "motivational", "whimsical", "airy", "eerie", "somber", "solemn", "mournful", "nostalgic",
+               "intimate", "catchy", "upbeat", "neon", "pastoral", "playful", "reflective", "magical", "lush",
+               "massive", "sweeping", "tense", "dark brooding", "uplifting", "focus")
+
+
+def vague_words(caption: str) -> list[str]:
+    low = caption.lower()
+    return [w for w in VAGUE_WORDS if re.search(rf"(?<![a-z]){re.escape(w)}(?![a-z])", low)]
+
+
+def instrument_catalog(lexicon: dict) -> dict[str, dict]:
+    """Lexicon entries with group 'instrument' - the ids styles, moods and requests refer to."""
+    return {k: v for k, v in lexicon.items() if v.get("group") == "instrument" and v.get("tags")}
+
+
+def instrument_label(key: str, entry: dict) -> str:
+    if entry.get("label_zh"):
+        return entry["label_zh"]
+    return next((m for m in entry.get("match", []) if re.search(r"[\u3400-\u9fff]", m)), key)
+
+
+def _instr_keywords(entry: dict) -> list[str]:
+    # the English match words double as detectors: 'strings' finds 'driving strings ostinato'
+    return [m.lower() for m in entry.get("match", []) if re.fullmatch(r"[A-Za-z0-9 \-]+", m)]
+
+
+def _mentions(tag: str, keywords: list[str]) -> bool:
+    t = tag.lower()
+    return any(re.search(rf"(?<![a-z]){re.escape(k)}", t) for k in keywords)
+
+
+def plan_instruments(style: dict, moods: dict, mood_ids, catalog: dict, said: list[str],
+                     instruments: list[str] | None, avoid_instruments) -> dict:
+    """Which instruments to use, which to keep out, and which style tags that implies dropping.
+
+    instruments=None follows the style's `instruments` (suggest + avoid); a list replaces both, so the
+    request's avoid_instruments is then the only avoid list besides the moods'.
+    Anything named in the description always wins over an avoid list.
+    """
+    si = style.get("instruments") or {}
+    suggest = [i for i in si.get("suggest", []) if i in catalog]
+    style_avoid = [i for i in si.get("avoid", []) if i in catalog]
+    custom = instruments is not None
+    avoid = [] if custom else list(style_avoid)  # a custom pick is the whole instrumentation: its avoid list is the user's
+    for mid in mood_ids:
+        avoid += [i for i in ((moods.get(mid) or {}).get("instruments") or {}).get("avoid", []) if i in catalog]
+    user_avoid = [i for i in avoid_instruments if i in catalog]
+    unknown = [i for i in list(instruments or []) + list(avoid_instruments) if i not in catalog]
+    use = [i for i in instruments if i in catalog] if custom else [i for i in suggest if i not in user_avoid]
+    keep = set(use) | set(said)
+    shown_avoid = [i for i in dict.fromkeys(avoid + user_avoid) if i not in keep]
+    drop = [i for i in dict.fromkeys(shown_avoid + (suggest if custom else [])) if i not in keep]
+    return {"mode": "custom" if custom else "style", "use": list(dict.fromkeys(use + said)), "avoid": shown_avoid,
+            "drop": drop, "unknown": unknown, "overrode": [i for i in said if i in style_avoid]}
+
+
 def build_spec(cfg: dict, styles: dict, moods: dict, *, style_id: str, description: str = "",
                mood_ids: list[str] | tuple = (), title: str | None = None,
                duration: float | None = None, bpm: int | None = None, key: str | None = None,
@@ -295,11 +358,14 @@ def build_spec(cfg: dict, styles: dict, moods: dict, *, style_id: str, descripti
                quality: str | None = None, workflow: str | None = None, seed: int | None = None,
                instrumental: bool | None = None, caption_extra: str = "",
                workflows: dict | None = None, lexicon: dict | None = None,
-               caption_override: str | None = None) -> dict:
+               caption_override: str | None = None, instruments: list[str] | None = None,
+               avoid_instruments: list[str] | tuple = ()) -> dict:
     """Turn a style + moods + overrides into a portable track spec.
 
     Precedence for quality / variants / duration: explicit argument > workflow `defaults`
     > style (duration only) > generation config.
+    Instruments: the description > `instruments` (replaces the style's suggestions) > style suggestions;
+    `avoid_instruments`, the style's and the moods' avoid lists strip matching style / mood tags.
     """
     warnings: list[str] = []
     style = styles.get(style_id)
@@ -316,17 +382,36 @@ def build_spec(cfg: dict, styles: dict, moods: dict, *, style_id: str, descripti
             continue
         mood_tags += _tags(mood.get("caption", ""))
         bpm_delta += int(mood.get("bpm_delta", 0))
-    ext = extract_tags(description, lexicon if lexicon is not None else load_lexicon())
+    lexicon = lexicon if lexicon is not None else load_lexicon()
+    ext = extract_tags(description, lexicon)
     bpm_delta += ext["bpm_delta"]
     desc_tags = ext["tags"] + ext["passthrough"]
     if ext["remove"]:
         drop = lambda t: any(r in t.lower() for r in ext["remove"])  # noqa: E731
         style_tags = [t for t in style_tags if not drop(t)]
         mood_tags = [t for t in mood_tags if not drop(t)]
+    catalog = instrument_catalog(lexicon)
+    inst = plan_instruments(style, moods, mood_ids, catalog, [k for k in ext["matched"] if k in catalog],
+                            instruments, avoid_instruments)
+    if inst["unknown"]:
+        warnings.append(f"unknown instrument id(s) ignored: {', '.join(inst['unknown'])} (see `msconfig.py instruments`)")
+    if inst["overrode"]:
+        warnings.append("this style usually avoids " + ", ".join(instrument_label(i, catalog[i]) for i in inst["overrode"]) +
+                        " - kept because your description asks for it")
+    drop_kws = [k for i in inst["drop"] for k in _instr_keywords(catalog[i])]
+    if drop_kws:
+        style_tags = [t for t in style_tags if not _mentions(t, drop_kws)]
+        mood_tags = [t for t in mood_tags if not _mentions(t, drop_kws)]
     if ext["unmatched"]:
         warnings.append("not understood from your description: " + " / ".join(ext["unmatched"]) +
                         " - add English tags in 'extra tags', or teach it in <workspace>/lexicon.json")
     extra_tags = _tags(caption_extra)
+    instr_tags: list[str] = []
+    for i in inst["use"]:
+        if i in ext["matched"]:
+            continue  # already in desc_tags
+        if not any(_mentions(t, _instr_keywords(catalog[i])) for t in style_tags + desc_tags + extra_tags + instr_tags):
+            instr_tags += _tags(catalog[i]["tags"])[:2]
 
     def join(parts: list[list[str]]) -> list[str]:
         seen, uniq = set(), []
@@ -338,14 +423,17 @@ def build_spec(cfg: dict, styles: dict, moods: dict, *, style_id: str, descripti
 
     if caption_override and caption_override.strip():
         uniq = join([_tags(caption_override)])
-        parts = {"style": [], "description": [], "moods": [], "extra": [], "override": uniq}
+        parts = {"style": [], "instruments": [], "description": [], "moods": [], "extra": [], "override": uniq}
     else:
-        uniq = join([style_tags, desc_tags, mood_tags, extra_tags])
-        parts = {"style": style_tags, "description": desc_tags, "moods": mood_tags, "extra": extra_tags, "override": []}
+        uniq = join([style_tags, instr_tags, desc_tags, mood_tags, extra_tags])
+        parts = {"style": style_tags, "instruments": instr_tags, "description": desc_tags, "moods": mood_tags,
+                 "extra": extra_tags, "override": []}
         # Too many tags blur the result and ACE-Step caps the caption at 512 chars. Keep, in priority order:
-        # the style's core tags, everything the person said, their moods, then the rest of the style.
+        # the style's core tags, everything the person said (incl. instruments they picked), their moods,
+        # then the rest of the style.
         MAX_TAGS = 14
-        prio = join([style_tags[:4], desc_tags, extra_tags, mood_tags, style_tags[4:]])
+        picked = instr_tags if inst["mode"] == "custom" else []
+        prio = join([style_tags[:4], desc_tags, picked, extra_tags, mood_tags, instr_tags, style_tags[4:]])
         if len(prio) > MAX_TAGS or len(", ".join(uniq)) > 480:
             kept = []
             for t in prio:
@@ -395,6 +483,7 @@ def build_spec(cfg: dict, styles: dict, moods: dict, *, style_id: str, descripti
         "description": description,
         "caption": caption,
         "caption_parts": parts,
+        "instruments": {k: inst[k] for k in ("mode", "use", "avoid")},
         "bpm": bpm,
         "key": key,
         "time_signature": time_signature or style.get("time_signature", "4"),
@@ -420,6 +509,7 @@ def validate(ws: Path | None = None) -> list[str]:
     problems: list[str] = []
     cfg, _ = load_config(ws)
     styles, workflows, moods = load_styles(ws), load_workflows(ws), load_moods(ws)
+    catalog = instrument_catalog(load_lexicon(ws))
     problems += LOAD_PROBLEMS
 
     if cfg["engine"] not in ("ace", "mock"):
@@ -449,6 +539,16 @@ def validate(ws: Path | None = None) -> list[str]:
         for req in ("name", "caption"):
             if not s.get(req):
                 problems.append(f"style '{sid}' ({s['_source']}) is missing '{req}'")
+        si = s.get("instruments")
+        if si is not None:
+            if not isinstance(si, dict):
+                problems.append(f"style '{sid}': instruments must be {{\"suggest\": [...], \"avoid\": [...]}}")
+            else:
+                for k in ("suggest", "avoid"):
+                    bad = [i for i in si.get(k, []) if i not in catalog]
+                    if bad:
+                        problems.append(f"style '{sid}': instruments.{k} has unknown id(s) {', '.join(bad)} "
+                                        "(instrument entries in lexicon.json)")
         b = s.get("bpm")
         if b is not None and not (isinstance(b, (int, float)) or
                                   (isinstance(b, list) and len(b) == 2 and b[0] <= b[1])):
@@ -488,12 +588,15 @@ def main(argv=None) -> int:
     sp = sub.add_parser("show"); sp.add_argument("--explain", action="store_true")
     sub.add_parser("tier")
     sub.add_parser("styles"); sub.add_parser("moods"); sub.add_parser("workflows"); sub.add_parser("lexicon")
+    sp = sub.add_parser("instruments"); sp.add_argument("--style")
     sp = sub.add_parser("plan")
     sp.add_argument("--style", required=True)
     sp.add_argument("--mood", default="", help="comma separated mood ids")
     sp.add_argument("--description", default="")
     sp.add_argument("--caption-extra", default="")
     sp.add_argument("--caption", help="use exactly this caption (comma separated English tags) instead of building one")
+    sp.add_argument("--instruments", help="comma separated instrument ids; replaces the style's suggestions ('none' = no suggestions)")
+    sp.add_argument("--avoid-instruments", default="", help="comma separated instrument ids to keep out")
     sp.add_argument("--title")
     sp.add_argument("--duration", type=float)
     sp.add_argument("--bpm", type=int)
@@ -530,6 +633,16 @@ def main(argv=None) -> int:
         print_json(_summ(load_workflows(ws)))
     elif args.cmd == "lexicon":
         print_json(_summ(load_lexicon(ws), ("match", "tags", "group")))
+    elif args.cmd == "instruments":
+        catalog = instrument_catalog(load_lexicon(ws))
+        out = {"instruments": [{"id": k, "label": instrument_label(k, v), "tags": v["tags"]} for k, v in catalog.items()]}
+        if args.style:
+            st = load_styles(ws).get(args.style)
+            if st is None:
+                log(f"error: unknown style '{args.style}'")
+                return 2
+            out["style"] = {"id": args.style, **{k: (st.get("instruments") or {}).get(k, []) for k in ("suggest", "avoid")}}
+        print_json(out)
     elif args.cmd == "plan":
         cfg, _ = load_config(ws)
         try:
@@ -540,7 +653,9 @@ def main(argv=None) -> int:
                 time_signature=args.time_signature, variants=args.variants, quality=args.quality,
                 workflow=args.workflow, seed=args.seed, instrumental=not args.vocals,
                 caption_extra=args.caption_extra, workflows=load_workflows(ws), lexicon=load_lexicon(ws),
-                caption_override=args.caption)
+                caption_override=args.caption,
+                instruments=None if args.instruments is None else [i for i in args.instruments.split(",") if i and i != "none"],
+                avoid_instruments=[i for i in args.avoid_instruments.split(",") if i])
         except KeyError as exc:
             log(f"error: {exc.args[0]}")
             return 2

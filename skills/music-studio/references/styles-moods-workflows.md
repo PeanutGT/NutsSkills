@@ -32,6 +32,20 @@ Deleting your file reverts to the built-in. The dashboard's delete button moves 
 
 Required: `id` (or the file name), `name`, `caption`. `bpm` is a number or `[min, max]` (the midpoint is used) or `null` for beatless styles. `keys` is a list; one is chosen per seed. `loopable` decides whether `when: loopable` post-processing steps run. `avoid` and `notes` are guidance for Claude and for you; they are not sent to the model.
 
+`instruments` (optional) lists lexicon instrument ids (`msconfig.py instruments`):
+
+```json
+"instruments": {"suggest": ["rhodes", "drums", "bass"], "avoid": ["guitar-electric", "trumpet"]}
+```
+
+- `suggest`: the default instrumentation. A suggested instrument the caption does not already mention is added as a tag.
+- `avoid`: style and mood tags that mention these instruments are dropped (detected by the entry's English `match` words, e.g. `strings` finds "driving strings ostinato").
+- A request can replace the set: `plan --instruments erhu,guzheng` (dashboard: the 樂器 chips; click cycles use -> avoid -> neutral). Style tags for suggested instruments that were not picked are dropped, and the style's avoid list no longer applies, only the request's `--avoid-instruments` and the moods'.
+- Instruments named in the description always win, with a warning when the style usually avoids them.
+- Moods may carry `"instruments": {"avoid": [...]}` too.
+
+`msconfig.py validate` reports unknown ids. To add an instrument, add a lexicon entry with `"group": "instrument"` (optional `label_zh` for the chip label).
+
 ## Mood
 
 ```json

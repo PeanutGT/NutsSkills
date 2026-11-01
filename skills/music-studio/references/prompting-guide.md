@@ -22,6 +22,7 @@ Tempo and key go in the `bpm` and `key` fields of the spec, not in the caption.
 These come from how text-to-music models generally behave, not from a spec - treat them as defaults to test, not laws.
 
 - **Concrete beats poetic.** `soft piano, marimba, pizzicato strings` steers better than `a feeling of morning light`.
+- **Describe the music, not the feeling.** Prefer what a player could perform: mode (`Dorian mode`, `harmonic minor`), chord vocabulary and progression (`minor ninth chords`, `ii-V-I`, `i-VI-III-VII`), rhythm (`swung eighth notes`, `half-time beat`, `syncopated accents`), texture and register (`arpeggiated left hand`, `low drone on the tonic`), dynamics (`pp to mp`, `gradual crescendo`), instruments with playing technique (`pizzicato strings`, `walking upright bass`). Keep feeling words (`warm`, `epic`, `dreamy`) to one or two, and let moods supply them. The built-in styles follow this; `msconfig.VAGUE_WORDS` lists the words they avoid.
 - **Write the caption in English** even when the person writes Chinese. Translate the intent; keep their proper nouns out.
 - **Fewer conflicting ideas.** `calm, aggressive, epic` pulls three ways. If a request is contradictory, ask which wins, or put the lesser one in as a hint (`slightly tense`).
 - **Say what to leave out by what you include.** There is no negative caption: to avoid drums write `no percussion`, to avoid vocals keep `instrumental` and never add vocal words.

@@ -2,7 +2,7 @@
   "id": "cinematic-emotional",
   "name": "Cinematic Emotional",
   "description": "Piano and strings that swell; for heartfelt scenes.",
-  "caption": "cinematic, instrumental, emotional piano, sweeping strings, slow build, heartfelt, film score, swelling, reverb",
+  "caption": "cinematic film score, instrumental, solo piano melody, sustained legato strings, natural minor with modal mixture, i-VI-III-VII progression, rubato opening then steady pulse, gradual crescendo from pp to ff, large hall reverb",
   "avoid": "drums early on, electronic sounds",
   "bpm": [
     60,
@@ -26,5 +26,15 @@
   ],
   "notes": "Has an arc, so use the video-score workflow to fit the exact scene length with a natural fade.",
   "name_zh": "電影感・抒情",
-  "description_zh": "弦樂與鋼琴的情緒場景配樂。"
+  "description_zh": "弦樂與鋼琴的情緒場景配樂。",
+  "instruments": {
+    "suggest": [
+      "piano",
+      "strings"
+    ],
+    "avoid": [
+      "synth",
+      "guitar-electric"
+    ]
+  }
 }

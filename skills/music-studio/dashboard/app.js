@@ -160,7 +160,9 @@ function formBody() {
   const f = S.form;
   return { style: f.style, description: f.description, moods: f.moods || [], workflow: f.workflow, quality: f.quality,
     duration: f.duration, bpm: f.bpm, key: f.key, variants: f.variants, seed: f.seed, title: f.title,
-    caption_extra: f.caption_extra, caption: f.caption };
+    caption_extra: f.caption_extra, caption: f.caption,
+    instruments: f.instr ? Object.keys(f.instr).filter(i => f.instr[i] === "use") : null,
+    avoid_instruments: f.instr ? Object.keys(f.instr).filter(i => f.instr[i] === "avoid") : [] };
 }
 let planTimer, planSeq = 0;
 function schedulePlan() { clearTimeout(planTimer); planTimer = setTimeout(refreshPlan, 350); }
@@ -173,9 +175,9 @@ async function refreshPlan() {
 function renderSendout(r) {
   const box = $("sendout"); if (!box) return;
   const spec = r.spec, p = r.params, parts = spec.caption_parts || {};
-  const groups = [["override", "你寫的 caption"], ["description", "來自你的描述"], ["extra", "額外標籤"], ["moods", "情緒"], ["style", "風格"]];
+  const groups = [["override", "你寫的 caption"], ["description", "來自你的描述"], ["extra", "額外標籤"], ["instruments", "樂器"], ["moods", "情緒"], ["style", "風格"]];
   const kept = new Set(spec.caption.split(", ").map(t => t.toLowerCase()));
-  const yours = new Set(["override", "description", "extra"]);
+  const yours = new Set(["override", "description", "extra", ...(spec.instruments?.mode === "custom" ? ["instruments"] : [])]);
   const rows = groups.map(([k, label]) => {
     const tags = (parts[k] || []).filter(t => kept.has(t.toLowerCase()));
     return tags.length ? h("div", { class: "tagrow" }, h("span", { class: "src" }, label), tags.map(t => h("span", { class: "tag" + (yours.has(k) ? " yours" : "") }, t))) : null;
@@ -214,6 +216,28 @@ function viewCreate() {
   const styleObj = () => st.styles.find(s => s.id === f.style);
   const styleHint = h("p", { class: "dim small", style: "margin:6px 0 0" });
   const durationInput = h("input", { type: "number", id: "f-duration", min: "10", step: "5", value: f.duration ?? "", oninput: e => (f.duration = e.target.value) });
+  // instruments: tri-state chips (use / avoid / neutral), seeded from the style until the person touches one
+  const instrState = () => {
+    if (f.instr) return f.instr;
+    const si = styleObj()?.instruments || {}, m = {};
+    (si.suggest || []).forEach(i => (m[i] = "use")); (si.avoid || []).forEach(i => (m[i] = "avoid"));
+    return m;
+  };
+  const instrBox = h("div", { class: "ichips", role: "group", "aria-labelledby": "instr-l" });
+  const instrSum = h("span", { class: "dim small" });
+  const renderInstr = () => {
+    const m = instrState(), lab = id => st.instruments.find(x => x.id === id)?.label || id;
+    const use = Object.keys(m).filter(i => m[i] === "use"), avoid = Object.keys(m).filter(i => m[i] === "avoid");
+    instrSum.textContent = `${f.instr ? "自訂" : "依風格"}：${use.map(lab).join("、") || "不指定"}${avoid.length ? `；避免 ${avoid.map(lab).join("、")}` : ""}`;
+    put(instrBox, (st.instruments || []).map(x => {
+      const v = m[x.id];
+      return h("button", { type: "button", class: "ichip" + (v ? " " + v : ""), "aria-pressed": v === "use" ? "true" : v === "avoid" ? "mixed" : "false",
+        title: `${x.tags}（點一下切換：使用 → 避免 → 不指定）`,
+        onclick: () => { f.instr = { ...instrState() }; f.instr[x.id] = v === "use" ? "avoid" : v === "avoid" ? undefined : "use";
+          if (!f.instr[x.id]) delete f.instr[x.id]; renderInstr(); schedulePlan(); } },
+        (v === "use" ? "✓ " : v === "avoid" ? "✕ " : "") + x.label);
+    }), f.instr ? h("button", { type: "button", class: "btn sm quiet", onclick: () => { f.instr = null; renderInstr(); schedulePlan(); } }, "改回依風格") : null);
+  };
   const updateHint = () => {
     const s = styleObj(), d = durOf(s);
     styleHint.textContent = descOf(s);
@@ -230,13 +254,14 @@ function viewCreate() {
     h("label", { for: "f-desc" }, "想要什麼樣的音樂", h("span", { class: "hint" }, "（中英文都可以）")),
     h("textarea", { id: "f-desc", placeholder: "例：遊戲失敗畫面，稀疏的鋼琴，有點落寞但不絕望", oninput: e => (f.description = e.target.value) }, f.description || ""),
     h("label", { for: "f-style" }, "風格"),
-    h("select", { id: "f-style", onchange: e => { f.style = e.target.value; updateHint(); } },
+    h("select", { id: "f-style", onchange: e => { f.style = e.target.value; f.instr = null; updateHint(); renderInstr(); } },
       st.styles.map(s => h("option", { value: s.id, selected: s.id === f.style }, nameOf(s)))), styleHint,
     h("span", { class: "lbl", id: "moods-l" }, "情緒"),
     h("div", { class: "switches", role: "group", "aria-labelledby": "moods-l" },
       st.moods.map(m => h("label", { class: "switch", style: "margin:0" },
         h("input", { type: "checkbox", checked: f.moods.includes(m.id), onchange: e => { f.moods = e.target.checked ? [...f.moods, m.id] : f.moods.filter(x => x !== m.id); } }),
         h("span", { title: m.caption }, m.label_zh || m.id)))),
+    h("details", { class: "instr" }, h("summary", { id: "instr-l" }, h("span", { style: "white-space:nowrap;margin-right:8px" }, "樂器"), instrSum), instrBox),
     h("div", { class: "row" },
       h("div", {}, h("label", { for: "f-workflow" }, "用途"),
         h("select", { id: "f-workflow", onchange: e => { f.workflow = e.target.value; wfHint.textContent = descOf(st.workflows.find(w => w.id === f.workflow)); } },
@@ -257,7 +282,7 @@ function viewCreate() {
     h("div", { id: "sendout", class: "sendout" }, h("p", { class: "dim small", style: "margin:0" }, "整理中…")),
     h("div", { class: "actions" }, genBtn, h("span", { class: "dim small" }, "可以連續送出，會依序排隊")));
   form.addEventListener("input", schedulePlan); form.addEventListener("change", schedulePlan);
-  updateHint(); setTimeout(refreshPlan, 0); loadHealth();
+  updateHint(); renderInstr(); setTimeout(refreshPlan, 0); loadHealth();
   put($view, h("div", { id: "health" }), h("div", { class: "split" }, form, h("div", { id: "stage" })));
   renderStage();
 }

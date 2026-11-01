@@ -2,7 +2,7 @@
   "id": "chill-electronic",
   "name": "Chill Electronic",
   "description": "Downtempo electronic with dreamy synths.",
-  "caption": "chillwave, downtempo electronic, instrumental, soft synths, smooth bass, light beat, dreamy, atmospheric",
+  "caption": "downtempo electronic, chillwave, instrumental, analog synth chords, sub bass, half-time beat with soft kick and rimshot, minor ninth and major seventh chords, two-chord vamp, sidechain pumping, low-pass filtered highs, wide stereo",
   "avoid": "vocals, harsh leads",
   "bpm": [
     90,
@@ -27,5 +27,15 @@
     "game"
   ],
   "name_zh": "輕電子",
-  "description_zh": "柔和的電子節拍。"
+  "description_zh": "柔和的電子節拍。",
+  "instruments": {
+    "suggest": [
+      "synth",
+      "bass"
+    ],
+    "avoid": [
+      "guitar-electric",
+      "organ"
+    ]
+  }
 }

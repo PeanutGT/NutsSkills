@@ -95,6 +95,47 @@ class TestCaption(Base):
         self.assertLessEqual(len(d["caption"]), 512)
         self.assertIn("soft rain ambience", d["caption"])
 
+    def test_style_instruments_shape_caption(self):
+        d = self.plan("--style", "rpg-battle")
+        self.assertEqual(d["instruments"]["mode"], "style")
+        self.assertIn("taiko", d["instruments"]["use"])
+        self.assertIn("synth-pad", d["instruments"]["avoid"])
+
+    def test_custom_instruments_replace_style_ones(self):
+        d = self.plan("--style", "rpg-battle", "--instruments", "erhu,guzheng,taiko")
+        self.assertIn("erhu", d["caption"])
+        self.assertIn("guzheng", d["caption"])
+        self.assertIn("taiko drums", d["caption"])  # chosen and already in the style: kept, not duplicated
+        self.assertNotIn("brass stabs", d["caption"])
+        self.assertNotIn("strings ostinato", d["caption"])
+        self.assertEqual(d["caption_parts"]["instruments"], ["erhu", "guzheng"])
+
+    def test_avoid_instrument_strips_style_tag(self):
+        d = self.plan("--style", "lofi", "--avoid-instruments", "drums")
+        self.assertNotIn("boom bap drums", d["caption"])
+        self.assertIn("drums", d["instruments"]["avoid"])
+
+    def test_description_beats_style_avoid(self):
+        d = self.plan("--style", "nature-piano", "--description", "合成器鋪底")
+        self.assertIn("warm synth pads", d["caption"])
+        self.assertTrue(any("usually avoids" in w for w in d["warnings"]))
+
+    def test_builtin_styles_use_music_theory_not_vague_words(self):
+        import msconfig
+        for f in sorted((ROOT / "defaults" / "styles").glob("*.json")):
+            cap = json.loads(f.read_text(encoding="utf-8"))["caption"]
+            self.assertEqual(msconfig.vague_words(cap), [], f.name)
+
+    def test_unknown_instrument_warns(self):
+        d = self.plan("--style", "lofi", "--instruments", "kazoo")
+        self.assertTrue(any("unknown instrument" in w for w in d["warnings"]))
+
+    def test_war_requiem_has_no_synths(self):
+        d = self.plan("--style", "war-requiem", "--description", "戰敗 犧牲 悲壯")
+        for tag in ("cello melody", "French horn", "solemn sacrifice"):
+            self.assertIn(tag, d["caption"])
+        self.assertNotIn("synth", d["caption"].lower())
+
     def test_override_and_stable_key(self):
         d = self.plan("--style", "lofi", "--caption", "a, b, c")
         self.assertEqual(d["caption"], "a, b, c")
@@ -318,6 +359,10 @@ class TestServer(Base):
         d = json.loads(body)
         self.assertIn("soft rain ambience", d["spec"]["caption"])
         self.assertIn("dit_model", d["params"])
+        code, body = self.req("/api/plan", "POST", {"style": "rpg-battle", "instruments": ["erhu"], "avoid_instruments": ["taiko"]})
+        d = json.loads(body)["spec"]
+        self.assertIn("erhu", d["caption"])
+        self.assertNotIn("taiko", d["caption"])
 
     def test_token_injected_and_config_put(self):
         code, body = self.req("/")

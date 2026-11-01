@@ -2,7 +2,7 @@
 
 ## Game BGM (loops)
 
-- Workflow `game-bgm`; styles `rpg-town`, `rpg-battle`, `dungeon-ambient`, `chiptune-adventure`, `puzzle-calm`, `synthwave-drive`.
+- Workflow `game-bgm`; styles `rpg-town`, `rpg-battle`, `dungeon-ambient`, `chiptune-adventure`, `puzzle-calm`, `synthwave-drive`, `war-requiem` (defeat / game over / war).
 - **Ask for a loop-friendly structure up front**: steady, repetitive, no long intro, no outro, no crescendo. A track that builds and resolves cannot loop well however the seam is handled.
 - The `loop` step folds the last 2 s over the first 2 s and (given a BPM) snaps the length to whole bars. It picks the crossfade law from how similar the two passages are, so repetitive drum loops do not bump in level.
 - **Read the QC line.** `seam_vs_typical` near 1 = the seam is as natural as any bar line. `click_ratio` above ~4 or `seam_vs_typical` above ~4 = audition `*.loop-preview.*` (the track played twice) before shipping.

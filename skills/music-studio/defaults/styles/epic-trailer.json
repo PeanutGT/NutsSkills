@@ -2,7 +2,7 @@
   "id": "epic-trailer",
   "name": "Epic Trailer",
   "description": "Massive cinematic build for trailers and reveals.",
-  "caption": "epic cinematic trailer music, instrumental, massive drums, choir pads, brass, risers, powerful, heroic, crescendo",
+  "caption": "epic trailer music, instrumental, taiko and orchestral percussion, brass section in octaves, wordless choir, staccato string ostinato, natural minor, i-VI-III-VII progression, risers and braams, three-stage crescendo to fff, big hall reverb",
   "avoid": "quiet ending, vocals with words",
   "bpm": [
     80,
@@ -24,5 +24,17 @@
     "video"
   ],
   "name_zh": "史詩預告",
-  "description_zh": "大鼓、銅管、逐步推高的預告片音樂。"
+  "description_zh": "大鼓、銅管、逐步推高的預告片音樂。",
+  "instruments": {
+    "suggest": [
+      "taiko",
+      "choir",
+      "trumpet"
+    ],
+    "avoid": [
+      "ukulele",
+      "music-box",
+      "guitar-acoustic"
+    ]
+  }
 }

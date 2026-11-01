@@ -3,7 +3,7 @@ name: music-studio
 description: Create instrumental music and BGM (game loops, video scores, study/work background, personal tracks) locally with ACE-Step 1.5 on the user's NVIDIA GPU, with fully customisable defaults, style library, description lexicon and workflows plus a local dashboard. Use whenever the user wants to make, generate, loop, master or manage background music or a soundtrack, tweak music defaults or styles, fix bad-sounding results, or says 做音樂/配樂/BGM/循環音樂/遊戲音樂/讀書背景音. Also use for music-studio setup or troubleshooting.
 license: Apache-2.0
 metadata:
-  version: "3.3.1"
+  version: "3.4.0"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---
@@ -36,6 +36,7 @@ Write the English caption yourself - it is the biggest quality lever: 6-12 concr
 `python scripts/msconfig.py plan --style S --description "<their words>" --mood a,b --caption "tag, tag, ..." [--duration N --bpm N --key K --quality Q --workflow W --variants N --seed N]`
 - `--style from-description` when no preset fits; otherwise the nearest style (`msconfig.py styles`; feelings -> styles in `references/use-cases.md`).
 - Without `--caption`, the caption is built from the style + the description (via the lexicon, `msconfig.py lexicon`) + moods; unknown Chinese words are reported in `warnings` - translate them yourself.
+- Instruments: each style suggests fitting instruments and avoids unfitting ones (`msconfig.py instruments --style S`). When the person names instruments, pass `--instruments id,id` (replaces the style's set) and/or `--avoid-instruments id,id`; instruments in the description always win. Defeat / war / sacrifice -> `war-requiem` (orchestral, no synths), not `nature-piano`.
 - Show caption, BPM, key, length, workflow in one block. Keep the **spec warnings** (clamped length, trimmed tags). Length: 30-120 s is the stable range; for long pieces generate ~2 min and loop.
 
 ## 4. Generate
