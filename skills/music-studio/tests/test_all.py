@@ -160,7 +160,7 @@ class TestCaption(Base):
         cfg = json.loads(self.sh("msconfig.py", "show").stdout)["config"]["hardware"]["tiers"]
         self.assertIsNone(cfg["mid"]["quantization"])
         self.assertEqual(cfg["mid"]["lm_model"], "acestep-5Hz-lm-0.6B")
-        self.assertEqual(cfg["low"]["quantization"], "int8_weight_only")
+        self.assertIsNone(cfg["low"]["quantization"])
 
 
 class TestMockPipeline(Base):

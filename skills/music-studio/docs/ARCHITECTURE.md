@@ -56,7 +56,7 @@ Before each job the worker computes a plan from the **measured** total VRAM, not
 
 | total VRAM | DiT placement | quantisation | LM | decode |
 |---|---|---|---|---|
-| < 6 GB | offloaded between phases (`offload_dit_to_cpu`) | int8 | none | GPU, tiled |
+| < 6 GB | offloaded between phases (`offload_dit_to_cpu`) | none | none | GPU, tiled |
 | 6-8 GB | offloaded | none | 0.6B (pt) | GPU, tiled |
 | >= 8 GB | as the tier says | as the tier says | as the tier says | GPU |
 

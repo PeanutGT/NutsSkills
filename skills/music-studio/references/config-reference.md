@@ -56,7 +56,7 @@ So a preset beats a tier and your explicit request beats everything. `engine_ove
 
 | Tier | VRAM | Diffusion | LM ("thinking") | Offload | Quantization |
 |---|---|---|---|---|---|
-| low | < 6 GB | turbo 2B | none | yes | int8 |
+| low | < 6 GB | turbo 2B | none | yes | none (int8 sounded broken on 4 GB; set `int8_weight_only` only if you run out of VRAM) |
 | mid | 6-12 GB | turbo 2B | 0.6B | yes | none |
 | high | 12-20 GB | turbo 2B | 1.7B | yes | none |
 | ultra | 20 GB+ | XL turbo 4B | 4B | no | none |
