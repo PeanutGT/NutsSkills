@@ -2,7 +2,7 @@
   "id": "war-requiem",
   "name": "War Requiem",
   "description": "Mournful orchestral music for defeat, war and sacrifice.",
-  "caption": "cinematic orchestral film score, instrumental, sorrowful solo cello melody, warm legato string section, soft French horn chords, slow marching snare drum, timpani rolls, adagio, mournful, tragic, concert hall reverb",
+  "caption": "cinematic orchestral film score, instrumental, sorrowful solo cello melody, legato string section, soft French horn chords, slow marching snare drum, timpani rolls, adagio, lament, tragic, concert hall reverb",
   "avoid": "synths, electronic pads, upbeat rhythm",
   "instruments": {
     "suggest": [
