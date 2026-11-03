@@ -7,6 +7,7 @@ Usage:  python tools/smoke_test.py [--out DIR]
 from __future__ import annotations
 
 import argparse
+from fractions import Fraction
 import shutil
 import subprocess
 import sys
@@ -14,6 +15,71 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "exam-prep"
+
+
+def circuit_problems(F, figs: Path) -> list[str]:
+    """Draws figs/circuit.svg for sample.md, and checks that solve_circuit follows the drawing (a reversed source
+    changes the answer) and that a missing wire is reported."""
+    import warnings
+    import schemdraw.elements as elm
+
+    def circuit(name, *, flip=False, missing_wire=False):
+        with F.schematic(str(figs / name)) as d:
+            src = F.V(12).up()
+            if flip:
+                src.reverse()
+            r1 = F.R(4, "R₁").right().label("i →", loc="bottom")
+            F.R(6, "R₂", loc="bottom").down()
+            if not missing_wire:
+                elm.Line().left()
+        return d, r1
+
+    problems = []
+    d, r1 = circuit("circuit.svg")
+    if F.solve_circuit(d).i(r1) != Fraction(6, 5):
+        problems.append("solve_circuit gave the wrong current")
+    d, r1 = circuit("flipped.svg", flip=True)
+    if F.solve_circuit(d).i(r1) != Fraction(-6, 5):
+        problems.append("solve_circuit ignored a reversed source")
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        d, _ = circuit("open.svg", missing_wire=True)
+    if not any("open end" in str(w.message) for w in caught):
+        problems.append("no open-end warning for a missing wire")
+    return problems
+
+
+def make_vector_pdf(path: Path):
+    """Three text pages; the middle one also has a circuit drawn as vector paths."""
+    import matplotlib.pyplot as plt
+    import schemdraw
+    import schemdraw.elements as elm
+    from matplotlib.backends.backend_pdf import PdfPages
+    text = ("Node-voltage method: pick a reference node, write KCL at every other essential node, "
+            "solve for the node voltages, then find branch currents and powers. ") * 3
+    with PdfPages(path) as pdf:
+        for page in range(3):
+            fig = plt.figure(figsize=(8.27, 11.69))
+            fig.text(0.1, 0.9, text, wrap=True, fontsize=11, va="top")
+            if page == 1:
+                ax = fig.add_axes([0.15, 0.3, 0.7, 0.4])
+                ax.axis("off")
+                with schemdraw.Drawing(canvas=ax, show=False) as d:
+                    elm.SourceV().up().label("20 V")
+                    elm.Resistor().right().label("1 Ω")
+                    elm.Dot(); d.push()
+                    elm.Resistor().down().label("2 Ω")
+                    d.pop()
+                    elm.Resistor().right().label("6 Ω")
+                    elm.Dot(); d.push()
+                    elm.Resistor().down().label("20 Ω")
+                    d.pop()
+                    elm.Line().right()
+                    elm.SourceI().down().reverse().label("2 A")
+                    elm.Line().left(); elm.Line().left(); elm.Ground(); elm.Line().left()
+                    d.draw(show=False)
+            pdf.savefig(fig)
+            plt.close(fig)
 
 
 def main() -> int:
@@ -29,8 +95,9 @@ def main() -> int:
     from scipy.stats import binom
     F.pmf_bar(range(11), [binom.pmf(k, 10, .3) for k in range(11)], str(out / "figs" / "binom.svg"),
               highlight=lambda k: k <= 2, highlight_label="P(X ≤ 2)", mean=3)
-
-    failed = False
+    problems = circuit_problems(F, out / "figs")
+    print(f"[circuit] {'FAIL ' + ', '.join(problems) if problems else 'ok'}")
+    failed = bool(problems)
     for theme in ("modern", "textbook", "cheatsheet"):
         pdf, html = out / f"sample-{theme}.pdf", out / f"sample-{theme}.html"
         r = subprocess.run(["node", str(SKILL / "scripts" / "render.mjs"), str(out / "sample.md"), str(pdf),
@@ -42,6 +109,8 @@ def main() -> int:
             problems.append(f"exit code {r.returncode}")
         if "mermaid error" in log:
             problems.append("mermaid error")
+        if "figure missing" in log or "image not found" in log:
+            problems.append("figure check")
         if not pdf.exists() or pdf.stat().st_size < 10_000:
             problems.append("PDF missing or too small")
         if html.exists():
@@ -53,6 +122,16 @@ def main() -> int:
         if problems:
             print(log)
             failed = True
+    # the figure guard must flag a question that says 如圖 without a figure, and a broken image path
+    (out / "nofig.md").write_text(":::q 1 | 計算題\n如圖所示電路，求 $i$。\n:::\n\n:::q 2 | 計算題\n求 $i$。\n\n![](figs/missing.svg)\n:::\n",
+                                  encoding="utf-8")
+    r = subprocess.run(["node", str(SKILL / "scripts" / "render.mjs"), str(out / "nofig.md"), str(out / "nofig.pdf")],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    ok = "figure missing: question 1" in r.stderr and "image not found" in r.stderr
+    print(f"[figure guard] {'ok' if ok else 'FAIL'}")
+    if not ok:
+        print(r.stdout + r.stderr)
+        failed = True
     # ingest + preview on the eval inputs and the rendered PDF
     files = sorted((SKILL / "evals").glob("*/files/*"))
     r = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), *map(str, files), "--out", str(out / "ingest")],
@@ -77,6 +156,17 @@ def main() -> int:
     ok = (r.returncode == 0 and outline.exists() and not (text / "la_slides_ch5.txt").exists() and part.exists()
           and "p.2 ===" in part.read_text(encoding="utf-8") and "p.1 ===" not in part.read_text(encoding="utf-8"))
     print(f"[ingest book/range] {'ok' if ok else 'FAIL'}")
+    if not ok:
+        print(r.stdout + r.stderr)
+        failed = True
+    # a page with a vector circuit diagram (full text layer, no images) must be flagged for viewing
+    vec = out / "vector.pdf"
+    make_vector_pdf(vec)
+    r = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), str(vec), "--out", str(out / "ingest-vector")],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    report = (out / "ingest-vector" / "report.md").read_text(encoding="utf-8") if r.returncode == 0 else ""
+    ok = "vector.pdf p.2：有向量圖" in report and "p.1：" not in report and "p.3：" not in report
+    print(f"[ingest vector figure] {'ok' if ok else 'FAIL'}")
     if not ok:
         print(r.stdout + r.stderr)
         failed = True

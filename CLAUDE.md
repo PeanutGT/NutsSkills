@@ -32,7 +32,7 @@ python tools/smoke_test.py --out dist/smoke                  # exam-prep 端到�
 python tools/build_zip.py exam-prep                          # 打包 dist/exam-prep-<版本>.zip
 ```
 
-smoke test 需要 Node.js、Chromium（Playwright）、poppler、Noto CJK 字型、Python 的 matplotlib／scipy／sympy／pillow／python-pptx。
+smoke test 需要 Node.js、Chromium（Playwright）、poppler、Noto CJK 字型、Python 的 matplotlib／scipy／sympy／pillow／python-pptx／schemdraw。
 
 ## 發版
 

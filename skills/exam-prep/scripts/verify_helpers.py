@@ -13,6 +13,10 @@ import sys
 
 import sympy as sp
 
+# Windows consoles default to cp950/cp1252; check ids often contain Ω, Δ or Chinese
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 _results: dict[str, bool] = {}
 
 

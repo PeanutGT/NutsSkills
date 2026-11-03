@@ -2,6 +2,27 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [2.4.0] - 2026-11-04
+
+需要看圖的題目（電路圖等）不再缺圖，而且圖和解答一定對得起來。
+
+### 新增
+- `figures.schematic`：用 schemdraw 畫電路圖、邏輯閘圖，沿用 figures.py 的字型與配色，標籤可用中文；畫完檢查懸空的端點（少畫導線）
+- `figures.R`／`V`／`I`／`C`／`L`／`Vdep`／`Idep` 與 `figures.solve_circuit`：元件帶數值，直接從畫出來的接線做節點分析求解，解答對照圖驗算。實測抓到手寫方程式抓不到的錯：電源極性畫反、少一段導線
+- `ingest.py` 偵測向量圖（電路圖、方塊圖、圖表）：這類頁面文字層完整又沒有圖片，以前被當成「文字就夠」，模型從頭到尾看不到電路。用 pdftocairo 數每頁畫的線條，和同一份檔案最空的頁比較（扣掉投影片模板）
+- `render.mjs` 防呆：題目寫了「如圖」「下列電路」「as shown」等卻沒有附圖時印出 `figure missing`，圖檔路徑錯誤時印出 `image not found`
+- SKILL.md 第 2 步新增「題目附圖」問題（電路、力學、幾何、圖論等科目才問）：需要圖的題目都畫圖，或只出文字能說清楚的題目
+
+### 變更
+- question-design.md 新增「需要圖的題目」：圖放在題目卡裡、數值和題幹與 `verify.py` 共用同一份、畫不出就改寫題目
+- figures.md 新增電路圖一節；reading-inputs.md 要求把考古題的圖用文字記進 materials.md
+- `setup.py` 會安裝 schemdraw（選用）；smoke test 加測電路圖求解、極性與斷線、向量圖偵測、兩種防呆警告
+
+### 修正
+- 整本書目錄：書籤最外層只有一個書名時，往下多顯示一層（原本只列到「章」，看不到「節」）
+- `ingest.py` 讀大檔案的指定頁：`pdfimages` 原本掃整本書，1,000 頁的課本讀 18 頁要 29 秒，現在約 7 秒
+- `verify_helpers.py` 在 Windows 中文主控台輸出 Ω、Δ、中文時變亂碼
+
 ## [2.3.0] - 2026-10-31
 
 整本課本不再整本讀進來。

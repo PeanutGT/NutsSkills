@@ -36,12 +36,13 @@
 
 ## 二、現況
 
-- **最新版本：2.3.0**（2026-10-31，整本課本先看目錄再選範圍）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`、`exam-prep-v2.3.0`（2.2.0 沒有單獨發）
+- **最新版本：2.4.0**（2026-11-03，需要看圖的題目附電路圖等，並有缺圖防呆）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`、`exam-prep-v2.3.0`（2.2.0 沒有單獨發）
 - 這個雲端環境的 git 代理不允許推 tag（HTTP 403），發版改用 GitHub Actions 手動觸發 Release workflow
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
 
 ### 實測紀錄
+- 2.4.0（Windows，2026-11-04）：電路學原文課本（820 頁，使用者提供，不可外流）→ 目錄模式選 Ch4 節點／網目分析 18 頁 → 8 題練習題（6 題附電路圖）＋解答，15 項驗算全過、渲染無警告。抓到並修正：向量電路圖沒被標成要看圖（根本原因：模型看不到電路）、目錄只列到章、`pdfimages` 掃整本書很慢、初稿兩張圖錯（少一段導線、電源極性畫反，手寫方程式驗算抓不到 → 新增 `solve_circuit`）
 - 1.x：線代（特徵值，英文投影片＋考古題）、機統（手機拍的筆記照片）完整跑過；抓到的問題都已修（選擇題雙正解、考古題配分算錯、標題孤立在頁尾等）
 - 2.0：機統照片 → 題型解題卡／Cornell／分層講義三份 PDF，21 項數字驗算全過；抓到 `pmf_bar` 尾端機率漏算（已加警告與 `highlight_value`）
 - 2.1：`ingest.py`、`preview.py` 單獨實測過（PDF、PPTX、DOCX、照片）
@@ -109,6 +110,7 @@ python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋inge
 
 ### 可做的改進
 - [x] **整本課本**（2.3.0）：超過 150 頁只給書籤目錄，`book.pdf:120-180` 只讀選定頁，SKILL.md 改為先問範圍。尚未在完整產出流程中實測（模型是否真的照目錄問範圍）
+- [x] **題目缺圖**（2.4.0，使用者回報：電路學練習題沒有電路圖）：第 2 步問「題目附圖」，`figures.schematic` 畫電路／邏輯閘，`solve_circuit` 從圖解答案，render.mjs 對「如圖」卻沒圖的題目印 `figure missing`，ingest 偵測向量圖。力圖、幾何仍靠模型自己用 matplotlib 畫，沒有對應的驗算
 - [ ] render.mjs 產出的 PDF 沒有書籤；Playwright 的 `page.pdf` 有 `outline`／`tagged` 選項，加了之後講義在 PDF 閱讀器裡有章節側欄
 - [ ] `.ppt`／`.doc` 舊格式：有 LibreOffice 時先轉 PDF 再讀；同名檔案（`.pptx` 與 `.pdf`）在報告中提醒只需讀一份
 - [ ] marketplace.json 的 plugin 條目加 `version`，並寫進發版流程

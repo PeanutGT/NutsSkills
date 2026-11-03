@@ -4,7 +4,7 @@ description: 把講義、投影片、課本、手寫筆記照片、考古題（�
 license: Apache-2.0
 compatibility: 需要可執行程式碼的環境（Claude.ai 需開啟程式碼執行；Claude Code、Codex 可直接使用），並能安裝 npm 與 pip 套件。渲染需要 Node.js 18+ 與 Chromium（Playwright），讀取與檢查需要 poppler，圖表與驗算需要 Python 3（matplotlib、sympy、scipy）。
 metadata:
-  version: "2.3.0"
+  version: "2.4.0"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---
@@ -65,8 +65,9 @@ python <skill-dir>/scripts/setup.py --check   # 只檢查，不安裝，離線�
 7. **題型與題數**（要練習題）— 例如「混合 15 題（推薦）」「選擇是非為主 20 題」「計算＋證明為主 10 題」；證明、計算只給理工科
 8. **難度與考試日期** — 基礎／混合（推薦）／挑戰；日期用 Other 填或選「不確定」
 9. **練習題語言**（要練習題）— 跟考古題一樣（有考古題時推薦，說明欄寫出考古題實際語言）／中文／英文／中英對照。沒有考古題時第一個選項改成「和講義相同」
+10. **題目附圖**（要練習題，且科目的題目常要看圖作答：電路、電子、數位邏輯、力學、幾何、圖論、資料結構，或考古題有附圖的題目）— 需要圖的題目都畫圖（推薦；電路圖、結構圖用程式畫，圖上數值和題目、解答一致）／只出文字就能說清楚的題目（看圖分析的題型會變少）
 
-**沒人可問時的預設**：範圍全部；整理方式＝章節重點，有考古題再加題型解題卡（明顯是要學懂教材時改為學習講義）；另加練習題＋解答；`modern`；混合 12–15 題；難度 4：4：2；考古題兩種用法都做；練習題語言跟考古題（沒有就中文）。回覆開頭一句話說明用了哪些預設。
+**沒人可問時的預設**：範圍全部；整理方式＝章節重點，有考古題再加題型解題卡（明顯是要學懂教材時改為學習講義）；另加練習題＋解答；`modern`；混合 12–15 題；難度 4：4：2；考古題兩種用法都做；練習題語言跟考古題（沒有就中文）；需要圖的題目都畫圖。回覆開頭一句話說明用了哪些預設。
 
 **考試日期**：≤ 3 天 → 重點精簡、優先常考，建議加小抄或分層講義；選了學習講義照做，但提醒「時間緊可先讀重點」。≥ 14 天 → 可多寫推導與延伸。
 
@@ -88,13 +89,15 @@ python <skill-dir>/scripts/setup.py --check   # 只檢查，不安裝，離線�
 
 見 `references/question-design.md`。題目依「重要性 × 常考程度」分配；有解題卡時每種題型至少一題並標出題型；不和講義例題、自我檢測、解題卡範例重複；兩份文件題號一致；計算與證明題加 `space=N`；解答先寫思路再算。
 
+**題目要看圖才能作答時**（「如圖」「下列電路」），圖放在題目卡裡，畫法見 question-design.md 的「需要圖的題目」。畫不出來就改寫成文字能說清楚的題目，不要留下沒有圖的「如圖」。
+
 ### 6. 驗算（不可省略）
 
 ```bash
 pip install --break-system-packages -q sympy numpy scipy matplotlib 2>/dev/null
 ```
 
-用 `scripts/verify_helpers.py`（`check`、`is_eigvec`、`summary`）寫一份 `verify.py`，流程見 `references/verification.md`。每個有確定答案的題目都重算，不符就修正解答或題目；通過標 `✓ 已驗算`，證明與申論標 `無法程式驗算`；選擇題確認恰好一個選項正確。**整理文件裡的數字也要驗**：例題結果、圖上標的數值、考古題配分統計。
+用 `scripts/verify_helpers.py`（`check`、`is_eigvec`、`summary`）寫一份 `verify.py`，流程見 `references/verification.md`。每個有確定答案的題目都重算，不符就修正解答或題目；通過標 `✓ 已驗算`，證明與申論標 `無法程式驗算`；選擇題確認恰好一個選項正確；電路題用 `figures.solve_circuit` 直接解題目附的電路圖，不另外手寫方程式。**整理文件裡的數字也要驗**：例題結果、圖上標的數值、考古題配分統計。
 
 ### 7. 渲染
 
@@ -102,7 +105,7 @@ pip install --break-system-packages -q sympy numpy scipy matplotlib 2>/dev/null
 node <skill-dir>/scripts/render.mjs patterns.md 線性代數_題型解題卡.pdf --theme modern
 ```
 
-公式小抄一律 `--theme cheatsheet`，其他文件用使用者選的主題（選了 cheatsheet 則用 textbook）。缺少的 npm 套件與 Chromium 會自動安裝；環境已有全域安裝時先設 `NODE_PATH`。出現 `mermaid error` 代表某張圖語法錯誤（常見：節點文字含未加引號的括號、用了 LaTeX）。`--html out.html` 可保留中間 HTML 除錯。
+公式小抄一律 `--theme cheatsheet`，其他文件用使用者選的主題（選了 cheatsheet 則用 textbook）。缺少的 npm 套件與 Chromium 會自動安裝；環境已有全域安裝時先設 `NODE_PATH`。出現 `mermaid error` 代表某張圖語法錯誤（常見：節點文字含未加引號的括號、用了 LaTeX）。出現 `figure missing`（題目提到圖，卡片裡卻沒有圖）或 `image not found`（圖檔路徑錯）要修好再交付。`--html out.html` 可保留中間 HTML 除錯。
 
 ### 8. 檢查排版，再交付
 
@@ -117,7 +120,7 @@ python <skill-dir>/scripts/preview.py out/線性代數_題型解題卡.pdf --pag
 
 ## 檔案
 
-- `scripts/ingest.py` 讀資料與挑出需要看圖的頁　`scripts/render.mjs` Markdown → PDF　`scripts/preview.py` 排版總覽　`scripts/figures.py` 教學圖表　`scripts/verify_helpers.py` 驗算工具　`scripts/setup.py` 檢查與安裝執行環境
+- `scripts/ingest.py` 讀資料與挑出需要看圖的頁　`scripts/render.mjs` Markdown → PDF　`scripts/preview.py` 排版總覽　`scripts/figures.py` 教學圖表與電路圖　`scripts/verify_helpers.py` 驗算工具　`scripts/setup.py` 檢查與安裝執行環境
 - `references/reading-inputs.md` 讀資料、materials.md、子代理、Google Drive
 - `references/markdown-format.md` 撰寫語法（寫 Markdown 前必讀）
 - `references/organize-styles.md` 概念分析與概念地圖（共同基礎）　`references/styles/*.md` 五種整理方式各自的寫法

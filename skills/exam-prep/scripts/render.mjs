@@ -368,6 +368,22 @@ if (usesMermaid) {
   });
   for (const e of errs) console.error(`[exam-prep] mermaid error: ${e}`);
 }
+// a question that points at a figure must carry one (circuits, free-body diagrams, graphs ...), and every image must load
+const figProblems = await page.evaluate(() => {
+  const POINTS_AT_FIG = /如圖|下圖|上圖|左圖|右圖|附圖|圖中|見圖|圖\s*\d|下列電路|下方電路|如下電路|as shown|shown (below|above|in)|(the|this|following) (figure|diagram|circuit|graph|network) (below|above|shown)|in (the|this) (figure|diagram)|\bfig(ure)?\.?\s*\d/i;
+  const out = [];
+  for (const card of document.querySelectorAll("section.qcard:not(.acard)")) {
+    const text = card.querySelector(".q-body")?.textContent || "";
+    if (POINTS_AT_FIG.test(text) && !card.querySelector("img, figure, pre.mermaid")) {
+      out.push(`figure missing: question ${card.querySelector(".q-num")?.textContent.trim()} refers to a figure ("${text.match(POINTS_AT_FIG)[0]}") but has none`);
+    }
+  }
+  for (const img of document.querySelectorAll("img")) {
+    if (!img.naturalWidth) out.push(`image not found: ${decodeURI(img.getAttribute("src") || "").replace(/^file:\/\/\/?/, "")}`);
+  }
+  return out;
+});
+for (const e of figProblems) console.error(`[exam-prep] ${e}`);
 // keep every heading on the same page as the block that follows it
 await page.evaluate(() => {
   for (const h of document.querySelectorAll("main.content h2, main.content h3, main.content h4")) {

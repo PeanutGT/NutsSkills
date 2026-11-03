@@ -26,7 +26,8 @@ NPM_PACKAGES = ["katex", "marked", "playwright", "mermaid"]
 # (import name, pip name, required)
 PY_PACKAGES = [("PIL", "pillow", True), ("sympy", "sympy", True), ("numpy", "numpy", True),
                ("scipy", "scipy", True), ("matplotlib", "matplotlib", True),
-               ("pptx", "python-pptx", False), ("docx", "python-docx", False)]
+               ("pptx", "python-pptx", False), ("docx", "python-docx", False),
+               ("schemdraw", "schemdraw", False)]
 POPPLER = ["pdftotext", "pdfinfo", "pdftoppm"]
 # same default install locations ingest.py checks; LibreOffice is usually not on PATH on Windows and macOS
 SOFFICE_PATHS = ["C:/Program Files/LibreOffice/program/soffice.exe", "C:/Program Files (x86)/LibreOffice/program/soffice.exe",

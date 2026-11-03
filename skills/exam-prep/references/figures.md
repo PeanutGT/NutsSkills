@@ -22,6 +22,9 @@
 | 事件關係、排容原理 | 文氏圖 | `figures.venn2` |
 | 線性變換、特徵向量、基底 | 變換前後對照圖 | `figures.linear_map_2d` |
 | 函數、極限、導數、積分 | 函數圖 | `figures.function_plot` |
+| 電路、電子、數位邏輯 | 電路圖、邏輯閘圖 | `figures.schematic`（schemdraw，見下方） |
+| 圖論、樹、狀態機 | 節點與邊 | Mermaid `flowchart`／`stateDiagram-v2` |
+| 力圖、幾何圖形 | 用 matplotlib 畫 | `figures._setup()` 後自己畫 |
 | 其他 | 用 matplotlib 自己畫，但沿用 `figures.py` 的配色與 `_setup()` | — |
 
 統計科目尤其要多用圖：每個分布至少一張圖，每個檢定的拒絕域用 `pdf_area` 畫出來，每個描述統計量（平均、中位數、IQR、標準差）都在圖上標出它在哪裡。
@@ -69,6 +72,45 @@ flowchart LR
 ```
 ````
 
+## 電路圖
+
+電路、電子、數位邏輯的題目常常「沒有圖就無法作答」，所以題目要附圖（規則見 question-design.md 的「需要圖的題目」）。用 `figures.schematic`，底層是 schemdraw（`setup.py` 會安裝；手動裝：`pip install --break-system-packages schemdraw`）：
+
+```python
+import schemdraw.elements as elm
+with F.schematic("figs/q3.svg") as d:
+    F.V(20).up()                                  # + 在畫的方向的終點（.up() → + 在上）；.reverse() 反過來
+    F.R(1, "R₁").right()
+    n1 = elm.Dot().label("v₁", loc="top"); d.push()
+    F.R(2).down()
+    d.pop()
+    r4 = F.R(4).right().label("i →", loc="bottom")
+    elm.Dot().label("v₂", loc="top")
+    elm.Line().right()
+    F.Vdep(lambda c: 2 * c.i(r4), "2i", loc="bottom").down().reverse()   # 相依電源：值由其他元件的電流／電壓算
+    elm.Line().left(); elm.Line().left(); elm.Ground(); elm.Line().left()
+
+c = F.solve_circuit(d)              # 直接解「畫出來的」電路（節點分析，精確分數）
+check("Q3 v1", c.vat(n1), 12)       # 寫進 verify.py
+check("Q3 i", c.i(r4), 2)
+```
+
+- **有數值的元件一律用 `F.R`／`F.V`／`F.I`／`F.C`／`F.L`／`F.Vdep`／`F.Idep` 畫**（會自動標上「6 Ω」「R₁ = 1 Ω」），再用 `F.solve_circuit(d)` 驗算解答：`c.i(el)` 是沿著畫的方向流過元件的電流（`.right()` 由左到右、`.down()` 由上到下），`c.v(el)` 是起點減終點的電壓，`c.p(el)` 是吸收功率（負的是提供），`c.vat(dot)` 是某個點對接地符號的電壓。直流穩態下電容當開路、電感當短路
+- 為什麼不自己列方程式驗：電源畫反、少一段導線時，手寫的方程式照樣「驗算通過」，但學生看到的圖算出來是別的答案。從圖解就不會有這個落差
+- 畫完時 `F.schematic` 會檢查有沒有懸空的端點（多半是少畫一段導線），有就發出警告；刻意留的端子（例如求 a、b 兩端的戴維寧等效）可以忽略
+- 其他元件：`Switch`、`Diode`、`Opamp`、`BjtNpn`…（用 `elm.` 畫，`solve_circuit` 不支援，要自己驗）；邏輯閘在 `schemdraw.logic`（`And`、`Or`、`Not`、`Nand`…）
+- 標籤用一般文字加 Unicode 下標（R₁、Vₛ、μF）；含中文的標籤不要用 `$...$`，中文會消失
+- 標籤放在電路外側：直向元件預設標在左邊，最右邊的支路用 `loc="bottom"` 標到右邊。並聯支路至少隔一個單位寬，標籤才不會疊在一起
+- 題幹提到的節點名稱（a、b）、電流方向、電壓極性、開關狀態都要畫出來
+
+```markdown
+:::q 3 | 計算題 | ★★☆ | space=6
+如圖所示電路，求穩態時的電流 $i$。
+
+![](figs/q3.svg)
+:::
+```
+
 ## 設計規則（已內建在 figures.py，自己畫圖時也要遵守）
 
 - **顏色有固定角色**：藍 `#2a78d6` 是主要資料；橘 `#eb6834` 是「被強調的事件／對照組」；綠 `#1baf7a` 是第三組或特殊方向（例如特徵方向）。同一份文件中顏色意義保持一致
@@ -80,4 +122,4 @@ flowchart LR
 
 ## 檢查
 
-渲染後看每一張圖：標籤有沒有互相重疊、文字有沒有被裁掉、陰影區域是否就是題目問的事件、顏色意義是否和圖說一致。
+渲染後看每一張圖：標籤有沒有互相重疊、文字有沒有被裁掉、陰影區域是否就是題目問的事件、顏色意義是否和圖說一致。電路圖再確認元件數值和題幹一致、電源極性和箭頭方向和解答一致、標籤沒有壓在元件或導線上、每條導線都有接上。

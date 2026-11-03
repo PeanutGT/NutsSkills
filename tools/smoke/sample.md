@@ -57,3 +57,9 @@ $$\det\begin{pmatrix}2-\lambda&1\\1&2-\lambda\end{pmatrix}=(\lambda-1)(\lambda-3
 :::a 1 | ✓ 已驗算
 $\lambda=1,3$
 :::
+
+:::q 2 | 計算題 | ★☆☆ | space=3
+如圖所示電路，求電流 $i$。
+
+![](figs/circuit.svg)
+:::

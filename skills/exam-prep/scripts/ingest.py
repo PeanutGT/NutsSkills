@@ -31,6 +31,7 @@ import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -114,9 +115,9 @@ def find_soffice() -> str | None:
 
 
 # ----------------------------------------------------------------------------- readers
-def pdf_pages_with_images(pdf: Path) -> set[int]:
-    try:
-        out = run([poppler("pdfimages"), "-list", str(pdf)])
+def pdf_pages_with_images(pdf: Path, first: int, last: int) -> set[int]:
+    try:  # only the pages being read: listing a whole textbook takes ~20 s
+        out = run([poppler("pdfimages"), "-list", "-f", str(first), "-l", str(last), str(pdf)])
     except (RuntimeError, subprocess.CalledProcessError):
         return set()
     pages = set()
@@ -127,6 +128,47 @@ def pdf_pages_with_images(pdf: Path) -> set[int]:
             if w * h >= 150 * 150:  # ignore logos / bullets
                 pages.add(int(parts[0]))
     return pages
+
+
+def page_runs(pages: list[int], size: int) -> list[tuple[int, int]]:
+    """Consecutive pages grouped into (first, last) runs of at most `size`, so each poppler call opens the file once."""
+    runs, start = [], pages[0]
+    for a, b in zip(pages, pages[1:] + [None]):
+        if b != a + 1 or a - start >= size - 1:
+            runs.append((start, a))
+            start = b
+    return runs
+
+
+def pdf_pages_with_drawings(pdf: Path, pages: list[int]) -> set[int]:
+    """Pages with vector figures (circuit diagrams, plots, block diagrams). These have a full text layer and no
+    images, so the other checks pass them as text-only although the figure is the point of the page.
+    Counts the paths each page draws, leaving out font glyphs and clip paths. A slide template draws the same
+    shapes on every page (about 10-30 paths), so pages are compared with the emptiest pages of the same file.
+    One page per pdftocairo call: its multi-page SVG drops the content of some pages (e.g. PDFs printed by Chrome)."""
+    if not pages:
+        return set()
+    try:
+        tool = poppler("pdftocairo")
+    except RuntimeError:
+        return set()
+    noise = re.compile(r'<g id="glyph[^"]*">.*?</g>|<symbol[^>]*>.*?</symbol>|<clipPath[^>]*>.*?</clipPath>', re.S)
+
+    def count(pg: int, tmp: str) -> tuple[int, int]:
+        out = Path(tmp) / f"p{pg}.svg"
+        r = subprocess.run([tool, "-svg", "-f", str(pg), "-l", str(pg), str(pdf), str(out)], capture_output=True)
+        if r.returncode or not out.exists():
+            return pg, 0
+        n = noise.sub("", out.read_text(encoding="utf-8", errors="replace")).count("<path")
+        out.unlink()
+        return pg, n
+
+    with tempfile.TemporaryDirectory() as tmp, ThreadPoolExecutor(8) as pool:
+        counts = dict(pool.map(lambda pg: count(pg, tmp), pages))
+    ranked = sorted(counts.values())
+    # template shapes drawn on (nearly) every page; a short file may have a figure on every page, so cap the guess
+    base = ranked[len(ranked) // 10] if len(ranked) >= 10 else min(ranked[0], 12)
+    return {pg for pg, c in counts.items() if c - base >= 20}
 
 
 def pdf_outline(pdf: Path, n: int) -> str:
@@ -154,9 +196,13 @@ def pdf_outline(pdf: Path, n: int) -> str:
         text = run([poppler("pdftotext"), "-enc", "UTF-8", "-layout", "-f", "1", "-l", str(first), str(pdf), "-"])
         return (f"這份 PDF 沒有書籤，以下是前 {first} 頁的文字，目錄通常在這裡。目錄上印的是書本頁碼，和 PDF 頁碼"
                 f"通常差一個固定值：抽一頁（`pdftotext -f 40 -l 40 檔案.pdf -`）對照章名就能算出來。\n\n{text}")
+    # many books wrap everything in a single bookmark named after the book; show two levels below it
+    top = 1
+    while sum(lv == top for lv, _, _ in items) == 1 and any(lv > top for lv, _, _ in items):
+        top += 1
     lines = ["| 層級 | 標題 | PDF 頁碼 |", "|---|---|---|"]
     for k, (level, page, title) in enumerate(items):
-        if level > 2:
+        if level > top + 1:
             continue
         # a heading runs until the next heading at the same or a higher level
         end = next((pg for lv, pg, _ in items[k + 1:] if lv <= level), n + 1) - 1
@@ -175,12 +221,21 @@ def read_pdf(src: Source, book_pages: int, name: str):
         return
     if src.wanted and src.wanted[-1] > n:
         src.note = f"這份 PDF 只有 {n} 頁，超出的頁碼已略過"
-    imgs = pdf_pages_with_images(src.path)
-    pdftotext = poppler("pdftotext")
-    for i in (pg for pg in (src.wanted or range(1, n + 1)) if 1 <= pg <= n):
-        # -enc UTF-8 is poppler's default but not xpdf's (Latin-1), in case only xpdf is installed
-        text = run([pdftotext, "-enc", "UTF-8", "-layout", "-f", str(i), "-l", str(i), str(src.path), "-"])
-        src.pages.append(Page(i, text, visual_reasons(text, i in imgs)))
+    pages = [pg for pg in (src.wanted or range(1, n + 1)) if 1 <= pg <= n]
+    imgs = pdf_pages_with_images(src.path, pages[0], pages[-1]) if pages else set()
+    drawn = pdf_pages_with_drawings(src.path, pages)
+    pdftotext, texts = poppler("pdftotext"), {}
+    for first, last in page_runs(pages, 100) if pages else []:
+        # -enc UTF-8 is poppler's default but not xpdf's (Latin-1), in case only xpdf is installed;
+        # one call per run because each call parses the whole file (slow on a big textbook); pages end with 
+        out = run([pdftotext, "-enc", "UTF-8", "-layout", "-f", str(first), "-l", str(last), str(src.path), "-"])
+        texts.update(zip(range(first, last + 1), out.split("")))
+    for i in pages:
+        text = texts.get(i, "")
+        reasons = visual_reasons(text, i in imgs)
+        if i in drawn and not reasons:
+            reasons.append("有向量圖（電路圖、示意圖、圖表），文字層讀不到圖的內容")
+        src.pages.append(Page(i, text, reasons))
     src.render_pdf = src.path
 
 

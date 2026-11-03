@@ -25,7 +25,7 @@ from typing import Callable, Iterable, Sequence
 import matplotlib
 
 matplotlib.use("Agg")
-warnings.filterwarnings("ignore", message="Glyph .* missing from font")
+warnings.filterwarnings("ignore", message="Glyph .* missing from")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager
@@ -337,3 +337,209 @@ def function_plot(funcs: Sequence[tuple], x_range: tuple, out: str, *, title="",
     ax.axhline(0, color=MUTED, lw=0.8)
     ax.set(title=title, xlabel=xlabel, ylabel=ylabel)
     return _save(fig, out)
+
+
+# ---------------------------------------------------------------- schematics (circuits, logic)
+class schematic:
+    """Circuit or logic diagram drawn with schemdraw (pip install schemdraw), saved as SVG in this file's style.
+
+        import schemdraw.elements as elm
+        with F.schematic("figs/q3.svg") as d:
+            elm.SourceV().up().label("Vₛ = 12 V")
+            elm.Resistor().right().label("R₁ = 4 Ω")
+            ...
+    Write labels as plain text with Unicode subscripts (R₁, Vₛ, μF); `$...$` mixed with Chinese loses the Chinese.
+    Logic gates: `import schemdraw.logic as logic`. Every element created inside the `with` block is added to `d`.
+    """
+
+    def __init__(self, out: str, *, unit=3.0, fontsize=11):
+        self.out, self.unit, self.fontsize = out, unit, fontsize
+
+    def __enter__(self):
+        try:
+            import schemdraw
+        except ImportError as e:
+            raise ImportError("電路圖需要 schemdraw：pip install --break-system-packages schemdraw") from e
+        _setup()
+        schemdraw.config(unit=self.unit, fontsize=self.fontsize, color=INK, lw=1.4, font="sans-serif")
+        self.d = schemdraw.Drawing(show=False)
+        self.d.__enter__()
+        return self.d
+
+    def open_ends(self) -> list[str]:
+        """Two-terminal elements whose end touches nothing else: almost always a missing wire, i.e. an open circuit.
+        Skipped for drawings with other element kinds (logic gates, op-amps), whose pins are not start/end."""
+        import schemdraw.elements as elm
+        ends: dict[tuple, list[str]] = {}
+        for e in self.d.elements:
+            a = e.absanchors
+            s, t = a.get("start"), a.get("end")
+            if s is None or t is None or (abs(s[0] - t[0]) < 1e-6 and abs(s[1] - t[1]) < 1e-6):
+                continue  # dots, grounds, labels
+            if not isinstance(e, elm.Element2Term):
+                return []
+            for p in (s, t):
+                ends.setdefault((round(p[0], 2), round(p[1], 2)), []).append(type(e).__name__)
+        return [names[0] for names in ends.values() if len(names) == 1]
+
+    def __exit__(self, *exc):
+        self.d.__exit__(*exc)
+        if exc[0] is None:
+            loose = self.open_ends()
+            if loose:
+                warnings.warn(f"schematic {self.out}: {len(loose)} open end(s) at {', '.join(loose)}; a wire is probably "
+                              "missing (open circuit). Ignore for intentional terminals such as a-b.", stacklevel=2)
+            os.makedirs(os.path.dirname(os.path.abspath(self.out)), exist_ok=True)
+            self.d.save(self.out, transparent=True)
+        plt.close("all")
+        return False
+
+
+# Elements that carry their value, so solve_circuit() can solve the circuit exactly as drawn. Each returns the
+# schemdraw element: chain .up()/.down()/.right()/.left()/.reverse() as usual.
+#   V: + at the end of the drawing direction (.up() → + on top); .reverse() puts + at the start
+#   I: arrow points along the drawing direction; .reverse() flips it
+def _si(x, unit: str) -> str:
+    x = float(x)
+    for f, p in ((1e6, "M"), (1e3, "k"), (1, ""), (1e-3, "m"), (1e-6, "μ"), (1e-9, "n")):
+        if abs(x) >= f * 0.999 or f == 1e-9:
+            return f"{x / f:g} {p}{unit}"
+
+
+def _valued(cls_name: str, kind: str, value, unit: str, name: str, label: str | None, loc: str | None):
+    import schemdraw.elements as elm
+    e = getattr(elm, cls_name)()
+    text = label if label is not None else (f"{name} = " if name else "") + (_si(value, unit) if unit else str(value))
+    if text:
+        e.label(text, loc=loc) if loc else e.label(text)
+    e._ep = (kind, value)
+    return e
+
+
+def R(value, name="", *, label=None, loc=None): return _valued("Resistor", "R", value, "Ω", name, label, loc)
+def V(value, name="", *, label=None, loc=None): return _valued("SourceV", "V", value, "V", name, label, loc)
+def I(value, name="", *, label=None, loc=None): return _valued("SourceI", "I", value, "A", name, label, loc)
+def C(value, name="", *, label=None, loc=None): return _valued("Capacitor", "C", value, "F", name, label, loc)  # DC: open
+def L(value, name="", *, label=None, loc=None): return _valued("Inductor", "L", value, "H", name, label, loc)  # DC: short
+
+
+def Vdep(fn: Callable, label: str, *, loc=None):
+    """Dependent voltage source; fn(c) gives its value from c.i(el) / c.v(el), e.g. lambda c: 2 * c.i(r4)."""
+    return _valued("SourceControlledV", "Vdep", fn, "", "", label, loc)
+
+
+def Idep(fn: Callable, label: str, *, loc=None):
+    """Dependent current source; fn(c) as for Vdep, e.g. lambda c: 0.5 * c.v(r2)."""
+    return _valued("SourceControlledI", "Idep", fn, "", "", label, loc)
+
+
+class Circuit:
+    """DC solution of a drawn circuit. For an element el:
+    i(el)   current through el along its drawing direction (.right(): left → right, .down(): top → bottom)
+    v(el)   voltage of its start terminal minus its end terminal
+    p(el)   power absorbed (negative = delivered), passive sign convention on v(el), i(el)
+    vat(el) voltage at el's start point (e.g. a labelled Dot) relative to the ground symbol"""
+
+    def __init__(self, i, v, vat):
+        self._i, self._v, self._vat = i, v, vat
+
+    def i(self, el): return self._i(el)
+    def v(self, el): return self._v(el)
+    def p(self, el): return self._v(el) * self._i(el)
+    def vat(self, el, anchor="start"): return self._vat(el, anchor)
+
+
+def solve_circuit(d) -> Circuit:
+    """Solve the circuit in drawing `d` (from `with F.schematic(...) as d`) by nodal analysis, straight from the
+    wiring that was drawn. Check answers against this, not against hand-written equations: a source drawn
+    upside down or a missing wire then shows up as a wrong answer instead of a figure that contradicts the key.
+    Every element must come from R/V/I/C/L/Vdep/Idep; plain elm.Line wires, Dots and a Ground are fine."""
+    import schemdraw.elements as elm
+    import sympy as sp
+
+    parent: dict[tuple, tuple] = {}
+
+    def key(p):
+        return (round(float(p[0]), 2), round(float(p[1]), 2))
+
+    def find(a):
+        parent.setdefault(a, a)
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    def union(a, b):
+        parent[find(a)] = find(b)
+
+    comps, wires, grounds = [], [], []
+    for e in d.elements:
+        a = e.absanchors
+        s, t = a.get("start"), a.get("end")
+        if s is None:
+            continue
+        if type(e).__name__.startswith("Ground"):
+            grounds.append(key(s))
+            find(key(s))
+            continue
+        ks, kt = key(s), key(t if t is not None else s)
+        if ks == kt:
+            find(ks)  # dots, labels
+        elif getattr(e, "_ep", None):
+            comps.append((e, e._ep, ks, kt))
+            find(ks), find(kt)
+        elif isinstance(e, elm.Line):
+            union(ks, kt)
+            wires.append((ks, kt))
+        else:
+            raise ValueError(f"solve_circuit: draw {type(e).__name__} with F.R/V/I/C/L/Vdep/Idep so it has a value")
+    for p in list(parent):  # an end landing in the middle of a wire (T-junction) joins that wire's node
+        for a, b in wires:
+            cross = (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
+            if abs(cross) < 1e-6 and min(a[0], b[0]) - 1e-6 <= p[0] <= max(a[0], b[0]) + 1e-6 \
+                    and min(a[1], b[1]) - 1e-6 <= p[1] <= max(a[1], b[1]) + 1e-6:
+                union(p, a)
+    nodes = sorted({find(p) for p in parent})
+    if grounds:
+        ref = find(grounds[0])
+    else:  # no ground symbol: the node with the most terminals, as textbooks choose it
+        ref = max(nodes, key=lambda n: sum((find(ks) == n) + (find(kt) == n) for _, _, ks, kt in comps))
+    nv = {n: (sp.Integer(0) if n == ref else sp.Symbol(f"v{k}")) for k, n in enumerate(nodes)}
+    src_i = {id(e): sp.Symbol(f"i{k}") for k, (e, (kind, _), _, _) in enumerate(comps) if kind in ("V", "Vdep", "L")}
+    by_id = {id(e): (e, kind, val, ks, kt) for e, (kind, val), ks, kt in comps}
+
+    def v(el):
+        _, _, _, ks, kt = by_id[id(el)]
+        return nv[find(ks)] - nv[find(kt)]
+
+    def i(el):
+        e, kind, val, ks, kt = by_id[id(el)]
+        sign = -1 if e._userparams.get("reverse") else 1
+        if kind == "R":
+            return v(el) / sp.nsimplify(val)
+        if kind == "I":
+            return sign * sp.nsimplify(val)
+        if kind == "Idep":
+            return sign * val(acc)
+        if kind == "C":
+            return sp.Integer(0)
+        return src_i[id(el)]
+
+    acc = Circuit(i, v, lambda el, anchor="start": nv[find(key(el.absanchors[anchor]))])
+    eqs = []
+    for n in nodes:
+        if n != ref:
+            eqs.append(sum((i(e) if find(ks) == n else 0) - (i(e) if find(kt) == n else 0) for e, _, ks, kt in comps))
+    for e, (kind, val), ks, kt in comps:
+        if kind in ("V", "Vdep", "L"):
+            value = 0 if kind == "L" else (sp.nsimplify(val) if kind == "V" else val(acc))
+            plus_at_end = not e._userparams.get("reverse")
+            eqs.append((v(e) * (-1 if plus_at_end else 1)) - value)
+    unknowns = [s for s in nv.values() if isinstance(s, sp.Symbol)] + list(src_i.values())
+    sol = sp.solve(eqs, unknowns, dict=True)
+    if len(sol) != 1 or any(u not in sol[0] for u in unknowns):
+        raise ValueError("solve_circuit: no unique solution: check for a missing wire, a floating part, "
+                         "or voltage sources in a loop / current sources in a cut")
+    sol = sol[0]
+    return Circuit(lambda el: sp.nsimplify(i(el).subs(sol)), lambda el: sp.nsimplify(v(el).subs(sol)),
+                   lambda el, anchor="start": sp.nsimplify(acc.vat(el, anchor).subs(sol)))

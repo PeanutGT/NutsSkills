@@ -64,6 +64,7 @@ summary()   # ALL OK，或列出 MISMATCH 並以 exit code 1 結束
 | 分布的機率/期望/變異數 | `sympy.stats`（`Binomial`, `Normal`, `P`, `E`, `variance`）或 `scipy.stats` |
 | 微積分 | `sp.diff`, `sp.integrate`, `sp.limit`, `sp.series` |
 | 數值方法 | `numpy` |
+| 電路（直流、穩態） | `figures.solve_circuit(d)` 直接解畫出來的電路；見 figures.md 的電路圖 |
 | 程式追蹤題 | 實際執行程式碼（Python 直接跑；C 用 `gcc` 編譯） |
 | 選擇題 | 對每個選項都算一次，確認恰好一個正確 |
 | 是非題 | 錯誤敘述找一個具體反例並用程式確認 |
