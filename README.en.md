@@ -47,7 +47,22 @@ For exam-prep. music-studio needs the GPU in your own computer, so install it wi
 /plugin install music-studio@nutsskills   # needs an NVIDIA GPU
 ```
 
-Or copy it into a skills folder manually:
+**Turn on auto-update** (recommended): Claude Code does not auto-update marketplaces you add yourself, so the plugin stays at the version you installed. Run `/plugin`, go to Marketplaces, pick `nutsskills` → "Enable auto-update", and Claude Code updates it every time it starts. Or add this to `~/.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "nutsskills": {
+      "source": { "source": "github", "repo": "PeanutGT/NutsSkills" },
+      "autoUpdate": true
+    }
+  }
+}
+```
+
+Without auto-update, update by hand: `claude plugin marketplace update nutsskills`, then `claude plugin update exam-prep@nutsskills`, and restart Claude Code.
+
+Or copy it into a skills folder manually (no auto-update: `git pull` and copy again to update):
 
 ```bash
 git clone https://github.com/PeanutGT/NutsSkills.git

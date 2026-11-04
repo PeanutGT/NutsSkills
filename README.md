@@ -47,7 +47,22 @@
 /plugin install music-studio@nutsskills   # 需要 NVIDIA 顯卡
 ```
 
-或手動複製到 skills 資料夾：
+**開啟自動更新**（建議）：Claude Code 對自己加入的市集預設不自動更新，裝好後會一直停在安裝當下的版本。輸入 `/plugin`，到 Marketplaces 選 `nutsskills` →「Enable auto-update」，之後每次啟動 Claude Code 都會更新到最新版。也可以直接在 `~/.claude/settings.json` 加上：
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "nutsskills": {
+      "source": { "source": "github", "repo": "PeanutGT/NutsSkills" },
+      "autoUpdate": true
+    }
+  }
+}
+```
+
+不開自動更新時，手動更新：`claude plugin marketplace update nutsskills`，再 `claude plugin update exam-prep@nutsskills`，重開 Claude Code 生效。
+
+或手動複製到 skills 資料夾（不會自動更新，要更新就重新 `git pull` 再複製）：
 
 ```bash
 git clone https://github.com/PeanutGT/NutsSkills.git
