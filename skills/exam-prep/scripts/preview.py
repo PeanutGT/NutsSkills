@@ -20,10 +20,9 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from local_paths import LABEL_FONTS
+
 SHEET_MAX = 1568
-# bold fonts for page labels: Linux, Windows, macOS
-LABEL_FONTS = ["/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-               "C:/Windows/Fonts/arialbd.ttf", "/System/Library/Fonts/Supplemental/Arial Bold.ttf"]
 
 
 def font(size=20):

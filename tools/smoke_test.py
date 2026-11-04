@@ -23,14 +23,18 @@ def circuit_problems(F, figs: Path) -> list[str]:
     import warnings
     import schemdraw.elements as elm
 
-    def circuit(name, *, flip=False, missing_wire=False):
+    def circuit(name, *, flip=False, missing_wire=False, two_grounds=False):
         with F.schematic(str(figs / name)) as d:
             src = F.V(12).up()
             if flip:
                 src.reverse()
             r1 = F.R(4, "R₁").right().label("i →", loc="bottom")
             F.R(6, "R₂", loc="bottom").down()
-            if not missing_wire:
+            if two_grounds:  # one ground under each branch instead of a return wire, as textbooks often draw it
+                elm.Ground()
+                d.move(-3, 0)
+                elm.Ground()
+            elif not missing_wire:
                 elm.Line().left()
         return d, r1
 
@@ -46,37 +50,49 @@ def circuit_problems(F, figs: Path) -> list[str]:
         d, _ = circuit("open.svg", missing_wire=True)
     if not any("open end" in str(w.message) for w in caught):
         problems.append("no open-end warning for a missing wire")
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        d, r1 = circuit("grounds.svg", two_grounds=True)
+    if F.solve_circuit(d).i(r1) != Fraction(6, 5):
+        problems.append("two ground symbols were not joined into one node")
+    if caught:
+        problems.append("open-end warning for a circuit closed through two grounds")
     return problems
 
 
-def make_vector_pdf(path: Path):
-    """Three text pages; the middle one also has a circuit drawn as vector paths."""
+def make_vector_pdf(path: Path, pages: int, circuits: set[int], *, template=False):
+    """Text pages (1-based) with a small vector circuit on the `circuits` pages; `template` adds the outlined header
+    and footer rules a slide template strokes on every page, highlighted words (filled boxes) on the text pages."""
     import matplotlib.pyplot as plt
     import schemdraw
     import schemdraw.elements as elm
     from matplotlib.backends.backend_pdf import PdfPages
+    from matplotlib.patches import Rectangle
     text = ("Node-voltage method: pick a reference node, write KCL at every other essential node, "
             "solve for the node voltages, then find branch currents and powers. ") * 3
     with PdfPages(path) as pdf:
-        for page in range(3):
+        for page in range(1, pages + 1):
             fig = plt.figure(figsize=(8.27, 11.69))
             fig.text(0.1, 0.9, text, wrap=True, fontsize=11, va="top")
-            if page == 1:
-                ax = fig.add_axes([0.15, 0.3, 0.7, 0.4])
+            if template:
+                for y in (0.95, 0.05):
+                    fig.add_artist(plt.Line2D([0.05, 0.95], [y, y], color="#2a78d6", lw=2))
+                fig.add_artist(Rectangle((0.05, 0.955), 0.9, 0.03, fill=False, edgecolor="#2a78d6"))
+                for k in range(8):
+                    fig.add_artist(Rectangle((0.1 + 0.1 * k, 0.6), 0.08, 0.015, facecolor="#ffe066", edgecolor="none",
+                                             zorder=0))
+            if page in circuits:  # four resistors and a source, about as small as a textbook circuit gets
+                ax = fig.add_axes([0.2, 0.25, 0.6, 0.3])
                 ax.axis("off")
                 with schemdraw.Drawing(canvas=ax, show=False) as d:
-                    elm.SourceV().up().label("20 V")
-                    elm.Resistor().right().label("1 Ω")
+                    elm.SourceV().up().label("12 V")
+                    elm.Resistor().right().label("4 Ω")
                     elm.Dot(); d.push()
+                    elm.Resistor().down().label("6 Ω")
+                    d.pop()
+                    elm.Resistor().right().label("3 Ω")
                     elm.Resistor().down().label("2 Ω")
-                    d.pop()
-                    elm.Resistor().right().label("6 Ω")
-                    elm.Dot(); d.push()
-                    elm.Resistor().down().label("20 Ω")
-                    d.pop()
-                    elm.Line().right()
-                    elm.SourceI().down().reverse().label("2 A")
-                    elm.Line().left(); elm.Line().left(); elm.Ground(); elm.Line().left()
+                    elm.Line().left(); elm.Line().left()
                     d.draw(show=False)
             pdf.savefig(fig)
             plt.close(fig)
@@ -86,6 +102,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=ROOT / "dist" / "smoke")
     out = ap.parse_args().out
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # failure logs carry ✓ and Chinese; cp950 can't print them
     shutil.rmtree(out, ignore_errors=True)
     (out / "figs").mkdir(parents=True)
     shutil.copy(ROOT / "tools" / "smoke" / "sample.md", out / "sample.md")
@@ -122,12 +139,14 @@ def main() -> int:
         if problems:
             print(log)
             failed = True
-    # the figure guard must flag a question that says 如圖 without a figure, and a broken image path
-    (out / "nofig.md").write_text(":::q 1 | 計算題\n如圖所示電路，求 $i$。\n:::\n\n:::q 2 | 計算題\n求 $i$。\n\n![](figs/missing.svg)\n:::\n",
-                                  encoding="utf-8")
+    # the figure guard must flag a question that says 如圖 without a figure and a broken image path, but not a
+    # proof that cites a theorem "as shown"
+    (out / "nofig.md").write_text(":::q 1 | 計算題\n如圖所示電路，求 $i$。\n:::\n\n:::q 2 | 計算題\n求 $i$。\n\n![](figs/missing.svg)\n:::\n\n"
+                                  ":::q 3 | 證明題\nProve that $A$ is invertible, as shown in Theorem 2.\n:::\n", encoding="utf-8")
     r = subprocess.run(["node", str(SKILL / "scripts" / "render.mjs"), str(out / "nofig.md"), str(out / "nofig.pdf")],
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    ok = "figure missing: question 1" in r.stderr and "image not found" in r.stderr
+    ok = ("figure missing: question 1" in r.stderr and "image not found" in r.stderr
+          and "figure missing: question 3" not in r.stderr)
     print(f"[figure guard] {'ok' if ok else 'FAIL'}")
     if not ok:
         print(r.stdout + r.stderr)
@@ -155,19 +174,30 @@ def main() -> int:
     outline, part = text / "la_slides_ch5-outline.md", text / "la_slides_ch5_p2-3.txt"
     ok = (r.returncode == 0 and outline.exists() and not (text / "la_slides_ch5.txt").exists() and part.exists()
           and "p.2 ===" in part.read_text(encoding="utf-8") and "p.1 ===" not in part.read_text(encoding="utf-8"))
+    # a reversed or zero range is an error, never "read the whole book"
+    for bad in ("4-2", "0"):
+        rb = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), f"{slides}:{bad}", "--book-pages", "2",
+                             "--out", str(out / "ingest-badrange")], capture_output=True, text=True, encoding="utf-8",
+                            errors="replace")
+        if rb.returncode == 0 or (out / "ingest-badrange" / "text" / "la_slides_ch5.txt").exists():
+            print(f"[ingest book/range] range :{bad} was accepted")
+            ok = False
     print(f"[ingest book/range] {'ok' if ok else 'FAIL'}")
     if not ok:
         print(r.stdout + r.stderr)
         failed = True
-    # a page with a vector circuit diagram (full text layer, no images) must be flagged for viewing
-    vec = out / "vector.pdf"
-    make_vector_pdf(vec)
-    r = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), str(vec), "--out", str(out / "ingest-vector")],
-                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    # pages with a vector circuit (full text layer, no images) must be flagged for viewing: a small circuit among
+    # slides whose template strokes rules on every page, and a worksheet repeating one circuit on most pages
+    cases = {"slides.pdf": (6, {3}, True), "worksheet.pdf": (12, set(range(1, 11)), False)}
+    for name, (pages, circuits, template) in cases.items():
+        make_vector_pdf(out / name, pages, circuits, template=template)
+    r = subprocess.run([sys.executable, str(SKILL / "scripts" / "ingest.py"), *(str(out / n) for n in cases),
+                        "--out", str(out / "ingest-vector")], capture_output=True, text=True, encoding="utf-8", errors="replace")
     report = (out / "ingest-vector" / "report.md").read_text(encoding="utf-8") if r.returncode == 0 else ""
-    ok = "vector.pdf p.2：有向量圖" in report and "p.1：" not in report and "p.3：" not in report
-    print(f"[ingest vector figure] {'ok' if ok else 'FAIL'}")
-    if not ok:
+    wrong = [f"{name} p.{pg}" for name, (pages, circuits, _) in cases.items() for pg in range(1, pages + 1)
+             if (f"{name} p.{pg}：" in report) != (pg in circuits)]
+    print(f"[ingest vector figure] {'FAIL ' + ', '.join(wrong) if wrong or not report else 'ok'}")
+    if wrong or not report:
         print(r.stdout + r.stderr)
         failed = True
     r = subprocess.run([sys.executable, str(SKILL / "scripts" / "preview.py"), str(out / "sample-modern.pdf"), "--out", str(out / "preview")],

@@ -31,9 +31,12 @@ import subprocess
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from local_paths import LABEL_FONTS, SOFFICE_PATHS
 
 try:
     from PIL import Image, ImageDraw, ImageFont
@@ -44,12 +47,6 @@ SHEET_MAX = 1568  # long side of a contact sheet; larger images get downscaled b
 IMG_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".heic", ".heif"}
 MATH_ALNUM = re.compile(r"[\U0001D400-\U0001D7FF]")  # 𝐴 𝜆 … : math italic letters from PDF formulas
 MATH_SYM = re.compile(r"[∑∏∫√∞≤≥≠≈±∓×÷∂∇λμσθπαβγδεΣΠΔ⁻¹²³ᵀ→⇒⇔∈∉⊂⊆∪∩]")
-# bold fonts for page labels: Linux, Windows, macOS
-LABEL_FONTS = ["/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-               "C:/Windows/Fonts/arialbd.ttf", "/System/Library/Fonts/Supplemental/Arial Bold.ttf"]
-# LibreOffice is usually not on PATH on Windows and macOS
-SOFFICE_PATHS = ["C:/Program Files/LibreOffice/program/soffice.exe", "C:/Program Files (x86)/LibreOffice/program/soffice.exe",
-                 "/Applications/LibreOffice.app/Contents/MacOS/soffice"]
 
 
 @dataclass
@@ -143,9 +140,12 @@ def page_runs(pages: list[int], size: int) -> list[tuple[int, int]]:
 def pdf_pages_with_drawings(pdf: Path, pages: list[int]) -> set[int]:
     """Pages with vector figures (circuit diagrams, plots, block diagrams). These have a full text layer and no
     images, so the other checks pass them as text-only although the figure is the point of the page.
-    Counts the paths each page draws, leaving out font glyphs and clip paths. A slide template draws the same
-    shapes on every page (about 10-30 paths), so pages are compared with the emptiest pages of the same file.
-    One page per pdftocairo call: its multi-page SVG drops the content of some pages (e.g. PDFs printed by Chrome)."""
+    Counts the stroked paths each page draws (lines, wires, outlined boxes), leaving out glyphs, clip paths and
+    fills: a highlighted word is a filled box, a wire is a stroke. A path drawn at the same spot on more than half
+    the pages is the slide template; real templates stroke at most 5 paths, so at most 5 are discounted per page
+    (a worksheet repeating one circuit on every page keeps it). Tuned on a circuits textbook, logic-design, Java
+    and business slides: pages with figures have 6+ such paths (a small circuit about 7), text pages 0-3."""
+    # One page per pdftocairo call: its multi-page SVG drops the content of some pages (e.g. PDFs printed by Chrome)
     if not pages:
         return set()
     try:
@@ -153,22 +153,28 @@ def pdf_pages_with_drawings(pdf: Path, pages: list[int]) -> set[int]:
     except RuntimeError:
         return set()
     noise = re.compile(r'<g id="glyph[^"]*">.*?</g>|<symbol[^>]*>.*?</symbol>|<clipPath[^>]*>.*?</clipPath>', re.S)
+    shape = re.compile(r'\b(?:d|transform)="([^"]*)"')
 
-    def count(pg: int, tmp: str) -> tuple[int, int]:
+    def stroked_paths(pg: int, tmp: str) -> tuple[int, list[str]]:
         out = Path(tmp) / f"p{pg}.svg"
         r = subprocess.run([tool, "-svg", "-f", str(pg), "-l", str(pg), str(pdf), str(out)], capture_output=True)
         if r.returncode or not out.exists():
-            return pg, 0
-        n = noise.sub("", out.read_text(encoding="utf-8", errors="replace")).count("<path")
+            return pg, []
+        svg = noise.sub("", out.read_text(encoding="utf-8", errors="replace"))
         out.unlink()
-        return pg, n
+        return pg, ["|".join(shape.findall(attrs)) for attrs in re.findall(r"<path\b([^>]*)>", svg)
+                    if re.search(r'stroke="(?!none)', attrs)]
 
     with tempfile.TemporaryDirectory() as tmp, ThreadPoolExecutor(8) as pool:
-        counts = dict(pool.map(lambda pg: count(pg, tmp), pages))
-    ranked = sorted(counts.values())
-    # template shapes drawn on (nearly) every page; a short file may have a figure on every page, so cap the guess
-    base = ranked[len(ranked) // 10] if len(ranked) >= 10 else min(ranked[0], 12)
-    return {pg for pg, c in counts.items() if c - base >= 20}
+        drawn = dict(pool.map(lambda pg: stroked_paths(pg, tmp), pages))
+    on_pages = Counter(p for paths in drawn.values() for p in set(paths))
+    template = {p for p, k in on_pages.items() if len(drawn) >= 4 and k > len(drawn) / 2}
+    flagged = set()
+    for pg, paths in drawn.items():
+        on_template = sum(p in template for p in paths)
+        if len(paths) - min(on_template, 5) >= 6:
+            flagged.add(pg)
+    return flagged
 
 
 def pdf_outline(pdf: Path, n: int) -> str:
@@ -221,7 +227,7 @@ def read_pdf(src: Source, book_pages: int, name: str):
         return
     if src.wanted and src.wanted[-1] > n:
         src.note = f"這份 PDF 只有 {n} 頁，超出的頁碼已略過"
-    pages = [pg for pg in (src.wanted or range(1, n + 1)) if 1 <= pg <= n]
+    pages = [pg for pg in (src.wanted if src.wanted is not None else range(1, n + 1)) if 1 <= pg <= n]
     imgs = pdf_pages_with_images(src.path, pages[0], pages[-1]) if pages else set()
     drawn = pdf_pages_with_drawings(src.path, pages)
     pdftotext, texts = poppler("pdftotext"), {}
@@ -372,11 +378,19 @@ def parse_target(arg: str) -> tuple[Path, list[int] | None, str]:
     m = re.fullmatch(r"(.+):(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*)", arg)
     if Path(arg).exists() or not m:
         return Path(arg), None, ""
+    path = Path(m.group(1))
+    # Git Bash rewrites "/c/x.pdf:1-3" as if it were a path list and hands over "\c\x.pdf"; undo that
+    drive = re.fullmatch(r"[\\/]([A-Za-z])[\\/](.*)", m.group(1))
+    if not path.exists() and drive and Path(f"{drive[1]}:/{drive[2]}").exists():
+        path = Path(f"{drive[1]}:/{drive[2]}")
     pages: list[int] = []
     for part in m.group(2).split(","):
         lo, _, hi = part.partition("-")
-        pages += range(int(lo), int(hi or lo) + 1)
-    return Path(m.group(1)), sorted(set(pages)), m.group(2)
+        lo, hi = int(lo), int(hi or lo)
+        if lo < 1 or hi < lo:  # "180-120" or ":0" would otherwise read nothing, or (before 2.4.1) the whole book
+            raise ValueError(f"頁碼範圍 {part} 不合理：頁碼從 1 開始，寫成「起-迄」且起 ≤ 迄（例如 120-180）")
+        pages += range(lo, hi + 1)
+    return path, sorted(set(pages)), m.group(2)
 
 
 def main() -> int:
@@ -388,7 +402,8 @@ def main() -> int:
     ap.add_argument("--book-pages", type=int, default=150,
                     help="a PDF longer than this, given without pages, is treated as a whole book (outline only)")
     a = ap.parse_args()
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # the report has symbols a cp950 console cannot print
+    for stream in (sys.stdout, sys.stderr):  # the report and errors have text a cp950 console cannot print
+        stream.reconfigure(encoding="utf-8", errors="replace")
 
     (a.out / "text").mkdir(parents=True, exist_ok=True)
     (a.out / "sheets").mkdir(parents=True, exist_ok=True)
@@ -397,7 +412,11 @@ def main() -> int:
 
     names: list[str] = []
     for arg in a.files:
-        f, wanted, spec = parse_target(arg)
+        try:
+            f, wanted, spec = parse_target(arg)
+        except ValueError as e:
+            print(f"{arg}: {e}", file=sys.stderr)
+            return 2
         if not f.exists():
             print(f"skip (not found): {f}", file=sys.stderr)
             continue

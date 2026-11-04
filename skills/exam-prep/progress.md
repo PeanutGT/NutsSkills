@@ -36,12 +36,13 @@
 
 ## 二、現況
 
-- **最新版本：2.4.0**（2026-11-03，需要看圖的題目附電路圖等，並有缺圖防呆）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`、`exam-prep-v2.3.0`、`exam-prep-v2.4.0`（2.2.0 沒有單獨發）
+- **最新版本：2.4.1**（2026-11-04，修正程式碼審查找到的問題）；已發布 Release：`exam-prep-v2.0.0`、`exam-prep-v2.1.0`、`exam-prep-v2.2.1`、`exam-prep-v2.2.2`、`exam-prep-v2.3.0`、`exam-prep-v2.4.0`（2.2.0 沒有單獨發）
 - 這個雲端環境的 git 代理不允許推 tag（HTTP 403），發版改用 GitHub Actions 手動觸發 Release workflow
 - CI 綠燈：格式檢查＋三主題渲染＋ingest＋preview
 - 檔案導覽：`SKILL.md`（約 3.2k tokens）→ `references/`（讀資料、語法、地圖、圖表、出題、驗算）→ `references/styles/`（五種整理方式各一份）
 
 ### 實測紀錄
+- 2.4.1（Windows，2026-11-04）：依程式碼審查報告逐項重現並修正（多個接地、反向頁碼、向量圖門檻、as shown 誤報與 5 項低嚴重度）。向量圖門檻用本機的課本與約 10 份投影片校準（只看線條數，不外流）；非 Big5 檔名實測正常
 - 2.4.0（Windows，2026-11-04）：電路學原文課本（820 頁，使用者提供，不可外流）→ 目錄模式選 Ch4 節點／網目分析 18 頁 → 8 題練習題（6 題附電路圖）＋解答，15 項驗算全過、渲染無警告。抓到並修正：向量電路圖沒被標成要看圖（根本原因：模型看不到電路）、目錄只列到章、`pdfimages` 掃整本書很慢、初稿兩張圖錯（少一段導線、電源極性畫反，手寫方程式驗算抓不到 → 新增 `solve_circuit`）
 - 1.x：線代（特徵值，英文投影片＋考古題）、機統（手機拍的筆記照片）完整跑過；抓到的問題都已修（選擇題雙正解、考古題配分算錯、標題孤立在頁尾等）
 - 2.0：機統照片 → 題型解題卡／Cornell／分層講義三份 PDF，21 項數字驗算全過；抓到 `pmf_bar` 尾端機率漏算（已加警告與 `highlight_value`）
@@ -74,7 +75,7 @@ python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋inge
 
 通過標準：
 - `setup.py --check` 不會因為 `✓`／`✗` 符號中止，缺的項目提示看得懂；poppler 用 `scoop install poppler` 或 conda 裝
-- ingest 的 `report.md` 沒有「讀取失敗」，`text/la_pastexam_2024-2025.txt` 第一行是「線性代數 期中考 (2025 Fall) — Eigen 部分」
+- ingest 的 `report.md` 沒有「讀取失敗」，`text/la_pastexam_2024-2025.txt` 第二行（第一行是 `=== … p.1 ===` 標記）是「線性代數 期中考 (2025 Fall) — Eigen 部分」
 - 再拿一份**檔名含中文**的 PDF 測 ingest（要確認 Windows 版 poppler 能開中文路徑；這是 2.2.1 唯一沒辦法在 Linux 模擬的部分）
 - smoke test 產出的 PDF 打開來中文正常、沒有方框（Chromium 在 Windows 會用微軟正黑體）
 - `preview.py` 總覽圖上的頁碼標籤清楚（Windows 用 `arialbd.ttf`）

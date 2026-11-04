@@ -2,6 +2,23 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [2.4.1] - 2026-11-04
+
+修正 2.3.0／2.4.0 程式碼審查找到的問題，每項都加進 smoke test。
+
+### 修正
+- `solve_circuit`：畫了兩個以上的接地符號時沒有視為同一個節點，算出錯的答案（例：應為 6/5 A，算出 0）且不報錯；斷線檢查也把接地點當成已連接
+- `ingest.py`：頁碼範圍寫反（`180-120`）或寫 0 時，原本會讀進整份 PDF；現在直接報錯並說明正確寫法
+- `ingest.py` 向量圖偵測改成只數描邊的線條（螢光底是填色，不算），並扣掉每頁同位置重複的模板線條（最多扣 5 條）。用電路學課本、數位邏輯、Java、企管投影片校準：原本漏掉的小電路（約 7 條線）現在抓得到，螢光底投影片不再誤判
+- `render.mjs`：英文只有「shown below／above」或「shown in the figure／circuit…」才算指向圖，「as shown in Theorem 2」不再誤報 `figure missing`
+- `ingest.py`：Git Bash 會把 `/c/x.pdf:1-3` 轉成 `\c\x.pdf`，現在會還原成 `C:/x.pdf`；錯誤訊息改用 UTF-8 輸出
+
+### 變更
+- `setup.py --check` 也檢查 `pdftocairo`、`pdftohtml`、`pdfimages`（選用）
+- 字型與 LibreOffice 的安裝位置集中到 `scripts/local_paths.py`，Windows 路徑改由環境變數決定
+- smoke test 的輸出改用 UTF-8（Windows 中文主控台印出失敗紀錄時不再中止）
+- 實測確認：簡體中文、日文、韓文、emoji 檔名在 Windows 上都能讀取與預覽
+
 ## [2.4.0] - 2026-11-04
 
 需要看圖的題目（電路圖等）不再缺圖，而且圖和解答一定對得起來。
@@ -59,9 +76,10 @@ Windows 相容性修正。
 - `preview.py`：PDF 資訊同樣固定以 UTF-8 解碼
 
 ### 變更
-- 總覽圖的頁碼標籤字型加入 Windows、macOS 的路徑；都找不到時改用 22px 的內建字型（原本是 10px）
+- 總覽圖的頁碼標籤字型加入 Windows、macOS 的路徑；都找不到時改用 20px 的內建字型（原本是 10px；Pillow 10.1 以前的內建字型不能調大小，仍是 10px）
 - 找 LibreOffice 時也檢查 Windows、macOS 的預設安裝位置（通常不在 PATH 裡），`ingest.py` 與 `setup.py` 一致
 - README 執行需求補上各平台安裝 poppler 的方式
+
 ## [2.2.0] - 2026-10-30
 
 支援 OpenAI Codex。

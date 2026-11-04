@@ -20,6 +20,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from local_paths import SOFFICE_PATHS  # the same LibreOffice locations ingest.py checks
+
 HERE = Path(__file__).resolve().parent
 DEPS_DIR = Path.home() / ".exam-prep-deps"  # same folder render.mjs installs into
 NPM_PACKAGES = ["katex", "marked", "playwright", "mermaid"]
@@ -29,9 +31,8 @@ PY_PACKAGES = [("PIL", "pillow", True), ("sympy", "sympy", True), ("numpy", "num
                ("pptx", "python-pptx", False), ("docx", "python-docx", False),
                ("schemdraw", "schemdraw", False)]
 POPPLER = ["pdftotext", "pdfinfo", "pdftoppm"]
-# same default install locations ingest.py checks; LibreOffice is usually not on PATH on Windows and macOS
-SOFFICE_PATHS = ["C:/Program Files/LibreOffice/program/soffice.exe", "C:/Program Files (x86)/LibreOffice/program/soffice.exe",
-                 "/Applications/LibreOffice.app/Contents/MacOS/soffice"]
+# without these ingest still runs: no vector-figure detection, no bookmark outline, image pages found by text alone
+POPPLER_OPTIONAL = {"pdftocairo": "偵測向量圖（電路圖）", "pdftohtml": "整本書的書籤目錄", "pdfimages": "找出有圖片的頁"}
 
 # resolves each package the way render.mjs does: next to the scripts, in DEPS_DIR, then NODE_PATH
 NODE_CHECK = r"""
@@ -123,6 +124,8 @@ def check() -> tuple[list[str], list[str]]:
                 + poppler_hint())
         else:
             row(path is not None, f"poppler：{tool}", poppler_hint())
+    for tool, use in POPPLER_OPTIONAL.items():  # ship with poppler; missing only in trimmed builds
+        row(poppler_path(tool) is not None, f"poppler：{tool}", f"沒有時無法{use}；" + poppler_hint(), required=False)
     font = cjk_font_ok()
     row(font if font is not None else None, "中文字型（Noto CJK）",
         "sudo apt-get install fonts-noto-cjk；缺字型時 PDF 中文會變成方框", required=font is not None)

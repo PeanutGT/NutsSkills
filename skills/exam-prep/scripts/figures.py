@@ -374,8 +374,11 @@ class schematic:
         for e in self.d.elements:
             a = e.absanchors
             s, t = a.get("start"), a.get("end")
+            if s is not None and type(e).__name__.startswith("Ground"):
+                ends.setdefault((round(s[0], 2), round(s[1], 2)), []).append("Ground")  # a ground connects its end
+                continue
             if s is None or t is None or (abs(s[0] - t[0]) < 1e-6 and abs(s[1] - t[1]) < 1e-6):
-                continue  # dots, grounds, labels
+                continue  # dots, labels
             if not isinstance(e, elm.Element2Term):
                 return []
             for p in (s, t):
@@ -499,6 +502,8 @@ def solve_circuit(d) -> Circuit:
             if abs(cross) < 1e-6 and min(a[0], b[0]) - 1e-6 <= p[0] <= max(a[0], b[0]) + 1e-6 \
                     and min(a[1], b[1]) - 1e-6 <= p[1] <= max(a[1], b[1]) + 1e-6:
                 union(p, a)
+    for g in grounds[1:]:  # every ground symbol is the same node (textbooks often draw one per branch)
+        union(g, grounds[0])
     nodes = sorted({find(p) for p in parent})
     if grounds:
         ref = find(grounds[0])
