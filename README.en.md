@@ -17,8 +17,8 @@
 
 | Skill | Description | Version |
 |---|---|---|
-| [exam-prep](skills/exam-prep/) | Reorganizes slides, textbooks, photos of handwritten notes and past exams (uploaded or via Google Drive links) into beautifully laid-out PDFs: detailed handouts / concise notes, **exam pattern cards**, **Cornell recall notes**, **layered notes** (30 s / 5 min / full), with concept maps and statistics / linear-algebra figures. Also practice questions, separate answer keys and cheat sheets, with computed answers verified in code. Output is Traditional Chinese by default. | [Changelog](skills/exam-prep/CHANGELOG.md) |
-| [music-studio](skills/music-studio/) | Generates instrumental music and BGM (seamless game loops, video scores, study/work background, personal tracks) locally on your NVIDIA GPU with ACE-Step 1.5. Customisable defaults, style library, description lexicon and workflows, plus a local dashboard. | [Changelog](skills/music-studio/CHANGELOG.md) |
+| [exam-prep](skills/exam-prep/) | Reorganizes slides, whole textbooks, photos of handwritten notes and past exams (uploaded or via Google Drive links) into beautifully laid-out PDFs: detailed handouts / concise notes, **exam pattern cards**, **Cornell recall notes**, **layered notes** (30 s / 5 min / full), with concept maps and statistics, linear-algebra and circuit diagrams. Also practice questions, separate answer keys and cheat sheets. Computed answers are verified in code, circuit questions are solved straight from the drawn schematic, and a whole textbook is read by its table of contents, chapter by chapter. Output is Traditional Chinese by default. | [![exam-prep release](https://img.shields.io/github/v/release/PeanutGT/NutsSkills?filter=exam-prep-v%2A&label=release)](https://github.com/PeanutGT/NutsSkills/releases)<br>[Changelog](skills/exam-prep/CHANGELOG.md) |
+| [music-studio](skills/music-studio/) | Generates instrumental music and BGM (seamless game loops, video scores, study/work background, personal tracks) locally on your NVIDIA GPU with ACE-Step 1.5. Pick or avoid instruments, get an automatic check for clipping, clicks and cut-off endings after every generation, and export with loudness presets for video, game or study use. Customisable defaults, style library, description lexicon and a local dashboard. | Installed with Claude Code, follows main (no zip)<br>[Changelog](skills/music-studio/CHANGELOG.md) |
 
 <p align="center">
   <img src="docs/images/exam-prep/overview.png" alt="Sample pages from exam-prep: pattern cards, Cornell recall notes and layered notes" width="720">
@@ -29,6 +29,8 @@
 ## Install
 
 ### Claude.ai / Claude Desktop
+
+For exam-prep. music-studio needs the GPU in your own computer, so install it with Claude Code below.
 
 1. Download the skill's zip (named `<skill-name>-<version>.zip`, e.g. `exam-prep-<version>.zip`) from [Releases](https://github.com/PeanutGT/NutsSkills/releases). **Don't unzip it.**
 2. Make sure code execution is on: **Settings → Capabilities → "Code execution and file creation"** (on Team / Enterprise an owner enables it in organization settings).
@@ -42,6 +44,7 @@
 ```text
 /plugin marketplace add PeanutGT/NutsSkills
 /plugin install exam-prep@nutsskills
+/plugin install music-studio@nutsskills   # needs an NVIDIA GPU
 ```
 
 Or copy it into a skills folder manually:
@@ -75,7 +78,9 @@ No special command is needed — just describe what you want, e.g.
 
 > My linear algebra midterm is next Thursday. Here are the slides and past exams — make pattern cards and 12 practice questions.
 
-Claude reads the materials first, asks about scope, organization style and theme, then produces the PDFs. See each skill's README for details and requirements.
+> Make a 60-second, seamlessly looping pixel-art game BGM.
+
+exam-prep reads the materials first (for a whole textbook, its table of contents, then asks which chapters), asks about scope, organization style and theme, then produces the PDFs. See each skill's README for details and requirements.
 
 ## FAQ
 
@@ -83,7 +88,7 @@ Claude reads the materials first, asks about scope, organization style and theme
 
 **Claude doesn't use the skill?** Check that it's toggled on under Customize → Skills and that code execution is enabled. You can also say "use the exam-prep skill".
 
-**PDF generation fails?** The skill installs npm and pip packages and needs Chromium in the execution environment. Please paste the error Claude reports into an [issue](https://github.com/PeanutGT/NutsSkills/issues/new/choose).
+**PDF generation fails?** The skill installs npm and pip packages and needs Chromium in the execution environment. On your own computer, ask Claude to run `scripts/setup.py --check` to see what's missing and `scripts/setup.py` to install it. If it still fails, please paste the error Claude reports into an [issue](https://github.com/PeanutGT/NutsSkills/issues/new/choose).
 
 ## Feedback
 
