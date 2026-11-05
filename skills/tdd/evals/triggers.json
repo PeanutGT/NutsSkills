@@ -1,0 +1,12 @@
+{
+  "skill": "tdd",
+  "should_trigger": [
+    "Implement a function that parses ISO-8601 durations",
+    "Add rate limiting to the /login endpoint",
+    "Fix the off-by-one in pagination"
+  ],
+  "should_not_trigger": [
+    "Explain how our pagination works",
+    "Update the README install section"
+  ]
+}

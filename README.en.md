@@ -19,6 +19,7 @@
 |---|---|---|
 | [exam-prep](skills/exam-prep/) | Reorganizes slides, whole textbooks, photos of handwritten notes and past exams (uploaded or via Google Drive links) into beautifully laid-out PDFs: detailed handouts / concise notes, **exam pattern cards**, **Cornell recall notes**, **layered notes** (30 s / 5 min / full), with concept maps and statistics, linear-algebra and circuit diagrams. Also practice questions, separate answer keys and cheat sheets. Computed answers are verified in code, circuit questions are solved straight from the drawn schematic, and a whole textbook is read by its table of contents, chapter by chapter. Output is Traditional Chinese by default. | [![exam-prep release](https://img.shields.io/github/v/release/PeanutGT/NutsSkills?filter=exam-prep-v%2A&label=release)](https://github.com/PeanutGT/NutsSkills/releases)<br>[Changelog](skills/exam-prep/CHANGELOG.md) |
 | [music-studio](skills/music-studio/) | Generates instrumental music and BGM (seamless game loops, video scores, study/work background, personal tracks) locally on your NVIDIA GPU with ACE-Step 1.5. Pick or avoid instruments, get an automatic check for clipping, clicks and cut-off endings after every generation, and export with loudness presets for video, game or study use. Customisable defaults, style library, description lexicon and a local dashboard. | Installed with Claude Code, follows main (no zip)<br>[Changelog](skills/music-studio/CHANGELOG.md) |
+| [nuts-engineering](skills/nutshell/) | A software-engineering workflow suite for coding agents (13 skills). The router [nutshell](skills/nutshell/) picks among [clarify](skills/clarify/), [spec](skills/spec/), [plan](skills/plan/), [tdd](skills/tdd/), [debug](skills/debug/), [verify](skills/verify/), [code-review](skills/code-review/), [design](skills/design/), [simplify](skills/simplify/), [ship](skills/ship/), [writing-skills](skills/writing-skills/): clarify → spec → plan → TDD → debug → verify before claiming done → review → ship. [repo-map](skills/repo-map/) builds a file/symbol/dependency map before reading code, 20–30x smaller than the source in our tests. Includes with/without-skill eval results. | Installed with Claude Code or Codex, follows main (no zip)<br>[Eval results](skills/nutshell/evals/RESULTS.md) |
 
 <p align="center">
   <img src="docs/images/exam-prep/overview.png" alt="Sample pages from exam-prep: pattern cards, Cornell recall notes and layered notes" width="720">
@@ -30,7 +31,7 @@
 
 ### Claude.ai / Claude Desktop
 
-For exam-prep. music-studio needs the GPU in your own computer, so install it with Claude Code below.
+For exam-prep. music-studio needs the GPU in your own computer, and nuts-engineering is a multi-skill suite for coding, so install those with Claude Code or Codex below.
 
 1. Download the skill's zip (named `<skill-name>-<version>.zip`, e.g. `exam-prep-<version>.zip`) from [Releases](https://github.com/PeanutGT/NutsSkills/releases). **Don't unzip it.**
 2. Make sure code execution is on: **Settings → Capabilities → "Code execution and file creation"** (on Team / Enterprise an owner enables it in organization settings).
@@ -45,6 +46,7 @@ For exam-prep. music-studio needs the GPU in your own computer, so install it wi
 /plugin marketplace add PeanutGT/NutsSkills
 /plugin install exam-prep@nutsskills
 /plugin install music-studio@nutsskills   # needs an NVIDIA GPU
+/plugin install nuts-engineering@nutsskills   # engineering workflow suite for coding
 ```
 
 **Turn on auto-update** (recommended): Claude Code does not auto-update marketplaces you add yourself, so the plugin stays at the version you installed. Run `/plugin`, go to Marketplaces, pick `nutsskills` → "Enable auto-update", and Claude Code updates it every time it starts. Or add this to `~/.claude/settings.json`:
@@ -75,6 +77,7 @@ cp -r NutsSkills/skills/exam-prep ~/.claude/skills/          # all projects
 ```bash
 codex plugin marketplace add PeanutGT/NutsSkills
 codex plugin install exam-prep@nutsskills
+codex plugin install nuts-engineering@nutsskills
 ```
 
 Or copy it into a skills folder manually:

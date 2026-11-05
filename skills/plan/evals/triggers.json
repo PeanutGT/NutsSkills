@@ -1,0 +1,12 @@
+{
+  "skill": "plan",
+  "should_trigger": [
+    "Plan the implementation for the approved CSV export spec",
+    "This refactor touches 12 files, how should we approach it?",
+    "Break this feature into tasks"
+  ],
+  "should_not_trigger": [
+    "Change the button color to blue",
+    "What is a vertical slice?"
+  ]
+}

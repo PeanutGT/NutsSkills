@@ -1,0 +1,12 @@
+{
+  "skill": "verify",
+  "should_trigger": [
+    "Ok, is the fix done?",
+    "Mark this task complete and open the PR",
+    "Did all the tests pass?"
+  ],
+  "should_not_trigger": [
+    "What testing framework should we use?",
+    "Brainstorm names for the new service"
+  ]
+}

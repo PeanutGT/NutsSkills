@@ -1,0 +1,12 @@
+{
+  "skill": "spec",
+  "should_trigger": [
+    "Requirements are agreed, write the spec for CSV export",
+    "Turn these notes into acceptance criteria",
+    "Document what the password reset feature must do"
+  ],
+  "should_not_trigger": [
+    "Fix the failing lint check",
+    "What's the difference between a spec and a plan?"
+  ]
+}

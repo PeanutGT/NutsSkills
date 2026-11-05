@@ -1,0 +1,12 @@
+{
+  "skill": "design",
+  "should_trigger": [
+    "Should the billing logic live in the controller or a service?",
+    "Design the API for our new webhooks feature",
+    "This class is impossible to test, how should we restructure it?"
+  ],
+  "should_not_trigger": [
+    "Fix the null check on line 40",
+    "Bump lodash to the latest version"
+  ]
+}

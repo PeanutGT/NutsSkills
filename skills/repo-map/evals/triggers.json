@@ -1,0 +1,12 @@
+{
+  "skill": "repo-map",
+  "should_trigger": [
+    "I just cloned this repo, where is the payment logic?",
+    "Which files call parse_config?",
+    "Give me an overview of how this codebase is organized"
+  ],
+  "should_not_trigger": [
+    "Fix the typo on line 3 of README.md",
+    "What does the word 'idempotent' mean?"
+  ]
+}

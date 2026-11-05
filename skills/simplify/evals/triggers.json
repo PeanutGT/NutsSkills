@@ -1,0 +1,12 @@
+{
+  "skill": "simplify",
+  "should_trigger": [
+    "This function is 300 lines, clean it up",
+    "Refactor the order module, it's a mess",
+    "Feature is done and green, tidy it before the PR"
+  ],
+  "should_not_trigger": [
+    "Add a new discount type",
+    "Why is this test failing?"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "skill": "writing-skills",
+  "should_trigger": [
+    "Create a new skill for database migrations",
+    "My debug skill never triggers, fix it",
+    "Write a SKILL.md for our deploy process"
+  ],
+  "should_not_trigger": [
+    "Use the tdd skill to build this function",
+    "List the skills I have"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "skill": "clarify",
+  "should_trigger": [
+    "I want to build a notification system",
+    "Let's add multi-tenant support",
+    "Make the dashboard better"
+  ],
+  "should_not_trigger": [
+    "Rename variable foo to userCount in utils.py",
+    "Fix the typo in the footer"
+  ]
+}

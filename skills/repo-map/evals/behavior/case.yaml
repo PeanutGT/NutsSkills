@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: repo-map-behavior
+expected_outcome: |
+  The agent builds .nuts/repo-map.md (or uses --find) before reading source files, then opens only the files the map points to, and answers with file:line references.

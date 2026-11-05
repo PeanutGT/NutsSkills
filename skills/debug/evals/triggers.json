@@ -1,0 +1,12 @@
+{
+  "skill": "debug",
+  "should_trigger": [
+    "TypeError: Cannot read properties of undefined (reading 'id') in cart.ts",
+    "This test passes locally but fails in CI",
+    "The API sometimes returns 500 under load"
+  ],
+  "should_not_trigger": [
+    "Add a new field to the user profile form",
+    "Write docs for the auth module"
+  ]
+}

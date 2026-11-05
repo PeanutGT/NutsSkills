@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: simplify-behavior
+expected_outcome: |
+  tests run before and after each step, no behavior change, bug noted separately rather than fixed in the refactor.
