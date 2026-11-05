@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: nutshell-behavior
+expected_outcome: |
+  agent names the skill it is using (clarify or plan) before touching code.

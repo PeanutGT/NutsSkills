@@ -1,0 +1,12 @@
+{
+  "skill": "nutshell",
+  "should_trigger": [
+    "Add a CSV export button to the reports page",
+    "The checkout test started failing after the last merge",
+    "Can you review my PR before I merge?"
+  ],
+  "should_not_trigger": [
+    "What does the word 'idempotent' mean?",
+    "Translate this paragraph to Japanese"
+  ]
+}

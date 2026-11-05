@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: spec-behavior
+expected_outcome: |
+  spec with scope in/out and Given/When/Then criteria, each testable, saved to docs/specs/.

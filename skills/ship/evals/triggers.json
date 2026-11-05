@@ -1,0 +1,12 @@
+{
+  "skill": "ship",
+  "should_trigger": [
+    "Commit these changes",
+    "Open a PR for this branch",
+    "Write a commit message for this diff"
+  ],
+  "should_not_trigger": [
+    "Explain what git rebase does",
+    "Review the PR from my teammate"
+  ]
+}

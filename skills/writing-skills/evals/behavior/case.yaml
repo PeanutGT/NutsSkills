@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: writing-skills-behavior
+expected_outcome: |
+  agent writes frontmatter with a 'Use when' description, an eval file with trigger/no-trigger/behavior cases, and adds it to the router table.

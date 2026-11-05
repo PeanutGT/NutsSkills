@@ -22,6 +22,13 @@
       "source": "./",
       "strict": false,
       "skills": ["./skills/music-studio"]
+    },
+    {
+      "name": "nuts-engineering",
+      "description": "Software-engineering workflow skills for coding agents: a nutshell router plus clarify, spec, plan, TDD, debug, verify, code review, design, simplify, ship, writing-skills, and repo-map (a compact code map that cuts exploration reading 20-30x).",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/nutshell", "./skills/repo-map", "./skills/clarify", "./skills/spec", "./skills/plan", "./skills/tdd", "./skills/debug", "./skills/verify", "./skills/code-review", "./skills/design", "./skills/simplify", "./skills/ship", "./skills/writing-skills"]
     }
   ]
 }

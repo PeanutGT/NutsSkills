@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: clarify-behavior
+expected_outcome: |
+  agent asks one question at a time with a recommended answer, and does not write code until decisions are summarized and approved.

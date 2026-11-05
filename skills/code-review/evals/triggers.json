@@ -1,0 +1,12 @@
+{
+  "skill": "code-review",
+  "should_trigger": [
+    "Review this diff before I merge",
+    "Is this PR safe to ship?",
+    "The reviewer says my query has an N+1 problem, fix it"
+  ],
+  "should_not_trigger": [
+    "Write a new endpoint for orders",
+    "How do I squash commits?"
+  ]
+}
