@@ -1,0 +1,12 @@
+{
+  "skill": "fresh-eyes",
+  "should_trigger": [
+    "The spec is written, get it reviewed before I show it to the team",
+    "We're about to migrate the orders table in production, sanity-check the plan",
+    "Is this retry logic really idempotent? I need to be sure before merging"
+  ],
+  "should_not_trigger": [
+    "Rename this variable to userCount",
+    "What does idempotent mean?"
+  ]
+}

@@ -81,6 +81,16 @@ diff 裡埋了 5 個問題：SQL injection、越權讀取、N+1、分頁 off-by-
 - **debug、verify 在 Opus 上沒有額外效果**，強模型本來就會這樣做；對較弱模型仍有幫助。
 - code-review 的難題對兩個模型都還不夠難。
 
+## 第三輪（2026-11-06）：參考最新的頂尖 skill 改版
+
+### 參考來源（2026-11-06 的 GitHub 數據）
+mattpocock/skills（316k 星，前一天剛更新）、obra/superpowers（313k，v7.0.2）、addyosmani/agent-skills（114k）、google/elephant-goldfish-model（12.7k，9 月新出、持續更新）。四者最近的共同方向是**讓沒有上下文的 reviewer 冷讀**，因此新增 `fresh-eyes`。其餘改動針對第二輪「對 Opus 沒有效果」的 skill：debug 改成以「先做出會變紅的單一指令」為核心、verify 補上需求逐條對照與回歸測試反證、code-review 改成兩軸並要求查證每條發現、tdd 新增 seam 與反模式、clarify 先判斷是否需要提問、spec 與 plan 加上交付前檢查。內容都以自己的話改寫。
+
+### 精簡 eval（只跑 2 次）
+- **觸發：65/70。** 失誤：nutshell 0/3（有具體 skill 時判斷者只挑具體的）、code-review 1 次（「reviewer 說有 N+1，幫我修」被判成 debug）、tdd 1 次（「修分頁 off-by-one」只判 debug，可接受）。已改寫 nutshell 與 code-review 的 description，**改寫後未重跑**。
+- **fresh-eyes 冒煙（Sonnet，有 skill）：通過。** reviewer 只拿到 spec、程式碼與問題，沒有對話脈絡；找出埋好的兩個缺口（HTTP 讀哪個 cart、HTTP 遇到缺 cart 怎麼辦）與另外三個；回饋有分類、spec 有更新、使用者問題一次問完。沒有跑 baseline 對照。
+- 改版後的 debug、verify、code-review 等**沒有重跑行為 eval**（為了節省 token）；第二輪的結論仍以舊版為準。
+
 ## 限制與待辦
 
 - 每組只跑一次（n=1）。

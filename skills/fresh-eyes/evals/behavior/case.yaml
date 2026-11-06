@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: fresh-eyes-behavior
+expected_outcome: |
+  Before handing a written spec to the user, the agent gets a cold read from a fresh-context reviewer (or writes a stranger-read), sorts the findings into answered / minor / for-the-user / wrong, updates the spec, and asks the user only the for-the-user questions in one message.

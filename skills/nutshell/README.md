@@ -13,7 +13,7 @@
 
 ```
 clarify → spec → plan → tdd ⇄ debug → verify → code-review → ship
-            repo-map / design / simplify 任何時候都可用
+     repo-map / design / simplify / fresh-eyes 任何時候都可用
 ```
 
 | Skill | 用途 | 什麼時候觸發 |
@@ -30,6 +30,7 @@ clarify → spec → plan → tdd ⇄ debug → verify → code-review → ship
 | [design](../design/) | deep modules、依賴方向、YAGNI、ADR | 新模組、API、架構選擇 |
 | [simplify](../simplify/) | 不改行為地刪減與重構 | 功能完成後、程式太複雜 |
 | [ship](../ship/) | 分支、commit 訊息、PR、合併前檢查 | commit、開 PR、收尾 |
+| [fresh-eyes](../fresh-eyes/) | 讓沒有上下文的 reviewer 冷讀，回饋分四類處理 | 交付 spec／plan、難以回頭的決策、大型 diff |
 | [writing-skills](../writing-skills/) | 寫新 skill 與 eval 的方法 | 新增或修改 skill |
 
 ## 評測
