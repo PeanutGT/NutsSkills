@@ -66,7 +66,7 @@ python tools/build_zip.py exam-prep    # 打包成 dist/exam-prep-<版本>.zip
 
 **方法一：在網頁上點一下（推薦）**
 
-GitHub repo → **Actions** → 左側 **Release** → 右上 **Run workflow** → 輸入 skill 名稱（預設 `exam-prep`）→ **Run workflow**。版本號會自動讀取 SKILL.md 的 `metadata.version`；該版本已經發布過的話會拒絕執行，提醒你先改版本號。
+GitHub repo → **Actions** → 左側 **Release** → 右上 **Run workflow** → 輸入 skill 或套組名稱（預設 `exam-prep`）→ **Run workflow**。版本號會自動讀取 SKILL.md 的 `metadata.version`；該版本已經發布過的話會拒絕執行，提醒你先改版本號。
 
 **方法二：推送 tag**
 
@@ -76,6 +76,8 @@ git push origin exam-prep-v2.1.0
 ```
 
 Tag 的版本必須和 SKILL.md 的 `metadata.version` 一致，否則發布會失敗。
+
+**套組**（`.claude-plugin/marketplace.json` 裡列出多個 skill 的 plugin，例如 `nuts-engineering`）：先在 `suites/<套組名稱>/CHANGELOG.md` 最上方加上新版本的條目，再用上面任一方法發布，名稱填套組名稱，例如 `git tag nuts-engineering-v1.1.0`。Tag 版本必須和該 CHANGELOG 最新的版本一致。Release 會驗證套組裡的每個 skill，並為每個 skill 各附一個 zip。
 
 ## 授權
 

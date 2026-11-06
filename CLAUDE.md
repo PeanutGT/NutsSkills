@@ -40,4 +40,6 @@ smoke test 需要 Node.js、Chromium（Playwright）、poppler、Noto CJK 字型
 - GitHub → Actions → **Release** → Run workflow → 輸入 skill 名稱
 - 或 `git tag exam-prep-v2.2.0 && git push origin exam-prep-v2.2.0`（tag 版本須與 metadata.version 一致）
 
+套組（marketplace.json 裡列出多個 skill 的 plugin，例如 nuts-engineering）：在 `suites/<名稱>/CHANGELOG.md` 最上方加版本條目，再推 `nuts-engineering-v1.1.0` 這樣的 tag。Release 會驗證套組裡每個 skill，並各附一個 zip。各 skill 自己的 `metadata.version` 與 CHANGELOG 照常維護。
+
 CI：`.github/workflows/validate.yml`（每次 push／PR），`release.yml`（建立 Release 並附 zip）。

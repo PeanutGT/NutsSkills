@@ -1,15 +1,17 @@
 name: Release
 
 # Two ways to release:
-#   1. GitHub → Actions → Release → Run workflow, pick the skill (version is read from its SKILL.md)
-#   2. Push a tag named <skill-name>-v<version>, e.g. exam-prep-v2.0.0
+#   1. GitHub → Actions → Release → Run workflow, pick the skill or suite
+#   2. Push a tag named <name>-v<version>, e.g. exam-prep-v2.0.0 or nuts-engineering-v1.1.0
+# A skill releases its own zip at the metadata.version in its SKILL.md. A suite (a marketplace
+# plugin listing several skills) releases one zip per skill at the version in suites/<name>/CHANGELOG.md.
 on:
   push:
     tags: ["*-v*.*.*"]
   workflow_dispatch:
     inputs:
       skill:
-        description: "Skill folder name under skills/"
+        description: "Skill folder under skills/, or a suite name such as nuts-engineering"
         required: true
         default: exam-prep
 
@@ -29,66 +31,53 @@ jobs:
           node-version: "22"
       - run: pip install pyyaml
 
-      - name: Resolve skill and version
+      - name: Resolve skill or suite and version
         id: tag
         env:
           INPUT_SKILL: ${{ inputs.skill }}
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            SKILL="${INPUT_SKILL}"
+            NAME="${INPUT_SKILL}"
           else
-            SKILL="${GITHUB_REF_NAME%-v*}"
+            NAME="${GITHUB_REF_NAME%-v*}"
           fi
-          test -f "skills/$SKILL/SKILL.md" || { echo "::error::skills/$SKILL/SKILL.md not found"; exit 1; }
-          DECLARED=$(python - "$SKILL" <<'PY'
-          import re, sys, yaml
-          text = open(f"skills/{sys.argv[1]}/SKILL.md", encoding="utf-8").read()
-          fm = yaml.safe_load(re.match(r"^---\n(.*?)\n---\n", text, re.S).group(1))
-          print((fm.get("metadata") or {}).get("version", ""))
-          PY
-          )
+          INFO=$(python tools/release_target.py "$NAME") || { echo "::error::cannot release '$NAME'"; exit 1; }
+          field() { echo "$INFO" | python -c "import json, sys; v = json.load(sys.stdin)['$1']; print(' '.join(v) if isinstance(v, list) else v)"; }
+          DECLARED=$(field version)
+          SOURCE=$(field changelog)
+          if [ "$(field kind)" = "skill" ]; then SOURCE="metadata.version in skills/$NAME/SKILL.md"; fi
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             VERSION="$DECLARED"
-            if git ls-remote --exit-code --tags origin "refs/tags/$SKILL-v$VERSION" >/dev/null; then
-              echo "::error::$SKILL-v$VERSION has already been released. Bump metadata.version in skills/$SKILL/SKILL.md first."
+            if git ls-remote --exit-code --tags origin "refs/tags/$NAME-v$VERSION" >/dev/null; then
+              echo "::error::$NAME-v$VERSION has already been released. Bump the version in $SOURCE first."
               exit 1
             fi
           else
             VERSION="${GITHUB_REF_NAME##*-v}"
           fi
-          echo "skill=$SKILL" >> "$GITHUB_OUTPUT"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "skills=$(field skills)" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=$SKILL-v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$NAME-v$VERSION" >> "$GITHUB_OUTPUT"
           if [ "$DECLARED" != "$VERSION" ]; then
-            echo "::error::Tag version $VERSION does not match metadata.version $DECLARED in skills/$SKILL/SKILL.md"
+            echo "::error::Tag version $VERSION does not match $DECLARED ($SOURCE)"
             exit 1
           fi
 
-      - run: python tools/validate_skills.py "${{ steps.tag.outputs.skill }}"
+      - run: python tools/validate_skills.py ${{ steps.tag.outputs.skills }}
 
-      - name: Build zip
-        run: python tools/build_zip.py "${{ steps.tag.outputs.skill }}"
+      - name: Build zips
+        run: for s in ${{ steps.tag.outputs.skills }}; do python tools/build_zip.py "$s"; done
 
       - name: Release notes from CHANGELOG
         run: |
-          python - "${{ steps.tag.outputs.skill }}" "${{ steps.tag.outputs.version }}" > notes.md <<'PY'
-          import re, sys
-          skill, version = sys.argv[1], sys.argv[2]
-          text = open(f"skills/{skill}/CHANGELOG.md", encoding="utf-8").read()
-          m = re.search(rf"^##\s*\[?{re.escape(version)}\]?.*?\n(.*?)(?=^##\s|\Z)", text, re.S | re.M)
-          body = m.group(1).strip() if m else ""
-          print(body)
-          print()
-          print("---")
-          print(f"**安裝 Install**：下載下方的 `{skill}-{version}.zip`，到 Claude.ai 的 Customize → Skills → ＋ → Upload a skill 上傳（不用解壓縮）。"
-                " Claude Code：`/plugin marketplace add PeanutGT/NutsSkills`。詳見 [README](https://github.com/PeanutGT/NutsSkills#安裝)。")
-          PY
+          python tools/release_target.py "${{ steps.tag.outputs.name }}" --notes "${{ steps.tag.outputs.version }}" > notes.md
           cat notes.md
 
       - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          name: ${{ steps.tag.outputs.skill }} v${{ steps.tag.outputs.version }}
+          name: ${{ steps.tag.outputs.name }} v${{ steps.tag.outputs.version }}
           body_path: notes.md
-          files: dist/${{ steps.tag.outputs.skill }}-${{ steps.tag.outputs.version }}.zip
+          files: dist/*.zip
