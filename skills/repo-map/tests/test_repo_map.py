@@ -63,6 +63,11 @@ class PythonTest(Base):
         """,
         "tests/test_cart.py": """
             import shop.cart
+
+            assert shop.cart.total("x") == 0
+        """,
+        "tests/test_import_only.py": """
+            import shop.cart
         """,
         "broken.py": "def oops(:\n",
     }
@@ -93,7 +98,31 @@ class PythonTest(Base):
         out = repo_map.find(self.root, "total")
         self.assertIn("shop/cart.py:", out)
         self.assertIn("def total", out)
-        self.assertIn("tests/test_cart.py", out)
+        self.assertIn("tests/test_cart.py:3", out)
+
+    def test_find_lists_only_files_that_mention_the_symbol(self):
+        """An importer that never uses the symbol is a false lead, not a reference."""
+        self.assertNotIn("test_import_only", repo_map.find(self.root, "total"))
+
+    def test_find_lists_references_inside_the_defining_file(self):
+        out = repo_map.find(self.root, "Item")
+        self.assertIn("shop/cart.py:1", out)
+
+
+class SiblingImportTest(Base):
+    """Scripts run from their own folder import siblings by bare name: `import common`."""
+    files = {
+        "tool/scripts/common.py": "def load():\n    pass\n",
+        "tool/scripts/cli.py": "import common\nfrom common import load\n",
+        "other/common.py": "def unrelated():\n    pass\n",
+    }
+
+    def test_resolves_bare_imports_to_the_sibling_file(self):
+        self.assertIn("imports: tool/scripts/common.py", self.section("tool/scripts/cli.py"))
+        self.assertIn("used by: tool/scripts/cli.py", self.section("tool/scripts/common.py"))
+
+    def test_does_not_link_a_same_named_file_elsewhere(self):
+        self.assertNotIn("used by", self.section("other/common.py"))
 
 
 class JavaScriptTest(Base):

@@ -19,7 +19,7 @@ clarify → spec → plan → tdd ⇄ debug → verify → code-review → ship
 | Skill | 用途 | 什麼時候觸發 |
 |---|---|---|
 | [nutshell](SKILL.md) | 路由＋四條行為底線 | 任何工程任務開始時 |
-| [repo-map](../repo-map/) | 先產生檔案／符號／依賴地圖再讀檔，省 20–30 倍讀取量 | 陌生或大型 repo、「X 在哪裡」 |
+| [repo-map](../repo-map/) | 檔案／符號／依賴地圖（約原始碼的 1/20–1/30），`--find` 列出使用某函式的行 | 陌生或大型 repo、「誰呼叫了 X」 |
 | [clarify](../clarify/) | 一次問一題，釐清到沒有歧義 | 需求模糊、新功能想法 |
 | [spec](../spec/) | Given/When/Then 驗收條件 | 需求確定後 |
 | [plan](../plan/) | 可獨立驗證的垂直切片 | 多步驟、多檔案的工作 |
