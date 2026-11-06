@@ -1,9 +1,9 @@
 ---
 name: nutshell
-description: "Use at the start of any software engineering task (building, fixing, reviewing, planning, refactoring, shipping) to pick which engineering skill to load before acting."
+description: "Use at the start of every software engineering task (building, fixing, reviewing, planning, refactoring, shipping), together with any more specific skill that applies. Holds the always-on baseline rules and picks which engineering skill to load next."
 license: Apache-2.0
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: PeanutGT
   suite: nuts-engineering
   repository: https://github.com/PeanutGT/NutsSkills
@@ -34,13 +34,14 @@ metadata:
 | New module, API, data model, or architectural choice | `design` |
 | Code works but feels too complex, or after a feature lands | `simplify` |
 | Committing, opening a PR, finishing a branch | `ship` |
+| Spec, plan, or risky decision about to be handed over or committed | `fresh-eyes` |
 | Creating or editing a skill | `writing-skills` |
 
 ## The default flow
 
 ```
 clarify → spec → plan → tdd ⇄ debug → verify → code-review → ship
-                  design / simplify can be called at any point
+       repo-map / design / simplify / fresh-eyes can be called at any point
 ```
 
 Small tasks skip early steps: a one-line fix goes straight to `tdd` → `verify`. A typo needs no skill at all.

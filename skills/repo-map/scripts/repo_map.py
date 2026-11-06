@@ -189,8 +189,13 @@ def resolve_js(rel: str, spec: str, files: dict[str, FileInfo]) -> str | None:
 def link(files: dict[str, FileInfo]) -> None:
     py_index = python_module_index(files)
     for rel, info in files.items():
+        # scripts run from their own folder import siblings by bare name (`import common`)
+        sibling = rel.rsplit("/", 1)[0].replace("/", ".") + "." if "/" in rel else ""
         for imp in info.raw_imports:
-            target = resolve_js(rel, imp, files) if rel.endswith(JS_EXT) else py_index.get(imp)
+            if rel.endswith(JS_EXT):
+                target = resolve_js(rel, imp, files)
+            else:
+                target = py_index.get(imp) or py_index.get(sibling + imp)
             if target and target != rel:
                 info.imports.add(target)
                 files[target].used_by.add(rel)
@@ -228,11 +233,20 @@ def find(root: Path, name: str) -> str:
     hits = [(info, s) for info in files.values() for s in info.symbols if s.name == name]
     if not hits:
         return f"'{name}' is not a public symbol in this repo (try grep for private or dynamic names)."
+    word = re.compile(rf"\b{re.escape(name)}\b")
     out = []
     for info, s in hits:
         out.append(f"{info.rel}:{s.line}  {s.text.strip()}")
-        if info.used_by:
-            out.append("  used by: " + ", ".join(sorted(info.used_by)))
+        # only importers that actually mention the name; an import alone is a false lead
+        refs = []
+        for rel in [info.rel, *sorted(info.used_by)]:
+            text = (Path(root) / rel).read_text(encoding="utf-8", errors="replace")
+            refs += [f"{rel}:{i}" for i, line in enumerate(text.splitlines(), 1)
+                     if word.search(line) and not (rel == info.rel and i == s.line)]
+        if refs:
+            shown = refs[:MAX_SYMBOLS]
+            more = f" … {len(refs) - len(shown)} more" if len(refs) > len(shown) else ""
+            out.append("  referenced at: " + ", ".join(shown) + more)
     return "\n".join(out)
 
 

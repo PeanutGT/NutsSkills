@@ -3,7 +3,7 @@ name: ship
 description: "Use when committing changes, writing a commit message, opening a pull request, or finishing a development branch. Covers branch naming, commit hygiene, PR descriptions, and the pre-merge checklist."
 license: Apache-2.0
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: PeanutGT
   suite: nuts-engineering
   repository: https://github.com/PeanutGT/NutsSkills
@@ -28,6 +28,7 @@ metadata:
   ```
   Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`.
 - The subject says *what*; the body says *why*. The diff already shows *how*.
+- For a bug fix, the body names the root cause found with `debug`, so the next person learns from it.
 
 ## Pull requests
 Template:

@@ -3,7 +3,7 @@ name: writing-skills
 description: "Use when creating a new skill, editing an existing skill, or when a skill fails to trigger or is not followed. Covers the SKILL.md template, writing descriptions that trigger, and testing skills with evals."
 license: Apache-2.0
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: PeanutGT
   suite: nuts-engineering
   repository: https://github.com/PeanutGT/NutsSkills
@@ -60,6 +60,7 @@ Related: `other-skill`
 - Fill the rationalizations table from real failures you observed in evals, not imagined ones.
 - Link to related skills by name; do not duplicate their content.
 - Move anything long or rarely needed into `references/`.
+- **Survive context compaction:** put the iron law and the checklist near the top, keep SKILL.md short, and restate the one rule that matters at the point where it applies instead of relying on something said earlier.
 
 ## Testing with evals
 Each skill's `evals/` contains:
@@ -72,6 +73,8 @@ Process:
 2. Add the skill. Run again. The failure should be gone.
 3. Run trigger prompts; fix the description until triggering is right.
 4. When the agent finds a new excuse, add it to the rationalizations table and re-run.
+
+**Keep eval cost low.** One trigger run covering all skills at once; behavior cases only for behavior the model does not already show by default; one run per case first, and more only when a result surprises you. A skill that changes nothing on a strong model is worth knowing about, not hiding.
 
 ## Done when
 - [ ] Frontmatter valid; `name` matches folder; CHANGELOG has the version
