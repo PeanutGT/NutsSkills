@@ -98,7 +98,7 @@ No special command is needed — just describe what you want, e.g.
 
 > Make a 60-second, seamlessly looping pixel-art game BGM.
 
-exam-prep reads the materials first (for a whole textbook, its table of contents, then asks which chapters), asks about scope, organization style and theme, then produces the PDFs. See each skill's README for details and requirements.
+exam-prep reads the materials first (for a whole textbook, its table of contents, then asks which chapters), asks about scope, organization style and theme, then produces the PDFs. For details and requirements, see the README in the exam-prep and music-studio folders; for nuts-engineering, see [skills/nutshell/README.md](skills/nutshell/README.md).
 
 ## FAQ
 

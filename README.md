@@ -100,7 +100,7 @@ Codex 預設的沙箱不能連網，也不能寫入專案資料夾以外的地�
 
 > 這個測試在 CI 上會隨機失敗，幫我查原因
 
-exam-prep 會先讀完資料（整本課本則先讀目錄、問你要哪幾章），再詢問範圍、整理方式、主題等細節，然後產出 PDF。各 skill 的用法與需求見各自資料夾內的 README。
+exam-prep 會先讀完資料（整本課本則先讀目錄、問你要哪幾章），再詢問範圍、整理方式、主題等細節，然後產出 PDF。exam-prep、music-studio 的用法與需求見各自資料夾的 README，nuts-engineering 見 [skills/nutshell/README.md](skills/nutshell/README.md)。
 
 ## 常見問題
 
