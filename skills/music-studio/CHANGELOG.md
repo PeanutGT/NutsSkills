@@ -2,6 +2,11 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [3.4.2] - 2026-11-07
+
+### 修正
+- `msclient.py generate` 在曲名是中文（或其他非 ASCII 字元）時，音樂已生成卻在最後一步當掉（`UnicodeEncodeError`）：送出請求前會先把網址路徑做百分比編碼；測試改用中文曲名
+
 ## [3.4.1] - 2026-11-01
 
 ### 變更
