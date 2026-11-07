@@ -95,4 +95,5 @@ mattpocock/skills（316k 星，前一天剛更新）、obra/superpowers（313k�
 
 - 每組只跑一次（n=1）。
 - 觸發測試是模擬判斷，不是真實 Claude Code 的 skill 載入流程。
-- 需要更難的 code-review 案例（例如跨檔案的競態條件或語意錯誤），以及沒有明顯關鍵字的 repo-map 結構題。
+- 更難的 code-review 案例已加入（2026-11-07）：`skills/code-review/evals/review-cross-file/`，4 個錯誤都要讀 diff 沒改到的檔案才看得到（金額單位不一致、巢狀 transaction、回傳值語意改變而呼叫端沒改、繞過價格快取），另有 1 個看起來像 SQL injection 但其實安全的誘答。每個錯誤都已實際重現，**有／無 skill 對照還沒跑**。
+- 還需要沒有明顯關鍵字的 repo-map 結構題。

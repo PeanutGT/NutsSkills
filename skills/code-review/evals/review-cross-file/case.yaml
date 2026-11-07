@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: review-cross-file
+expected_outcome: |
+  The review finds the four planted defects on feat/coupons, each of which only shows up when the diff is read
+  together with code it did not change, gives a verified failing scenario for each, and does not report the decoy.
+context:
+  scaffold_script: place-files.sh

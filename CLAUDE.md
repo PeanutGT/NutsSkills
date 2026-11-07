@@ -8,6 +8,7 @@ PeanutGT（曹萬生）的 Claude Skills 合集，公開於 https://github.com/P
 |---|---|
 | 任何 exam-prep 的工作 | `skills/exam-prep/progress.md`（現況、決策、待辦） |
 | 任何 music-studio 的工作 | `skills/music-studio/progress.md` |
+| 任何 nuts-engineering 的工作 | `suites/nuts-engineering/progress.md`，評測結果見 `skills/nutshell/evals/RESULTS.md` |
 | 新增 skill、發版流程 | `CONTRIBUTING.md` |
 
 ## 規則（使用者明確要求）
