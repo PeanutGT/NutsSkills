@@ -86,7 +86,7 @@ A workflow is the ordered list of stages a track goes through, which of them pau
 
 ## Built-in workflows
 
-`quick` (everyday), `sketch` (3 fast drafts, no mastering), `game-bgm` (seamless loop, ogg+wav), `video-score` (exact length, fade, -18 LUFS, wav24+mp3), `focus-session` (5 min, quiet -20 LUFS, mp3).
+`quick` (everyday; loopable styles get a seamless loop instead of a fade-out), `sketch` (3 fast drafts, no mastering), `game-bgm` (seamless loop, ogg+wav), `video-score` (exact length, fade, -18 LUFS, wav24+mp3), `focus-session` (5 min, quiet -20 LUFS, mp3).
 
 
 ## Lexicon (your words -> English tags)
