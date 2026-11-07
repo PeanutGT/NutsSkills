@@ -2,7 +2,7 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
-## [3.4.2] - 2026-11-07
+## [3.4.3] - 2026-11-07
 
 ### 修正
 - 預設工作流程 `quick` 匯出可循環風格（`loopable: true`，例如 war-requiem、rpg-battle、lofi）時沒有做循環處理，只有修剪靜音＋調響度，接回開頭會跳一下。現在會先做無縫循環（2 秒交叉淡化、對齊小節），並附 2 倍長的循環試聽檔；不可循環的風格照舊淡出
