@@ -6,7 +6,25 @@ Generate instrumental music and BGM with [ACE-Step 1.5](https://github.com/ace-s
 
 ## Listen
 
-Audio samples are coming. Below is the local dashboard (captured with the test engine, so the waveforms are not real music):
+All generated with ACE-Step 1.5 on an RTX 3050 Laptop 4 GB, with no manual editing beyond cutting the excerpt and normalising to the −14 LUFS video preset.
+
+**Pixel-style town, seamless loop**: `rpg-town`, 99 BPM, D major, 24 s, **loop version**: the loop seam is at 12 s. Caption: `fantasy rpg town theme, acoustic guitar, flute, light hand percussion, warm, cheerful, medieval folk, loopable`
+
+VIDEO_URL_RPG_TOWN
+
+**War requiem**: `war-requiem`, 64 BPM, D minor, 25 s cut from a 60 s track, not a loop. Caption: `epic sad orchestral, full string orchestra, solo cello lament, brass choir, deep timpani, slow military snare, adagio, tragic, film score`
+
+VIDEO_URL_WAR_REQUIEM
+
+**RPG battle with erhu and guzheng**: `rpg-battle`, 155 BPM, A minor, 25 s cut from a 50 s track, not a loop. Caption: `orchestral battle music, harmonic minor, i-bVI-bVII, syncopated accents, fast, ff, erhu, guzheng`
+
+VIDEO_URL_RPG_BATTLE
+
+**Study background piano**: `nature-piano`, 72 BPM, C major, 30 s cut from a 2-minute loop (no seam in this excerpt). Caption: `ambient solo soft felt piano, sparse gentle melody, simple repeating motif, warm nostalgic, peaceful, lots of space`
+
+VIDEO_URL_NATURE_PIANO
+
+The local dashboard (captured with the test engine, so the waveforms are not real music):
 
 ![Music Studio dashboard: description, style and moods on the left; two variants compared side by side with the automatic check result on the right](../../docs/images/music-studio/dashboard.png)
 

@@ -27,6 +27,18 @@
   <sub>exam-prep 的產出：題型解題卡、Cornell 回憶筆記、分層講義（同一份機統筆記照片產出）</sub>
 </p>
 
+### music-studio 試聽
+
+全部由 ACE-Step 1.5 在 RTX 3050 Laptop 4 GB 上生成，沒有人工修音，只剪片段並把響度調到影片用的 −14 LUFS。更多試聽見 [music-studio 的 README](skills/music-studio/README.md#試聽)。
+
+**像素風小鎮・無縫循環**：`rpg-town`，99 BPM D 大調，24 秒，**循環版**：第 12 秒就是循環接縫。caption：`fantasy rpg town theme, acoustic guitar, flute, light hand percussion, warm, cheerful, medieval folk, loopable`
+
+VIDEO_URL_RPG_TOWN
+
+**戰爭安魂曲**：`war-requiem`，64 BPM D 小調，從 60 秒的曲子剪 25 秒，非循環版。caption：`epic sad orchestral, full string orchestra, solo cello lament, brass choir, deep timpani, slow military snare, adagio, tragic, film score`
+
+VIDEO_URL_WAR_REQUIEM
+
 ## 安裝
 
 ### Claude.ai／Claude 桌面版
