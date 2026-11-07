@@ -483,7 +483,9 @@ class TestClient(Base):
     def test_msclient_starts_server_and_generates(self):
         import signal
         try:
-            r = self.sh("msclient.py", "generate", "--spec", "-", "--engine", "mock", stdin=self.spec(variants=1))
+            # a Chinese title ends up in the take id, which goes into the request URL
+            r = self.sh("msclient.py", "generate", "--spec", "-", "--engine", "mock",
+                        stdin=self.spec(variants=1, title="戰敗的黃昏"))
             ev = events(r)
             self.assertEqual(ev[-1]["event"], "result", r.stdout[-800:] + r.stderr[-800:])
             self.assertTrue(Path(ev[-1]["dir"]).is_dir())

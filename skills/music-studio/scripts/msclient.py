@@ -21,6 +21,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -66,7 +67,8 @@ def ensure_server(start: bool = True) -> dict:
 
 
 def call(info: dict, path: str, method: str = "GET", body=None, timeout: float = 30):
-    req = urllib.request.Request(info["url"] + "api/" + path, method=method,
+    # ids can hold the track title (e.g. Chinese), and http.client only sends ASCII; the server unquotes
+    req = urllib.request.Request(info["url"] + "api/" + urllib.parse.quote(path, safe="/"), method=method,
                                  data=json.dumps(body).encode("utf-8") if body is not None else None,
                                  headers={"Content-Type": "application/json", "X-Token": info["token"]})
     try:
