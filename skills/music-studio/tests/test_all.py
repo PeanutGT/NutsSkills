@@ -181,6 +181,21 @@ class TestMockPipeline(Base):
         self.assertLessEqual(out["report"]["true_peak_db"], -1.0)
         self.assertTrue(any(f.endswith(".ogg") for f in out["files"]))
 
+    def test_default_workflow_loops_loopable_styles(self):
+        res = self.generate(variants=1)  # lofi is loopable; no workflow given -> quick
+        out = json.loads(self.sh("postprocess.py", "run", "--take", res["id"]).stdout)
+        self.assertIn("loop", out["applied"])
+        self.assertNotIn("fade", out["applied"])
+
+    def test_default_workflow_fades_non_loopable_styles(self):
+        r = self.sh("msconfig.py", "plan", "--style", "cinematic-emotional", "--duration", "12",
+                    "--quality", "draft", "--bpm", "90", "--variants", "1")
+        g = self.sh("engine.py", "generate", "--spec", "-", "--engine", "mock", stdin=r.stdout)
+        res = [e for e in events(g) if e["event"] == "result"][0]
+        out = json.loads(self.sh("postprocess.py", "run", "--take", res["id"]).stdout)
+        self.assertIn("fade", out["applied"])
+        self.assertNotIn("loop", out["applied"])
+
     def test_every_variant_gets_an_automatic_check(self):
         res = self.generate(variants=2)
         take = json.loads(self.sh("library.py", "show", res["id"]).stdout)

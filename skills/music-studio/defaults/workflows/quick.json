@@ -1,7 +1,7 @@
 {
   "id": "quick",
   "name": "Quick track",
-  "description": "Plan, generate variants, pick one, normalise, export. The everyday default.",
+  "description": "Plan, generate variants, pick one, make loopable styles loop seamlessly, normalise, export. The everyday default.",
   "stages": [
     {
       "id": "plan",
@@ -20,6 +20,12 @@
       "steps": [
         {
           "op": "trim_silence"
+        },
+        {
+          "op": "loop",
+          "crossfade": 2.0,
+          "snap_bars": true,
+          "when": "loopable"
         },
         {
           "op": "fade",
@@ -42,5 +48,5 @@
     }
   ],
   "name_zh": "一般",
-  "description_zh": "生成幾個版本，挑一個，調響度後匯出。"
+  "description_zh": "生成幾個版本，挑一個，可循環的風格自動做無縫循環，調響度後匯出。"
 }

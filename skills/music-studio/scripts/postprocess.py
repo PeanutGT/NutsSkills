@@ -465,7 +465,7 @@ def workflow_steps(workflow: dict | None, cfg: dict) -> list[dict]:
         for st in workflow.get("stages", []):
             if st.get("id") == "postprocess" and st.get("steps"):
                 return st["steps"]
-    return [{"op": "loudnorm"}, {"op": "export"}]
+    return [{"op": "loop", "snap_bars": True, "when": "loopable"}, {"op": "loudnorm"}, {"op": "export"}]
 
 
 def run_for_take(take_id: str, variant: int | None, workflow_id: str | None, steps: list[dict] | None,
