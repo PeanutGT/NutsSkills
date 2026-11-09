@@ -73,7 +73,7 @@ Peanut 決定先把 Music Studio 做成獨立 app，**M2–M5 暫停**，等 app
 | 項目 | 決定 |
 |---|---|
 | 形態 | 像 yovoice 一樣重寫：Tauri 2（Rust）+ React 桌面 app |
-| 程式碼位置 | 新 repo（暫名 `PeanutGT/MusicStudio`），本 repo 的 skill 保留 |
+| 程式碼位置 | 新 repo [`PeanutGT/Nusic-Studio`](https://github.com/PeanutGT/Nusic-Studio)，本 repo 的 skill 保留 |
 | 生成引擎 | 保留 Python ACE-Step（`ace_worker.py`）當子行程；引擎接口留給之後的 audio.cpp |
 | Rust 範圍 | 所有非 GPU 邏輯：設定與參數目錄、風格／情緒／詞庫／規劃／caption、佇列、作品庫、響度後製、品檢、匯出。Python 只跑 ACE-Step |
 | 安裝 | 安裝檔只有數十 MB；首次啟動精靈用 uv 建環境、下載 PyTorch／ACE-Step／模型（進度條、可續傳、檢查顯卡），也可指定已裝好的 ACE-Step |
@@ -98,7 +98,7 @@ App v1 = A0–A5 全部 ✅。之後：skill 改成 app 客戶端（v4），再�
 
 ### 進度
 
-- ⬜ A0 骨架（需要 Peanut 先建立新 repo 並加進專案）
+- ⬜ A0 骨架
 - ⬜ A1 引擎橋接
 - ⬜ A2 核心搬家
 - ⬜ A3 後製與品檢
