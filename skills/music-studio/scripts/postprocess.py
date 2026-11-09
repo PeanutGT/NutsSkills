@@ -7,8 +7,9 @@
 
 Design: audio is decoded once with ffmpeg into float32 numpy, processed in
 memory, and only encoded at the `export` step, so chained steps never
-accumulate lossy-codec damage. Loudness uses ffmpeg's two-pass `loudnorm`
-(EBU R128 / ITU BS.1770), which is the standard, well-tested implementation.
+accumulate lossy-codec damage. Loudness is measured with ffmpeg's `loudnorm`
+(EBU R128 / ITU BS.1770) and applied as one plain gain, capped so the true
+peak stays under the ceiling: no compression, the dynamics stay intact.
 
 Step vocabulary (what a workflow's postprocess.steps may contain):
     {"op":"trim_silence", "threshold_db":-50, "keep_tail":0.05}
@@ -192,8 +193,8 @@ def qc(report: dict, cfg: dict, expected_duration: float | None = None, looped: 
 def inspect_audio(x: np.ndarray, sr: int, loopable: bool = False) -> list[dict]:
     """Automatic check of a freshly generated variant. Returns issues with a time in seconds:
     clipping, clicks, silence (an interior gap >= 2 s), cut_off (still at full level in the last
-    0.1 s), near_silent, low_volume. Heuristics tuned to flag what a listener would notice; the
-    ear decides. Loopable takes skip cut_off: they are meant to keep going."""
+    0.1 s), near_silent, low_volume, dull (almost no energy above 4 kHz: sounds muffled).
+    Heuristics tuned to flag what a listener would notice; the ear decides. Loopable takes skip cut_off: they are meant to keep going."""
     issues: list[dict] = []
     if not len(x):
         return [{"code": "near_silent", "at": 0.0}]
@@ -256,7 +257,32 @@ def inspect_audio(x: np.ndarray, sr: int, loopable: bool = False) -> list[dict]:
             issues.append({"code": "cut_off", "at": round(len(mono) / sr - 0.1, 2)})
         if ref < -32:
             issues.append({"code": "low_volume", "at": 0.0, "rms_db": round(ref, 1)})
+    tone = brightness(mono, sr)
+    if tone and tone["hf_pct"] < DULL_HF_PCT and tone["rolloff95_hz"] < DULL_ROLLOFF_HZ:
+        issues.append({"code": "dull", "at": 0.0, **tone})
     return issues
+
+
+DULL_HF_PCT, DULL_ROLLOFF_HZ = 1.0, 3000.0  # healthy mixes sit around 5-20 % / 5-12 kHz
+
+
+def brightness(mono: np.ndarray, sr: int, n: int = 4096) -> dict | None:
+    """Average spectrum of the audible frames: % of energy above 4 kHz and the 95 % rolloff."""
+    hop = max(n, sr // 2)
+    starts = range(0, len(mono) - n, hop)
+    if not len(starts):
+        return None
+    frames = np.stack([mono[s:s + n] for s in starts]) * np.hanning(n)
+    loud = np.sqrt(np.mean(frames ** 2, axis=1))
+    frames = frames[loud > 10 ** (-50 / 20)]
+    if not len(frames):
+        return None
+    power = np.mean(np.abs(np.fft.rfft(frames, axis=1)) ** 2, axis=0)
+    freqs = np.fft.rfftfreq(n, 1 / sr)
+    total = float(power.sum()) or 1e-12
+    cum = np.cumsum(power) / total
+    return {"hf_pct": round(100 * float(power[freqs >= 4000].sum()) / total, 2),
+            "rolloff95_hz": round(float(freqs[min(np.searchsorted(cum, 0.95), len(freqs) - 1)]))}
 
 
 def inspect_file(path: Path, cfg: dict, loopable: bool = False) -> list[dict]:
@@ -353,29 +379,34 @@ def op_loop(x, sr, p, ctx):
     return body
 
 
+TP_MARGIN_DB = 0.5  # lossy export (mp3/ogg) overshoots the measured true peak by a few tenths of a dB
+
+
 def op_loudnorm(x, sr, p, ctx):
     cfg = ctx["cfg"]
     target = float(p.get("target_lufs", cfg["postprocess"]["loudness_lufs"]))
     tp = float(p.get("true_peak_db", cfg["postprocess"]["true_peak_db"]))
     ctx["lufs_target"], ctx["tp_target"] = target, tp  # the QC report checks against what was asked for
     with tempfile.TemporaryDirectory(prefix="msnorm_") as tmp:
-        src, dst = Path(tmp) / "in.wav", Path(tmp) / "out.wav"
+        src = Path(tmp) / "in.wav"
         encode(x, sr, src, cfg, ["-c:a", "pcm_f32le"])
         m = _loudnorm_json(src, cfg, target, tp)
         measured = _num(m.get("input_i"))
         if measured is None or measured < -69:
             ctx["warnings"].append("loudnorm: audio is (almost) silent, skipped")
             return x
-        flt = (f"loudnorm=I={target}:TP={tp}:LRA=11:measured_I={m['input_i']}:measured_LRA={m['input_lra']}"
-               f":measured_TP={m['input_tp']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}"
-               f":linear=true")
-        proc = subprocess.run([_bin(cfg, "ffmpeg"), "-y", "-v", "error", "-i", str(src), "-af", flt,
-                               "-ar", str(sr), "-c:a", "pcm_f32le", str(dst)], capture_output=True)
-        if proc.returncode != 0:
-            raise PostError("loudnorm failed: " + proc.stderr.decode(errors="replace")[:300])
-        y = decode(dst, cfg, sr)
-    ctx["notes"].append(f"loudness {measured:.1f} -> {target} LUFS")
-    return y
+        peak = _num(m.get("input_tp"))
+    # Plain gain, never ffmpeg's second loudnorm pass: that pass silently switches from linear to
+    # dynamic mode (a compressor riding the gain, audible as ducked accents and "blocked" high
+    # notes) whenever the target gain would push the true peak over the ceiling or the input's
+    # loudness range is wide. If the peak caps the gain we stay quieter than asked and say so.
+    gain = target - measured
+    if peak is not None and peak + gain > tp - TP_MARGIN_DB:
+        gain = tp - TP_MARGIN_DB - peak
+        ctx["warnings"].append(f"loudnorm: peaks allow only {measured + gain:.1f} LUFS (target {target}); "
+                               "kept the dynamics instead of compressing")
+    ctx["notes"].append(f"loudness {measured:.1f} -> {measured + gain:.1f} LUFS (linear gain {gain:+.1f} dB)")
+    return (x * 10 ** (gain / 20)).astype(x.dtype, copy=False)
 
 
 def op_export(x, sr, p, ctx):  # handled by run_steps (needs file naming); kept for the vocabulary

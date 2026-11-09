@@ -35,7 +35,8 @@ Use the direct path only when the server will not start, or to tell a server pro
 | Dashboard port busy | The server takes a free port automatically and prints the URL (also in `<workspace>\server.json`). To pin one: `dashboard.port`. |
 | Audio will not play in the dashboard | Browsers play flac, wav, mp3 and ogg. If a codec fails, set `generation.audio_format` to `wav` or `mp3`. |
 | Loop clicks or "jumps" | See the loop section in `use-cases.md`; usually the tempo drifted or the track has an intro/outro. Regenerate with "steady, repetitive" and no build, or set `crossfade` longer (4 s). |
-| Mastered file sounds quiet | That is the target (-16 LUFS is typical streaming/game level; -20 for background). Change `postprocess.loudness_lufs` or the workflow's `loudnorm` step. |
+| Sounds muffled, `qc` has `dull` | Almost nothing above 4 kHz in the raw take. Add bright words to the caption (crisp, bright, airy, clear high end), drop dark ones (warm, soft, felt, muffled), or try `quality high` (sft; on 4 GB keep it at 60 s or less). |
+| Mastered file sounds quiet | `warnings` says "peaks allow only X LUFS": the track's peaks capped the gain, and the dynamics were kept instead of compressing. Otherwise that is the target (-16 LUFS is typical streaming/game level; -20 for background). Change `postprocess.loudness_lufs` or the workflow's `loudnorm` step. |
 
 ## Testing without a GPU
 

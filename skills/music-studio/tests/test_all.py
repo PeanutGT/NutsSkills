@@ -216,7 +216,9 @@ class TestMockPipeline(Base):
         self.assertEqual(p.returncode, 0, p.stderr)
         out = json.loads(p.stdout)
         self.assertIn("loop", out["applied"])
-        self.assertAlmostEqual(out["report"]["lufs"], -16.0, delta=0.6)
+        # plain gain: at most the target, less only when the peaks cap it (the mock is peaky)
+        self.assertLessEqual(out["report"]["lufs"], -16.0 + 0.6)
+        self.assertGreater(out["report"]["lufs"], -17.5)
         self.assertLessEqual(out["report"]["true_peak_db"], -1.0)
         self.assertTrue(any(f.endswith(".ogg") for f in out["files"]))
 
@@ -245,8 +247,10 @@ class TestMockPipeline(Base):
         p = self.sh("postprocess.py", "run", "--take", res["id"], "--workflow", "game-bgm", "--loudness", "video")
         self.assertEqual(p.returncode, 0, p.stderr)
         rep = json.loads(p.stdout)["report"]
-        self.assertAlmostEqual(rep["lufs"], -14.0, delta=0.6)
-        self.assertFalse(any("off target" in q for q in rep["qc"]), rep["qc"])
+        # -14 LUFS needs more gain than the peaks allow: plain gain up to the ceiling, no compression
+        self.assertGreater(rep["lufs"], -16.0)
+        self.assertLessEqual(rep["lufs"], -14.0 + 0.6)
+        self.assertLessEqual(rep["true_peak_db"], -1.0 + 0.2)
         bad = self.sh("postprocess.py", "run", "--take", res["id"], "--loudness", "loud")
         self.assertNotEqual(bad.returncode, 0)
 
@@ -324,6 +328,8 @@ class TestInspect(unittest.TestCase):
         self.np, self.sr = np, 48000
         t = np.arange(self.sr * 20) / self.sr
         tone = 0.3 * np.sin(2 * np.pi * 220 * t) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.5 * t))
+        self.lows = np.stack([tone, tone], 1)
+        tone = tone + 0.06 * np.sin(2 * np.pi * 6000 * t)  # some high end, as a real mix has
         x = np.stack([tone, tone], 1)
         x[-self.sr * 2:] *= np.linspace(1, 0, self.sr * 2)[:, None]  # a proper fade-out
         self.x = x
@@ -355,6 +361,14 @@ class TestInspect(unittest.TestCase):
         self.assertEqual(self.codes(self.x * 1e-4), ["near_silent"])
         self.assertEqual(self.codes(self.x * 0.1), ["low_volume"])
 
+    def test_flags_muffled_take(self):
+        import postprocess
+        dull = self.lows.copy(); dull[-self.sr * 2:] *= self.np.linspace(1, 0, self.sr * 2)[:, None]
+        issues = postprocess.inspect_audio(dull, self.sr)
+        self.assertEqual([i["code"] for i in issues], ["dull"])
+        self.assertLess(issues[0]["rolloff95_hz"], 1000)
+        self.assertLess(issues[0]["hf_pct"], 1)
+
     def test_tail_silence_with_faint_noise_is_not_mid_silence(self):
         np = self.np
         rng = np.random.default_rng(1)
@@ -373,6 +387,20 @@ class TestPostprocessOps(unittest.TestCase):
         x = (0.3 * np.sin(2 * np.pi * 220 * t)).astype(np.float32)
         m = postprocess.seam_metrics(np.stack([x, x], 1), sr)
         self.assertLess(m["click_ratio"], 4)
+
+
+class TestLoudnorm(unittest.TestCase):
+    def test_wide_dynamics_get_plain_gain_not_compression(self):
+        import numpy as np, postprocess
+        cfg = json.loads((ROOT / "defaults" / "config.json").read_text(encoding="utf-8"))
+        sr = 48000; t = np.arange(sr * 30) / sr
+        env = np.select([t < 10, t < 20], [0.06, 0.18], 0.5)  # wide range: ffmpeg's pass 2 went dynamic here
+        x = np.stack([env * np.sin(2 * np.pi * 440 * t)] * 2, 1).astype(np.float32)
+        ctx = {"cfg": cfg, "warnings": [], "notes": []}
+        y = postprocess.op_loudnorm(x, sr, {"target_lufs": -16, "true_peak_db": -1.5}, ctx)
+        ratio = y[:, 0] / np.where(np.abs(x[:, 0]) > 1e-4, x[:, 0], np.nan)
+        self.assertLess(np.nanmax(ratio) - np.nanmin(ratio), 1e-3)  # one gain for the whole track
+        self.assertLessEqual(np.max(np.abs(y)), 10 ** (-1.5 / 20) + 1e-3)
 
 
 class TestServer(Base):
