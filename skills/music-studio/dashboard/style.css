@@ -218,3 +218,13 @@ code { font-family: Consolas, ui-monospace, monospace; background: var(--well); 
 .ichip.use { color: inherit; border-color: var(--green); }
 .ichip.avoid { color: var(--ink-dim); border-style: dashed; text-decoration: line-through; }
 .ichip:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+/* settings: tunable parameter table */
+table.knobs td { vertical-align: top; padding-top: 10px; padding-bottom: 10px; }
+table.knobs td:first-child { max-width: 360px; }
+table.knobs td:last-child { min-width: 180px; }
+table.knobs select, table.knobs input { margin-top: 0; margin-bottom: 4px; }
+#knobs { overflow-x: auto; }
+#knob-fields h3 { margin: 12px 0 4px; }
+#knobs th { width: auto; white-space: nowrap; }
+#knob-fields .row { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }

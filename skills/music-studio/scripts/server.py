@@ -100,8 +100,12 @@ def _spec_from_body(body: dict) -> dict:
     def num(key, cast):
         v = body.get(key)
         return cast(v) if v not in (None, "") else None
+    engine_params, errors = msconfig.check_engine_params(body.get("engine_params") or {}, per_request_only=True) \
+        if isinstance(body.get("engine_params") or {}, dict) else ({}, ["engine_params must be an object"])
+    if errors:
+        raise ApiError(400, "; ".join(errors))
     try:
-        return msconfig.build_spec(
+        spec = msconfig.build_spec(
             cfg, msconfig.load_styles(ws), msconfig.load_moods(ws), style_id=body["style"],
             description=str(body.get("description") or "")[:2000],
             mood_ids=[str(m) for m in body.get("moods", [])], title=(body.get("title") or None),
@@ -115,6 +119,9 @@ def _spec_from_body(body: dict) -> dict:
         raise ApiError(400, str(exc.args[0]))
     except (TypeError, ValueError) as exc:
         raise ApiError(400, f"bad number: {exc}")
+    if engine_params:
+        spec["engine_params"] = engine_params
+    return spec
 
 
 def api_plan(body: dict) -> dict:
@@ -122,8 +129,10 @@ def api_plan(body: dict) -> dict:
     spec = _spec_from_body(body)
     ws = workspace_dir()
     cfg, _ = msconfig.load_config(ws)
-    r = msconfig.resolve_params(cfg, spec.get("quality"), {"duration": spec.get("duration"), "batch_size": spec.get("variants")})
-    return {"spec": spec, "params": r["params"], "tier": r["tier"], "quality": r["quality"], "warnings": r["warnings"]}
+    r = msconfig.resolve_params(cfg, spec.get("quality"), {"duration": spec.get("duration"), "batch_size": spec.get("variants"),
+                                                           **(spec.get("engine_params") or {})})
+    return {"spec": spec, "params": r["params"], "sources": r["sources"], "tier": r["tier"], "quality": r["quality"],
+            "warnings": r["warnings"]}
 
 
 def api_submit(body: dict) -> dict:
@@ -131,6 +140,11 @@ def api_submit(body: dict) -> dict:
     spec = body.get("spec") if isinstance(body.get("spec"), dict) else _spec_from_body(body)
     if not spec.get("caption"):
         raise ApiError(400, "spec has no caption")
+    if spec.get("engine_params") is not None:
+        ep = spec["engine_params"] if isinstance(spec["engine_params"], dict) else {"engine_params": spec["engine_params"]}
+        spec["engine_params"], errors = msconfig.check_engine_params(ep)
+        if errors:
+            raise ApiError(400, "; ".join(errors))
     engine = body.get("engine")
     if engine not in (None, "", "ace", "mock"):
         raise ApiError(400, "engine must be ace or mock")
@@ -186,6 +200,15 @@ def api_config_get() -> dict:
     ws = ensure_workspace()
     cfg, prov = msconfig.load_config(ws)
     return {"config": cfg, "sources": prov, "user": read_json(ws / "config.json", {}) or {}}
+
+
+def api_knobs(url) -> dict:
+    """Every tunable generation setting: effective value, source layer, range, effect (defaults/knobs.json)."""
+    q = parse_qs(url.query)
+    cfg, prov = msconfig.load_config(ensure_workspace())
+    tier = (q.get("tier") or [None])[0]
+    return msconfig.knob_table(cfg, prov, (q.get("quality") or [None])[0] or None,
+                               tier if tier in cfg["hardware"]["tiers"] else None)
 
 
 def api_config_set(body: dict) -> dict:
@@ -321,6 +344,8 @@ class Handler(BaseHTTPRequestHandler):
                 return {"ok": library.trash_take(p[1])}
         if n == 3 and p[0] == "tracks" and p[2] == "finalize" and method == "POST":
             return api_finalize(p[1], self._body())
+        if p == ["knobs"] and method == "GET":
+            return api_knobs(url)
         if p == ["config"]:
             if method == "GET":
                 return api_config_get()
