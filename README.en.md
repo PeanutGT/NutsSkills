@@ -29,7 +29,7 @@
 
 ### music-studio samples
 
-All generated with ACE-Step 1.5 on an RTX 3050 Laptop 4 GB, with no manual editing beyond cutting the excerpt and normalising to the −14 LUFS video preset. More samples in the [music-studio README](skills/music-studio/README.en.md#listen).
+All generated with ACE-Step 1.5 on an RTX 3050 Laptop 4 GB, with no manual editing or compression: only the excerpt was cut and its volume set by plain gain (about −14 to −16 LUFS). More samples in the [music-studio README](skills/music-studio/README.en.md#listen).
 
 **Pixel-style town, seamless loop**: `rpg-town`, 99 BPM, D major, 24 s, **loop version**: the loop seam is at 12 s. Caption: `fantasy rpg town theme, acoustic guitar, flute, light hand percussion, warm, cheerful, medieval folk, loopable`
 

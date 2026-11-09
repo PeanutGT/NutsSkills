@@ -29,7 +29,7 @@
 
 ### music-studio 試聽
 
-全部由 ACE-Step 1.5 在 RTX 3050 Laptop 4 GB 上生成，沒有人工修音，只剪片段並把響度調到影片用的 −14 LUFS。更多試聽見 [music-studio 的 README](skills/music-studio/README.md#試聽)。
+全部由 ACE-Step 1.5 在 RTX 3050 Laptop 4 GB 上生成，沒有人工修音或壓縮，只剪片段並用純增益調整音量（約 −14 到 −16 LUFS）。更多試聽見 [music-studio 的 README](skills/music-studio/README.md#試聽)。
 
 **像素風小鎮・無縫循環**：`rpg-town`，99 BPM D 大調，24 秒，**循環版**：第 12 秒就是循環接縫。caption：`fantasy rpg town theme, acoustic guitar, flute, light hand percussion, warm, cheerful, medieval folk, loopable`
 
