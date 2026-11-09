@@ -379,6 +379,9 @@ def op_loop(x, sr, p, ctx):
     return body
 
 
+TP_MARGIN_DB = 0.5  # lossy export (mp3/ogg) overshoots the measured true peak by a few tenths of a dB
+
+
 def op_loudnorm(x, sr, p, ctx):
     cfg = ctx["cfg"]
     target = float(p.get("target_lufs", cfg["postprocess"]["loudness_lufs"]))
@@ -398,8 +401,8 @@ def op_loudnorm(x, sr, p, ctx):
     # notes) whenever the target gain would push the true peak over the ceiling or the input's
     # loudness range is wide. If the peak caps the gain we stay quieter than asked and say so.
     gain = target - measured
-    if peak is not None and peak + gain > tp:
-        gain = tp - peak
+    if peak is not None and peak + gain > tp - TP_MARGIN_DB:
+        gain = tp - TP_MARGIN_DB - peak
         ctx["warnings"].append(f"loudnorm: peaks allow only {measured + gain:.1f} LUFS (target {target}); "
                                "kept the dynamics instead of compressing")
     ctx["notes"].append(f"loudness {measured:.1f} -> {measured + gain:.1f} LUFS (linear gain {gain:+.1f} dB)")

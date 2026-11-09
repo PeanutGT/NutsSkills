@@ -177,7 +177,9 @@ class TestMockPipeline(Base):
         self.assertEqual(p.returncode, 0, p.stderr)
         out = json.loads(p.stdout)
         self.assertIn("loop", out["applied"])
-        self.assertAlmostEqual(out["report"]["lufs"], -16.0, delta=0.6)
+        # plain gain: at most the target, less only when the peaks cap it (the mock is peaky)
+        self.assertLessEqual(out["report"]["lufs"], -16.0 + 0.6)
+        self.assertGreater(out["report"]["lufs"], -17.5)
         self.assertLessEqual(out["report"]["true_peak_db"], -1.0)
         self.assertTrue(any(f.endswith(".ogg") for f in out["files"]))
 
