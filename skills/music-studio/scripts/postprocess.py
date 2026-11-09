@@ -7,8 +7,9 @@
 
 Design: audio is decoded once with ffmpeg into float32 numpy, processed in
 memory, and only encoded at the `export` step, so chained steps never
-accumulate lossy-codec damage. Loudness uses ffmpeg's two-pass `loudnorm`
-(EBU R128 / ITU BS.1770), which is the standard, well-tested implementation.
+accumulate lossy-codec damage. Loudness is measured with ffmpeg's `loudnorm`
+(EBU R128 / ITU BS.1770) and applied as one plain gain, capped so the true
+peak stays under the ceiling: no compression, the dynamics stay intact.
 
 Step vocabulary (what a workflow's postprocess.steps may contain):
     {"op":"trim_silence", "threshold_db":-50, "keep_tail":0.05}
@@ -384,23 +385,25 @@ def op_loudnorm(x, sr, p, ctx):
     tp = float(p.get("true_peak_db", cfg["postprocess"]["true_peak_db"]))
     ctx["lufs_target"], ctx["tp_target"] = target, tp  # the QC report checks against what was asked for
     with tempfile.TemporaryDirectory(prefix="msnorm_") as tmp:
-        src, dst = Path(tmp) / "in.wav", Path(tmp) / "out.wav"
+        src = Path(tmp) / "in.wav"
         encode(x, sr, src, cfg, ["-c:a", "pcm_f32le"])
         m = _loudnorm_json(src, cfg, target, tp)
         measured = _num(m.get("input_i"))
         if measured is None or measured < -69:
             ctx["warnings"].append("loudnorm: audio is (almost) silent, skipped")
             return x
-        flt = (f"loudnorm=I={target}:TP={tp}:LRA=11:measured_I={m['input_i']}:measured_LRA={m['input_lra']}"
-               f":measured_TP={m['input_tp']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}"
-               f":linear=true")
-        proc = subprocess.run([_bin(cfg, "ffmpeg"), "-y", "-v", "error", "-i", str(src), "-af", flt,
-                               "-ar", str(sr), "-c:a", "pcm_f32le", str(dst)], capture_output=True)
-        if proc.returncode != 0:
-            raise PostError("loudnorm failed: " + proc.stderr.decode(errors="replace")[:300])
-        y = decode(dst, cfg, sr)
-    ctx["notes"].append(f"loudness {measured:.1f} -> {target} LUFS")
-    return y
+        peak = _num(m.get("input_tp"))
+    # Plain gain, never ffmpeg's second loudnorm pass: that pass silently switches from linear to
+    # dynamic mode (a compressor riding the gain, audible as ducked accents and "blocked" high
+    # notes) whenever the target gain would push the true peak over the ceiling or the input's
+    # loudness range is wide. If the peak caps the gain we stay quieter than asked and say so.
+    gain = target - measured
+    if peak is not None and peak + gain > tp:
+        gain = tp - peak
+        ctx["warnings"].append(f"loudnorm: peaks allow only {measured + gain:.1f} LUFS (target {target}); "
+                               "kept the dynamics instead of compressing")
+    ctx["notes"].append(f"loudness {measured:.1f} -> {measured + gain:.1f} LUFS (linear gain {gain:+.1f} dB)")
+    return (x * 10 ** (gain / 20)).astype(x.dtype, copy=False)
 
 
 def op_export(x, sr, p, ctx):  # handled by run_steps (needs file naming); kept for the vocabulary
