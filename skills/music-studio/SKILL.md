@@ -3,7 +3,7 @@ name: music-studio
 description: Create instrumental music and BGM (game loops, video scores, study/work background, personal tracks) locally with ACE-Step 1.5 on the user's NVIDIA GPU, with fully customisable defaults, style library, description lexicon and workflows plus a local dashboard. Use whenever the user wants to make, generate, loop, master or manage background music or a soundtrack, tweak music defaults or styles, fix bad-sounding results, or says 做音樂/配樂/BGM/循環音樂/遊戲音樂/讀書背景音. Also use for music-studio setup or troubleshooting.
 license: Apache-2.0
 metadata:
-  version: "3.4.4"
+  version: "3.6.0"
   author: PeanutGT
   repository: https://github.com/PeanutGT/NutsSkills
 ---
@@ -56,7 +56,7 @@ Do not guess. Read `references/quality.md`: open the take's `effective` / `warni
 
 ## Customisation (the point of this skill)
 Four layers in the workspace, merged over the shipped defaults:
-- **Parameters/defaults**: `config.json` via `python scripts/msconfig.py set KEY VALUE` / `unset KEY` (`show --explain` tells which layer a value comes from; keys in `references/config-reference.md`).
+- **Parameters/defaults**: `config.json` via `python scripts/msconfig.py set KEY VALUE` / `unset KEY` (`show --explain` tells which layer a value comes from; keys in `references/config-reference.md`). "What can I tune?" -> `msconfig.py knobs [--quality Q]` (every generation setting: value, layer, range, effect; same table as dashboard 設定). A one-off tweak for one take: `plan ... --param shift=2.5`.
 - **Styles / moods**: `styles/*.json`, `moods.json` (`references/styles-moods-workflows.md`).
 - **Lexicon**: `lexicon.json` - teach it how your words map to English tags (`msconfig.py lexicon` shows the built-ins).
 - **Workflows**: `workflows/*.json` - stages, gates, post-process steps.

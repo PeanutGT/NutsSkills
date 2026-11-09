@@ -16,6 +16,7 @@ CLI:
     msconfig.py set KEY VALUE            write a workspace override (dotted key, JSON value)
     msconfig.py unset KEY                remove a workspace override
     msconfig.py validate                 check config, styles and workflows
+    msconfig.py knobs [--quality Q]      every tunable generation setting: value, source layer, range, effect
 """
 from __future__ import annotations
 
@@ -149,6 +150,105 @@ def resolve_params(cfg: dict, quality: str | None = None, overrides: dict | None
             warnings.append(f"the {tier} tier has no language model, so 'thinking' is off.")
         params["thinking"] = False
     return {"params": params, "tier": tier, "quality": quality, "warnings": warnings, "sources": prov}
+
+
+# --------------------------------------------------------------------------- tunable settings
+def load_knobs() -> dict:
+    """The catalog in defaults/knobs.json: every generation setting a person may tune."""
+    return read_json(DEFAULTS_DIR / "knobs.json", {}) or {}
+
+
+def _engine_knobs(knobs: dict | None = None) -> dict[str, dict]:
+    knobs = knobs if knobs is not None else load_knobs()
+    return {k["key"]: k for k in knobs.get("knobs", []) if k.get("layer", "engine") == "engine"}
+
+
+def check_knob(knob: dict, value):
+    """Coerce `value` to the knob's type. Returns (value, error-or-None)."""
+    t, key = knob.get("type"), knob["key"]
+    if t == "bool":
+        if isinstance(value, str) and value.lower() in ("true", "false"):
+            value = value.lower() == "true"
+        return (value, None) if isinstance(value, bool) else (value, f"{key} must be true or false")
+    if t == "choice":
+        return (value, None) if value in knob.get("choices", []) else \
+            (value, f"{key} must be one of {', '.join(str(c) for c in knob.get('choices', []))}")
+    if t == "string":
+        return (value, None) if value is None or isinstance(value, str) else (value, f"{key} must be text")
+    try:
+        if isinstance(value, bool):
+            raise ValueError
+        num = float(value)
+        if t == "int":
+            if num != int(num):
+                raise ValueError
+            num = int(num)
+    except (TypeError, ValueError):
+        return value, f"{key} must be {'an integer' if t == 'int' else 'a number'}, got {value!r}"
+    lo, hi = knob.get("min"), knob.get("max")
+    if (lo is not None and num < lo) or (hi is not None and num > hi):
+        return num, f"{key} must be between {lo} and {hi}, got {num}"
+    return num, None
+
+
+def check_engine_params(params: dict, knobs: dict | None = None, per_request_only: bool = False) -> tuple[dict, list[str]]:
+    """Validate per-take engine parameters against the catalog. Unknown keys are errors."""
+    cat = _engine_knobs(knobs)
+    clean, errors = {}, []
+    for key, value in (params or {}).items():
+        knob = cat.get(key)
+        if knob is None or (per_request_only and not knob.get("per_request")):
+            errors.append(f"{key} is not a per-take setting (see `msconfig.py knobs`)")
+            continue
+        if value is None or value == "":
+            continue
+        value, err = check_knob(knob, value)
+        if err:
+            errors.append(err)
+        else:
+            clean[key] = value
+    return clean, errors
+
+
+def _layer_path(source: str, key: str) -> str | None:
+    if source in ("generation", "engine_overrides"):
+        return f"{source}.{key}"
+    if source.startswith("tier:"):
+        return f"hardware.tiers.{source[5:]}.{key}"
+    if source.startswith("preset:"):
+        return f"quality.presets.{source[7:]}.{key}"
+    return None
+
+
+def knob_table(cfg: dict, prov: dict, quality: str | None = None, tier: str | None = None) -> dict:
+    """Every tunable setting with its effective value for one quality preset and where that value came from."""
+    knobs = load_knobs()
+    r = resolve_params(cfg, quality, tier=tier)
+    tier, quality = r["tier"], r["quality"]
+    tier_cfg = cfg["hardware"]["tiers"].get(tier, {})
+    rows = []
+    for k in knobs.get("knobs", []):
+        key = k["key"]
+        if k.get("layer") == "tier":
+            source = f"tier:{tier}" if key in tier_cfg else None
+            value = tier_cfg.get(key)
+        else:
+            source = r["sources"].get(key)
+            value = r["params"].get(key)
+        path = _layer_path(source, key) if source else None
+        candidates = [f"generation.{key}", f"engine_overrides.{key}"] + \
+            [f"quality.presets.{q}.{key}" for q in cfg["quality"]["presets"]] + \
+            [f"hardware.tiers.{t}.{key}" for t in cfg["hardware"]["tiers"]]
+        raw = get_dotted(cfg, path) if path else None
+        rows.append({**k, "value": value, "source": source, "path": path,
+                     "from_user": bool(path and prov.get(path) == "user"),
+                     "adjusted_from": raw if path and raw != value else None,
+                     "user_paths": [c for c in candidates if prov.get(c) == "user"]})
+    return {"quality": quality, "tier": tier, "groups": knobs.get("groups", {}), "knobs": rows,
+            "warnings": r["warnings"], "presets": cfg["quality"]["presets"], "tiers": cfg["hardware"]["tiers"],
+            "engine_overrides": cfg.get("engine_overrides", {}),
+            "not_passed": (knobs.get("not_passed") or {}).get("items", []),
+            "precedence": ["generation", "tier", "preset", "engine_overrides", "request"]}
 
 
 # --------------------------------------------------------------------------- libraries
@@ -530,6 +630,23 @@ def validate(ws: Path | None = None) -> list[str]:
         v = cfg["generation"].get(key)
         if not isinstance(v, (int, float)) or v <= 0:
             problems.append(f"generation.{key} must be a positive number, got {v!r}")
+    knobs = load_knobs()
+    engine_cat = _engine_knobs(knobs)
+    tier_cat = {k["key"]: k for k in knobs.get("knobs", []) if k.get("layer") == "tier"}
+    layers = [("generation", cfg["generation"]), ("engine_overrides", cfg.get("engine_overrides", {}))] + \
+        [(f"quality.presets.{q}", p) for q, p in cfg["quality"]["presets"].items()]
+    for where, layer in layers:
+        for key, value in layer.items():
+            if key in engine_cat and value is not None:
+                err = check_knob(engine_cat[key], value)[1]
+                if err:
+                    problems.append(f"{where}.{err}")
+    for t, tc in cfg["hardware"]["tiers"].items():
+        for key, value in tc.items():
+            if key in tier_cat and value is not None:
+                err = check_knob(tier_cat[key], value)[1]
+                if err:
+                    problems.append(f"hardware.tiers.{t}.{err}")
     for name, preset in cfg["quality"]["presets"].items():
         b = preset.get("batch_size", 1)
         if not isinstance(b, int) or not 1 <= b <= 8:
@@ -607,9 +724,12 @@ def main(argv=None) -> int:
     sp.add_argument("--workflow")
     sp.add_argument("--seed", type=int)
     sp.add_argument("--vocals", action="store_true", help="not instrumental (reserved for phase 2)")
+    sp.add_argument("--param", action="append", default=[], metavar="KEY=VALUE",
+                    help="per-take engine setting, repeatable (e.g. --param shift=2.5); see `msconfig.py knobs`")
     sp = sub.add_parser("set"); sp.add_argument("key"); sp.add_argument("value")
     sp = sub.add_parser("unset"); sp.add_argument("key")
     sub.add_parser("validate")
+    sp = sub.add_parser("knobs"); sp.add_argument("--quality"); sp.add_argument("--tier")
     args = ap.parse_args(argv)
 
     ws = ensure_workspace() if args.cmd in ("init", "set", "unset") else workspace_dir()
@@ -659,6 +779,14 @@ def main(argv=None) -> int:
         except KeyError as exc:
             log(f"error: {exc.args[0]}")
             return 2
+        raw = dict(p.split("=", 1) for p in args.param if "=" in p)
+        bad = [p for p in args.param if "=" not in p]
+        params, errors = check_engine_params({k.strip(): parse_value(v) for k, v in raw.items()}, per_request_only=True)
+        if bad or errors:
+            log("error: " + "; ".join(errors + [f"--param needs KEY=VALUE, got {b!r}" for b in bad]))
+            return 2
+        if params:
+            spec["engine_params"] = params
         print_json(spec)
     elif args.cmd == "set":
         path = ws / "config.json"
@@ -672,6 +800,14 @@ def main(argv=None) -> int:
         removed = unset_dotted(user, args.key)
         write_json(path, user)
         print_json({"ok": removed, "key": args.key})
+    elif args.cmd == "knobs":
+        cfg, prov = load_config(ws)
+        t = knob_table(cfg, prov, args.quality, args.tier)
+        keep = ("key", "label", "group", "type", "min", "max", "choices", "per_request", "help",
+                "value", "source", "path", "from_user", "adjusted_from")
+        print_json({"tier": t["tier"], "quality": t["quality"], "precedence": t["precedence"],
+                    "knobs": [{k: row[k] for k in keep if k in row} for row in t["knobs"]],
+                    "not_passed": t["not_passed"], "warnings": t["warnings"]})
     elif args.cmd == "validate":
         problems = validate(ws)
         print_json({"ok": not problems, "problems": problems})

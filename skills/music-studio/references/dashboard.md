@@ -19,7 +19,8 @@ opens the first.
 - **後製與匯出**: runs the chosen workflow's steps on the variant you are listening to. 響度 picks a loudness preset (影片平台 -14, 遊戲 BGM -16, 背景／讀書 -18 LUFS) instead of the workflow's own target. Shows loudness, true peak, length, loop seam (for loops), the automatic check of the finished file, a loop preview and download buttons.
 - **實際使用的設定**: what really ran (model, steps, LM, quantisation, DiT offload, CPU-decode fallback, settings your ACE-Step build ignored).
 - **Queue dock** (bottom): the running job's phases (載入模型 / 編碼提示 / 生成 / 解碼音訊 / 寫檔) with elapsed time and cancel; queued jobs with their own cancel; the last finished jobs (click to open).
-- **資料庫**, **設定**: library with search/favourites; common settings and the style editor (writes only to your workspace).
+- **進階：生成參數** (create form): per-take diffusion and LM settings (steps, CFG, shift, sampling, thinking, LM temperature...). Empty fields show the value that would be used and which layer it comes from; the send-out box shows CFG / shift and lists the per-take changes.
+- **資料庫**, **設定**: library with search/favourites; common settings and the style editor (writes only to your workspace). **所有可調的生成參數** lists every setting from `defaults/knobs.json` with its effective value for a chosen quality preset, the layer it came from, range and effect; save it into a layer or reset it. Below: the quality presets, the tier table (your card marked), `engine_overrides`, and the ACE-Step settings not wired in yet.
 
 ## Safety
 - Binds `127.0.0.1` only; `Host` must be localhost; every write needs the per-start token (embedded in the page, and written to `<workspace>/server.json` for msclient).
@@ -28,10 +29,10 @@ opens the first.
 
 ## API
 `GET /api/state`, `POST /api/plan`, `GET /api/check`,
-`POST /api/jobs` (`{"spec":{...}}` or the form fields), `GET /api/jobs?since=SEQ&wait=1` (long poll), `GET /api/jobs/<id>`, `POST /api/jobs/<id>/cancel`,
+`POST /api/jobs` (`{"spec":{...}}` or the form fields; `engine_params` = per-take settings, range-checked), `GET /api/jobs?since=SEQ&wait=1` (long poll), `GET /api/jobs/<id>`, `POST /api/jobs/<id>/cancel`,
 `GET /api/worker`, `POST /api/worker/unload`,
 `GET /api/tracks`, `GET|PATCH|DELETE /api/tracks/<id>`, `POST /api/tracks/<id>/finalize`,
-`GET|PUT /api/config`, `PUT|DELETE /api/{styles,moods,workflows}/<id>`, `GET /audio/<take>/<file>` (Range; `?download=1`).
+`GET|PUT /api/config`, `GET /api/knobs?quality=Q&tier=T`, `PUT|DELETE /api/{styles,moods,workflows}/<id>`, `GET /audio/<take>/<file>` (Range; `?download=1`).
 
 ## Notes
 - Fonts (Barlow Condensed, Noto Sans TC) load from Google Fonts; offline the page uses system fonts.
