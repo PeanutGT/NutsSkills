@@ -162,7 +162,8 @@ function formBody() {
     duration: f.duration, bpm: f.bpm, key: f.key, variants: f.variants, seed: f.seed, title: f.title,
     caption_extra: f.caption_extra, caption: f.caption,
     instruments: f.instr ? Object.keys(f.instr).filter(i => f.instr[i] === "use") : null,
-    avoid_instruments: f.instr ? Object.keys(f.instr).filter(i => f.instr[i] === "avoid") : [] };
+    avoid_instruments: f.instr ? Object.keys(f.instr).filter(i => f.instr[i] === "avoid") : [],
+    engine_params: Object.fromEntries(Object.entries(f.engine_params || {}).filter(([, v]) => v !== "" && v != null)) };
 }
 let planTimer, planSeq = 0;
 function schedulePlan() { clearTimeout(planTimer); planTimer = setTimeout(refreshPlan, 350); }
@@ -187,9 +188,12 @@ function renderSendout(r) {
   put($("so-info"), h("h3", {}, "會送給 ACE-Step 的內容"), rows,
     h("div", { class: "readouts" }, readout("BPM", spec.bpm), readout("調性", spec.key), readout("長度", `${spec.duration} 秒`),
       readout("版本", p.batch_size), readout("模型", String(p.dit_model).replace("acestep-v15-", "")), readout("步數", p.inference_steps),
-      readout("語言模型", lm), readout("量化", p.quantization ? "int8" : "無")),
+      readout("CFG", p.guidance_scale), readout("shift", p.shift), readout("語言模型", lm), readout("量化", p.quantization ? "int8" : "無")),
+    Object.keys(spec.engine_params || {}).length ? h("p", { class: "dim small" }, "這首單獨調整：" +
+      Object.entries(spec.engine_params).map(([k, v]) => `${k} = ${v}`).join("、")) : null,
     [...(spec.warnings || []), ...(r.warnings || [])].map(w => h("div", { class: "note" }, w)));
   renderCaptionEditor();
+  renderKnobPlaceholders(r);
 }
 function renderCaptionEditor() {
   const f = S.form, host = $("so-edit"); if (!host) return;
@@ -279,12 +283,16 @@ function viewCreate() {
         h("div", {}, text("f-seed", "seed", "種子", "隨機", "number"))),
       text("f-title", "title", "標題", "自動"),
       text("f-extra", "caption_extra", "額外英文標籤", "例：felt piano, distant drone")),
+    h("details", { id: "knob-panel" }, h("summary", {}, "進階：生成參數（步數、CFG、shift、語言模型）"),
+      h("p", { class: "dim small" }, "只影響這一首。空白 = 用設定裡的值（灰字）。全部參數的說明與預設值在「設定」分頁。"),
+      h("div", { id: "knob-fields" }, "載入中…")),
     h("div", { id: "sendout", class: "sendout" }, h("p", { class: "dim small", style: "margin:0" }, "整理中…")),
     h("div", { class: "actions" }, genBtn, h("span", { class: "dim small" }, "可以連續送出，會依序排隊")));
   form.addEventListener("input", schedulePlan); form.addEventListener("change", schedulePlan);
   updateHint(); renderInstr(); setTimeout(refreshPlan, 0); loadHealth();
   put($view, h("div", { id: "health" }), h("div", { class: "split" }, form, h("div", { id: "stage" })));
   renderStage();
+  renderKnobFields();
 }
 async function loadHealth() {
   let r; try { r = await api("check"); } catch (e) { return; }
@@ -564,12 +572,15 @@ function renderDiag(take) {
       row("顯存", e.vram_gb ? `${e.vram_gb} GB` : null),
       row("語言模型改寫的 caption", lm.caption || lm.cot_caption),
       row("語言模型判斷的 BPM / 調性", (lm.bpm || lm.keyscale) ? `${lm.bpm || "-"} / ${lm.keyscale || "-"}` : null),
+      row("CFG / 取樣", `${p.guidance_scale ?? "-"} / ${p.infer_method || "ACE-Step 內建"}`),
+      row("這首單獨調整的參數", Object.entries(take.spec?.engine_params || {}).map(([k, v]) => `${k} = ${fmtVal(v)}`).join("、") || null),
       row("送出的 caption", take.spec?.caption))));
 }
 function refine(take, index) {
   const s = take.spec || {}, v = take.variants.find(x => x.index === index) || take.variants[0] || {};
   S.form = { style: s.style, description: s.description || "", moods: s.moods || [], workflow: s.workflow, quality: s.quality,
-    duration: s.duration, bpm: s.bpm, key: s.key, variants: s.variants, seed: v.seed, title: s.title, caption_extra: "", caption: s.caption };
+    duration: s.duration, bpm: s.bpm, key: s.key, variants: s.variants, seed: v.seed, title: s.title, caption_extra: "", caption: s.caption,
+    engine_params: { ...(s.engine_params || {}) } };
   S.take = null; S.follow = null; show("create");
   toast(`已帶入 v${v.index ?? ""} 的種子和 caption。只改一個標籤再生，最容易保留原本的感覺。`);
 }
@@ -620,6 +631,125 @@ async function viewLibrary() {
   draw();
 }
 
+// ---------------------------------------------------------------- tunable settings (defaults/knobs.json)
+const LAYER_LABEL = src => !src ? "ACE-Step 內建" : src === "generation" ? "全域預設" : src === "engine_overrides" ? "強制（engine_overrides）"
+  : src.startsWith("preset:") ? `品質預設 ${src.slice(7)}` : src.startsWith("tier:") ? `硬體等級 ${src.slice(5)}` : src === "request" ? "這一首" : src;
+const LAYER_RANK = src => !src ? -1 : src === "generation" ? 0 : src.startsWith("tier:") ? 1 : src.startsWith("preset:") ? 2 : src === "engine_overrides" ? 3 : 4;
+const fmtVal = v => v == null ? "—" : typeof v === "boolean" ? (v ? "開" : "關") : String(v);
+const rangeOf = k => k.type === "bool" ? "開／關" : k.type === "choice" ? k.choices.map(c => c ?? "無").join(" / ")
+  : k.min != null ? `${k.min} – ${k.max}${k.unit ? " " + k.unit : ""}` : "文字";
+function parseKnob(k, raw) {
+  if (raw === "") return k.type === "string" ? null : "";
+  if (k.type === "bool") return raw === "true";
+  if (k.type === "int" || k.type === "float") return Number(raw);
+  if (k.type === "choice") return raw === "null" ? null : raw;
+  return raw;
+}
+function knobInput(k, id, value, onchange, emptyLabel) {
+  if (k.type === "bool" || k.type === "choice") {
+    const opts = k.type === "bool" ? [true, false] : k.choices;
+    return h("select", { id, onchange },
+      emptyLabel != null ? h("option", { value: "" }, emptyLabel) : null,
+      opts.map(o => h("option", { value: String(o), selected: value !== undefined && value !== "" && String(o) === String(value) }, k.type === "bool" ? fmtVal(o) : o ?? "無")));
+  }
+  return h("input", { id, type: k.type === "string" ? "text" : "number", min: k.min, max: k.max, step: k.step || (k.type === "int" ? 1 : "any"),
+    value: value ?? "", oninput: onchange });
+}
+async function loadKnobs(quality) {
+  const q = quality ? "?quality=" + encodeURIComponent(quality) : "";
+  return api("knobs" + q);
+}
+async function renderKnobFields() {
+  const host = $("knob-fields"); if (!host) return;
+  const t = S.knobs || (S.knobs = await guard(() => loadKnobs()));
+  if (!t) return;
+  const f = S.form; f.engine_params = f.engine_params || {};
+  const per = t.knobs.filter(k => k.per_request);
+  const groups = [...new Set(per.map(k => k.group))];
+  put(host, groups.map(g => h("div", {},
+    h("h3", { class: "small" }, t.groups[g] || g),
+    h("div", { class: "row" }, per.filter(k => k.group === g).map(k => h("div", {},
+      h("label", { for: "kp-" + k.key, title: k.help }, k.label, h("span", { class: "hint dim" }, `（${rangeOf(k)}）`)),
+      knobInput(k, "kp-" + k.key, f.engine_params[k.key], e => { f.engine_params[k.key] = parseKnob(k, e.target.value); schedulePlan(); }, "依設定"),
+      h("div", { class: "dim small", id: "kh-" + k.key }, k.help)))))),
+    h("button", { type: "button", class: "btn sm quiet", onclick: () => { f.engine_params = {}; renderKnobFields(); schedulePlan(); } }, "全部改回依設定"));
+  if (Object.keys(f.engine_params).length) $("knob-panel").open = true;
+  if (S.plan) renderKnobPlaceholders(S.plan);
+}
+function renderKnobPlaceholders(r) {
+  (S.knobs?.knobs || []).filter(k => k.per_request).forEach(k => {
+    const el = $("kp-" + k.key); if (!el) return;
+    const v = r.params?.[k.key], src = r.sources?.[k.key];
+    if (el.tagName === "SELECT") el.options[0].textContent = `依設定（${fmtVal(v)}）`; else el.placeholder = fmtVal(v);
+    const hint = $("kh-" + k.key);
+    if (hint) hint.textContent = (v == null ? "沒設定，用 ACE-Step 內建值。" : `依設定：${fmtVal(v)}，來自${LAYER_LABEL(src)}。`) + k.help;
+  });
+}
+function knobTable(t, refresh) {
+  const save = (k, target, raw) => guard(async () => {
+    const v = parseKnob(k, raw);
+    if (v === "") return toast("請先填一個值", true);
+    const r = await api("config", "PUT", { set: { [`${target}.${k.key}`]: v } });
+    S.knobs = null; toast(r.problems.length ? "已儲存，但設定還有問題：" + r.problems[0] : `已把 ${k.label} 設為 ${fmtVal(v)}`, !!r.problems.length); refresh();
+  });
+  const reset = k => guard(async () => {
+    await api("config", "PUT", { unset: k.user_paths }); S.knobs = null; toast(`${k.label} 已還原為內建`); refresh();
+  });
+  const targets = k => k.layer === "tier" ? [[`hardware.tiers.${t.tier}`, `硬體等級 ${t.tier}`]]
+    : [["generation", "全域預設"], [`quality.presets.${t.quality}`, `只有品質 ${t.quality}`], ["engine_overrides", "強制所有品質"]];
+  const row = k => {
+    const id = "kt-" + k.key, ts = targets(k);
+    const def = ts.find(([p]) => k.path && k.path.startsWith(p + ".")) || ts[0];
+    const input = knobInput(k, id, k.value, () => {}, k.type === "bool" || k.type === "choice" ? "（選一個）" : null);
+    const target = h("select", { "aria-label": "存到哪一層" }, ts.map(([p, l]) => h("option", { value: p, selected: p === def[0] }, l)));
+    const shadow = h("div", { class: "dim small" });
+    const checkShadow = () => {
+      const rank = target.value === "generation" ? 0 : target.value.startsWith("hardware") ? 1 : target.value.startsWith("quality") ? 2 : 3;
+      shadow.textContent = LAYER_RANK(k.source) > rank ? `注意：目前生效的是「${LAYER_LABEL(k.source)}」，存到這一層會被它蓋過。` : "";
+    };
+    target.addEventListener("change", checkShadow); checkShadow();
+    return h("tr", {},
+      h("td", {}, h("b", {}, k.label), h("div", {}, h("code", { class: "small" }, k.key)), h("div", { class: "dim small" }, k.help)),
+      h("td", { style: "white-space:nowrap" }, h("b", {}, fmtVal(k.value)),
+        h("div", { class: "dim small" }, LAYER_LABEL(k.source) + (k.from_user ? "（你改過）" : "")),
+        k.adjusted_from != null ? h("div", { class: "dim small" }, `設定是 ${fmtVal(k.adjusted_from)}，依硬體自動調整`) : null,
+        h("div", { class: "dim small" }, "範圍 " + rangeOf(k))),
+      h("td", {}, input, target, shadow,
+        h("div", { class: "actions", style: "margin-top:4px" },
+          h("button", { class: "btn sm", onclick: () => save(k, target.value, input.value) }, "儲存"),
+          k.user_paths.length ? h("button", { class: "btn sm quiet", title: k.user_paths.join("\n"), onclick: () => reset(k) }, "還原內建") : null)));
+  };
+  const groups = [...new Set(t.knobs.map(k => k.group))];
+  return groups.map(g => [h("h3", {}, t.groups[g] || g),
+    h("table", { class: "knobs" }, h("thead", {}, h("tr", {}, h("th", {}, "參數"), h("th", {}, "目前值"), h("th", {}, "修改"))),
+      h("tbody", {}, t.knobs.filter(k => k.group === g).map(row)))]);
+}
+function layerTables(t) {
+  const pkeys = [...new Set(Object.values(t.presets).flatMap(Object.keys))];
+  const tkeys = [...new Set(Object.values(t.tiers).flatMap(Object.keys))];
+  const ov = Object.entries(t.engine_overrides || {}).filter(([k]) => !k.startsWith("_"));
+  return [
+    h("h3", {}, "品質預設的內容"),
+    h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "品質"), pkeys.map(k => h("th", {}, k)))),
+      h("tbody", {}, Object.entries(t.presets).map(([q, p]) => h("tr", {}, h("td", {}, h("b", {}, q), q === t.quality ? "（目前）" : null), pkeys.map(k => h("td", {}, fmtVal(p[k]))))))),
+    h("h3", {}, "硬體等級表"),
+    h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "等級"), tkeys.map(k => h("th", {}, k)))),
+      h("tbody", {}, Object.entries(t.tiers).map(([n, c]) => h("tr", {}, h("td", {}, h("b", {}, n), n === t.tier ? "（你的顯卡）" : null), tkeys.map(k => h("td", {}, fmtVal(c[k]))))))),
+    h("p", { class: "dim small" }, ov.length ? "engine_overrides（強制所有品質）：" + ov.map(([k, v]) => `${k} = ${fmtVal(v)}`).join("、") : "engine_overrides 目前是空的（建議保持空白，否則會蓋過所有品質預設）。"),
+    t.not_passed.length ? h("details", {}, h("summary", {}, `ACE-Step 還有、但 Music Studio 尚未接上的 ${t.not_passed.length} 組參數`),
+      h("ul", {}, t.not_passed.map(x => h("li", {}, h("code", {}, x.key), "：", x.label)))) : null];
+}
+async function renderKnobSection(host, quality) {
+  const t = await guard(() => loadKnobs(quality)); if (!t) return;
+  const qSel = h("select", { id: "kq", onchange: e => renderKnobSection(host, e.target.value) },
+    Object.keys(t.presets).map(q => h("option", { value: q, selected: q === t.quality }, q)));
+  put(host, h("h2", {}, "所有可調的生成參數"),
+    h("p", { class: "dim small" }, "每個參數的值依序由這幾層決定，後面的蓋過前面的：全域預設 → 硬體等級 → 品質預設 → 強制（engine_overrides）→ 這一首（建立頁的「進階」）。改動只寫進你的工作區 config.json。"),
+    h("div", { class: "row" }, h("div", {}, h("label", { for: "kq" }, "看哪個品質預設下的值"), qSel), h("div", {}, h("span", { class: "lbl" }, "硬體等級"), h("div", {}, h("b", {}, t.tier)))),
+    (t.warnings || []).map(w => h("div", { class: "note" }, w)),
+    knobTable(t, () => renderKnobSection(host, t.quality)), layerTables(t));
+}
+
 // ---------------------------------------------------------------- settings
 async function viewSettings() {
   const { config, sources } = await guard(() => api("config")) || {};
@@ -661,6 +791,7 @@ async function viewSettings() {
       }) }, "儲存風格"), h("button", { class: "btn quiet", onclick: () => (editor.hidden = true) }, "取消")));
     editor.scrollIntoView({ block: "nearest" });
   }
+  const knobHost = h("section", { class: "module", id: "knobs", style: "margin-top:16px" }, "載入參數表…");
   const userKeys = Object.keys(sources || {}).filter(k => sources[k] && sources[k] !== "default");
   put($view, h("div", { class: "two" },
     h("section", { class: "module" }, h("h2", {}, "常用設定"),
@@ -677,14 +808,15 @@ async function viewSettings() {
       h("div", { class: "actions" }, save),
       userKeys.length ? h("details", {}, h("summary", {}, `你改過的 ${userKeys.length} 個項目`),
         h("table", {}, h("tbody", {}, userKeys.map(k => h("tr", {}, h("td", {}, h("code", {}, k)), h("td", {}, h("button", { class: "btn sm quiet", onclick: () => reset(k) }, "還原")))))) ) : null,
-      h("p", { class: "dim small" }, "硬體等級表、品質預設和後製步驟可以直接改工作區的 config.json，或在對話裡跟 Claude 說「以後預設用…」。")),
+      h("p", { class: "dim small" }, "擴散、語言模型、硬體等級和品質預設的每個參數都列在下方「所有可調的生成參數」。後製步驟可以直接改工作區的 config.json，或在對話裡跟 Claude 說「以後預設用…」。")),
     h("section", { class: "module" }, h("h2", {}, "風格庫"),
       h("table", {}, h("tbody", {}, S.state.styles.map(s => h("tr", {},
         h("td", {}, h("b", {}, nameOf(s)), h("div", { class: "dim small" }, (s.source || "").includes("user") ? "你的風格" : "內建")),
         h("td", { style: "text-align:right;white-space:nowrap" }, h("button", { class: "btn sm", onclick: () => editStyle(s) }, "編輯"),
           (s.source || "").includes("user") ? h("button", { class: "btn sm danger", style: "margin-left:6px", onclick: () => confirm(`刪除「${s.name || s.id}」？`) && guard(async () => {
             await api("styles/" + encodeURIComponent(s.id), "DELETE"); await refreshState(); viewSettings(); }) }, "刪除") : null)))))),
-    editor));
+    editor), knobHost);
+  renderKnobSection(knobHost);
 }
 
 // ---------------------------------------------------------------- boot

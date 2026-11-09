@@ -45,6 +45,45 @@ class TestConfig(Base):
         cfg = json.loads(self.sh("msconfig.py", "show").stdout)
         self.assertNotEqual(cfg["config"]["generation"]["duration"], 77)
 
+    def test_knobs_report_value_source_and_user_edits(self):
+        self.sh("msconfig.py", "set", "quality.presets.standard.shift", "2.5")
+        self.sh("msconfig.py", "set", "generation.lm_temperature", "0.7")
+        t = json.loads(self.sh("msconfig.py", "knobs", "--quality", "standard").stdout)
+        rows = {k["key"]: k for k in t["knobs"]}
+        self.assertEqual((rows["shift"]["value"], rows["shift"]["source"], rows["shift"]["from_user"]), (2.5, "preset:standard", True))
+        self.assertEqual((rows["lm_temperature"]["value"], rows["lm_temperature"]["source"]), (0.7, "generation"))
+        self.assertEqual(rows["inference_steps"]["source"], "preset:standard")
+        self.assertIsNone(rows["use_adg"]["source"])  # unset -> ACE-Step's own default
+        self.assertEqual(rows["dit_model"]["source"], f"tier:{t['tier']}")
+
+    def test_knob_ranges_validated(self):
+        self.sh("msconfig.py", "set", "generation.shift", "99")
+        problems = json.loads(self.sh("msconfig.py", "validate").stdout)["problems"]
+        self.assertTrue(any("generation.shift must be between" in p for p in problems), problems)
+        self.assertEqual(self.sh("msconfig.py", "plan", "--style", "lofi", "--param", "dit_model=x").returncode, 2)
+        spec = json.loads(self.sh("msconfig.py", "plan", "--style", "lofi", "--param", "shift=2", "--param", "use_adg=true").stdout)
+        self.assertEqual(spec["engine_params"], {"shift": 2.0, "use_adg": True})
+
+    def test_knob_catalog_matches_config_worker_and_docs(self):
+        cat = json.loads((ROOT / "defaults" / "knobs.json").read_text(encoding="utf-8"))
+        cfg = json.loads((ROOT / "defaults" / "config.json").read_text(encoding="utf-8"))
+        keys = {k["key"]: k for k in cat["knobs"]}
+        for k in cfg["generation"]:
+            if not k.startswith("_") and k != "instrumental":
+                self.assertIn(k, keys, f"generation.{k} missing from knobs.json")
+        for tier in cfg["hardware"]["tiers"].values():
+            for k in tier:
+                self.assertIn(k, keys, f"tier key {k} missing from knobs.json")
+        for p in cfg["quality"]["presets"].values():
+            for k in p:
+                self.assertIn(k, keys, f"preset key {k} missing from knobs.json")
+        worker = (SCRIPTS / "ace_worker.py").read_text(encoding="utf-8")
+        doc = (ROOT / "references" / "config-reference.md").read_text(encoding="utf-8")
+        for k in keys.values():
+            self.assertIn(f"`{k['key']}`", doc, f"{k['key']} not documented in config-reference.md")
+            if k.get("per_request"):
+                self.assertIn(f'"{k["key"]}"', worker, f"{k['key']} is offered per take but never sent to ACE-Step")
+
     def test_tiers(self):
         import gpu
         self.assertEqual([gpu.tier_for(v) for v in (4, 8, 16, 24)], ["low", "mid", "high", "ultra"])
@@ -406,6 +445,18 @@ class TestServer(Base):
         d = json.loads(body)["spec"]
         self.assertIn("erhu", d["caption"])
         self.assertNotIn("taiko", d["caption"])
+
+    def test_knobs_endpoint_and_per_take_params(self):
+        t = json.loads(self.req("/api/knobs?quality=high")[1])
+        self.assertEqual(t["quality"], "high")
+        self.assertEqual({k["key"]: k for k in t["knobs"]}["inference_steps"]["value"], 50)
+        code, body = self.req("/api/plan", "POST", {"style": "lofi", "engine_params": {"shift": 2, "lm_temperature": 0.6}})
+        d = json.loads(body)
+        self.assertEqual(code, 200)
+        self.assertEqual((d["params"]["shift"], d["sources"]["shift"]), (2, "request"))
+        self.assertEqual(d["spec"]["engine_params"], {"shift": 2, "lm_temperature": 0.6})
+        self.assertEqual(self.req("/api/plan", "POST", {"style": "lofi", "engine_params": {"shift": 50}})[0], 400)
+        self.assertEqual(self.req("/api/plan", "POST", {"style": "lofi", "engine_params": {"dit_model": "x"}})[0], 400)
 
     def test_token_injected_and_config_put(self):
         code, body = self.req("/")

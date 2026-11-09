@@ -193,8 +193,8 @@ def qc(report: dict, cfg: dict, expected_duration: float | None = None, looped: 
 def inspect_audio(x: np.ndarray, sr: int, loopable: bool = False) -> list[dict]:
     """Automatic check of a freshly generated variant. Returns issues with a time in seconds:
     clipping, clicks, silence (an interior gap >= 2 s), cut_off (still at full level in the last
-    0.1 s), near_silent, low_volume, dull (almost no energy above 4 kHz: sounds muffled). Heuristics tuned to flag what a listener would notice; the
-    ear decides. Loopable takes skip cut_off: they are meant to keep going."""
+    0.1 s), near_silent, low_volume, dull (almost no energy above 4 kHz: sounds muffled).
+    Heuristics tuned to flag what a listener would notice; the ear decides. Loopable takes skip cut_off: they are meant to keep going."""
     issues: list[dict] = []
     if not len(x):
         return [{"code": "near_silent", "at": 0.0}]
