@@ -47,7 +47,7 @@ Save the spec and run `python scripts/msclient.py generate --spec spec.json` (`-
 
 ## 5. Audition -> refine -> finish
 - Variants are `v1`, `v2`... in the take folder / dashboard. Iterate by changing **one** thing and keeping the seed of the liked variant (dashboard: 以這版為基礎微調再生). Draft on `draft`/`standard`; re-render the keeper on `high` with the same seed.
-- Every variant is checked automatically when it is written: `variants[].qc` in the take (clipping, clicks, cut_off, silence, near_silent, low_volume, each with a time). Mention any issue in one line with its time; it is a heuristic, the ear decides.
+- Every variant is checked automatically when it is written: `variants[].qc` in the take (clipping, clicks, cut_off, silence, near_silent, low_volume, dull = muffled/no highs, each with a time). Mention any issue in one line with its time; it is a heuristic, the ear decides.
 - Finish: `python scripts/postprocess.py run --take ID [--variant N] [--workflow W] [--loudness video|game|background|-14] [--preview]`; `--loudness` overrides the workflow's target (video -14, game -16, background -18 LUFS). Explain `report.qc` and `report.issues` in plain words. Loops: if the seam is flagged, offer the loop preview or regenerate with "steady, repetitive, no build".
 - Library: `python scripts/library.py list|show|annotate ID rating=4 favorite=true notes=...|trash ID`.
 

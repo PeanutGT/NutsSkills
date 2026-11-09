@@ -285,6 +285,8 @@ class TestInspect(unittest.TestCase):
         self.np, self.sr = np, 48000
         t = np.arange(self.sr * 20) / self.sr
         tone = 0.3 * np.sin(2 * np.pi * 220 * t) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.5 * t))
+        self.lows = np.stack([tone, tone], 1)
+        tone = tone + 0.06 * np.sin(2 * np.pi * 6000 * t)  # some high end, as a real mix has
         x = np.stack([tone, tone], 1)
         x[-self.sr * 2:] *= np.linspace(1, 0, self.sr * 2)[:, None]  # a proper fade-out
         self.x = x
@@ -315,6 +317,14 @@ class TestInspect(unittest.TestCase):
         self.assertIn("clipping", self.codes(np.clip(self.x * 5, -1, 1)))
         self.assertEqual(self.codes(self.x * 1e-4), ["near_silent"])
         self.assertEqual(self.codes(self.x * 0.1), ["low_volume"])
+
+    def test_flags_muffled_take(self):
+        import postprocess
+        dull = self.lows.copy(); dull[-self.sr * 2:] *= self.np.linspace(1, 0, self.sr * 2)[:, None]
+        issues = postprocess.inspect_audio(dull, self.sr)
+        self.assertEqual([i["code"] for i in issues], ["dull"])
+        self.assertLess(issues[0]["rolloff95_hz"], 1000)
+        self.assertLess(issues[0]["hf_pct"], 1)
 
     def test_tail_silence_with_faint_noise_is_not_mid_silence(self):
         np = self.np

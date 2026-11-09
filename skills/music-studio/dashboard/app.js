@@ -485,6 +485,7 @@ const ISSUE_TEXT = {
   cut_off: i => `結尾像是被切斷（${clock(i.at)} 還在全音量）`,
   near_silent: () => "幾乎沒有聲音",
   low_volume: i => `音量偏小（約 ${i.rms_db} dBFS）`,
+  dull: i => `聲音發悶（4 kHz 以上只有 ${i.hf_pct}% 的能量，95% 集中在 ${i.rolloff95_hz} Hz 以下）`,
 };
 const issueText = i => (ISSUE_TEXT[i.code] || (() => i.code))(i);
 function issueList(variants) {

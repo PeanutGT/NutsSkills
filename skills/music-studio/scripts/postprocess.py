@@ -192,7 +192,7 @@ def qc(report: dict, cfg: dict, expected_duration: float | None = None, looped: 
 def inspect_audio(x: np.ndarray, sr: int, loopable: bool = False) -> list[dict]:
     """Automatic check of a freshly generated variant. Returns issues with a time in seconds:
     clipping, clicks, silence (an interior gap >= 2 s), cut_off (still at full level in the last
-    0.1 s), near_silent, low_volume. Heuristics tuned to flag what a listener would notice; the
+    0.1 s), near_silent, low_volume, dull (almost no energy above 4 kHz: sounds muffled). Heuristics tuned to flag what a listener would notice; the
     ear decides. Loopable takes skip cut_off: they are meant to keep going."""
     issues: list[dict] = []
     if not len(x):
@@ -256,7 +256,32 @@ def inspect_audio(x: np.ndarray, sr: int, loopable: bool = False) -> list[dict]:
             issues.append({"code": "cut_off", "at": round(len(mono) / sr - 0.1, 2)})
         if ref < -32:
             issues.append({"code": "low_volume", "at": 0.0, "rms_db": round(ref, 1)})
+    tone = brightness(mono, sr)
+    if tone and tone["hf_pct"] < DULL_HF_PCT and tone["rolloff95_hz"] < DULL_ROLLOFF_HZ:
+        issues.append({"code": "dull", "at": 0.0, **tone})
     return issues
+
+
+DULL_HF_PCT, DULL_ROLLOFF_HZ = 1.0, 3000.0  # healthy mixes sit around 5-20 % / 5-12 kHz
+
+
+def brightness(mono: np.ndarray, sr: int, n: int = 4096) -> dict | None:
+    """Average spectrum of the audible frames: % of energy above 4 kHz and the 95 % rolloff."""
+    hop = max(n, sr // 2)
+    starts = range(0, len(mono) - n, hop)
+    if not len(starts):
+        return None
+    frames = np.stack([mono[s:s + n] for s in starts]) * np.hanning(n)
+    loud = np.sqrt(np.mean(frames ** 2, axis=1))
+    frames = frames[loud > 10 ** (-50 / 20)]
+    if not len(frames):
+        return None
+    power = np.mean(np.abs(np.fft.rfft(frames, axis=1)) ** 2, axis=0)
+    freqs = np.fft.rfftfreq(n, 1 / sr)
+    total = float(power.sum()) or 1e-12
+    cum = np.cumsum(power) / total
+    return {"hf_pct": round(100 * float(power[freqs >= 4000].sum()) / total, 2),
+            "rolloff95_hz": round(float(freqs[min(np.searchsorted(cum, 0.95), len(freqs) - 1)]))}
 
 
 def inspect_file(path: Path, cfg: dict, loopable: bool = False) -> list[dict]:
