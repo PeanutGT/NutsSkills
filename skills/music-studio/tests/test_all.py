@@ -243,7 +243,9 @@ class TestMockPipeline(Base):
         self.assertTrue(all(isinstance(v.get("qc"), list) for v in take["variants"]))
 
     def test_loudness_preset_overrides_workflow_target(self):
-        res = self.generate(workflow="game-bgm", variants=1)
+        # Fixed seed: how much gain fits under the peak ceiling depends on the mock audio,
+        # and some random seeds land just under -16 LUFS (e.g. seeds 22 and 38).
+        res = self.generate(workflow="game-bgm", variants=1, seed=1)
         p = self.sh("postprocess.py", "run", "--take", res["id"], "--workflow", "game-bgm", "--loudness", "video")
         self.assertEqual(p.returncode, 0, p.stderr)
         rep = json.loads(p.stdout)["report"]

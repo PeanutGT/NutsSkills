@@ -99,7 +99,7 @@ App v1 = A0–A5 全部 ✅。之後：skill 改成 app 客戶端（v4），再�
 ### 進度
 
 - ✅ A0 骨架（Nusic-Studio PR #1；2026-11-09：Windows CI 綠燈、安裝檔 1.4 MB，Peanut 在 MSI 上開出視窗）
-- 🛠 A1 引擎橋接（Nusic-Studio PR #2，2026-11-10 合併）：Rust 用 Job Object 管 v3.7 `ace_worker.py`（啟動、監控、取消、當機後自動重啟）、nvidia-smi 即時顯存、最小介面。待 3050 驗收：連跑 3 次、生成中／解碼中取消、不掉 CPU 解碼
+- ✅ A1 引擎橋接（Nusic-Studio PR #2；2026-11-10 Peanut 在 RTX 3050 驗收過：連跑、取消、不掉 CPU 解碼。試聽「音訊品質偏差」：A1 固定 turbo 8 步、不開 LM、沒有後製，品質留給 A2 參數與 A3 後製）
 - ⬜ A2 核心搬家
 - ⬜ A3 後製與品檢
 - ⬜ A4 完整介面
@@ -173,4 +173,4 @@ App v1 = A0–A5 全部 ✅。之後：skill 改成 app 客戶端（v4），再�
 | 2026-11-09 | v3.7.0（品質改善）：響度改線性增益，修正高音被壓、品檢新增「聲音發悶」 |
 | 2026-11-09 | 路線改變：先做獨立 app（Tauri + React，新 repo），M2–M5 暫停，skill 凍結在 v3.7；新增「App 路線」A0–A5 |
 | 2026-11-09 | **A0 完成**：Nusic-Studio 骨架、Windows CI、v3.7 對照資料（`golden/v3.7`） |
-| 2026-11-10 | A1 引擎橋接合併（Nusic-Studio PR #2），待 GPU 驗收 |
+| 2026-11-10 | **A1 完成**：引擎橋接（Nusic-Studio PR #2）在 RTX 3050 驗收過 |
