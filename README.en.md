@@ -27,6 +27,18 @@
   <sub>exam-prep output: pattern cards, Cornell recall notes and layered notes, all generated from one photo of probability and statistics notes</sub>
 </p>
 
+### music-studio samples
+
+All generated with ACE-Step 1.5 on an RTX 3050 Laptop 4 GB, with no manual editing or compression: only the excerpt was cut and its volume set by plain gain (about −14 to −16 LUFS). More samples in the [music-studio README](skills/music-studio/README.en.md#listen).
+
+**Pixel-style town, seamless loop**: `rpg-town`, 99 BPM, D major, 24 s, **loop version**: the loop seam is at 12 s. Caption: `fantasy rpg town theme, acoustic guitar, flute, light hand percussion, warm, cheerful, medieval folk, loopable`
+
+VIDEO_URL_RPG_TOWN
+
+**War requiem**: `war-requiem`, 64 BPM, D minor, 25 s cut from a 60 s track, not a loop. Caption: `epic sad orchestral, full string orchestra, solo cello lament, brass choir, deep timpani, slow military snare, adagio, tragic, film score`
+
+VIDEO_URL_WAR_REQUIEM
+
 ## Install
 
 ### Claude.ai / Claude Desktop
