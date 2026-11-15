@@ -12,7 +12,9 @@ Checks (errors fail CI):
   - the skill is linked from README.md and README.en.md, and covered by a plugin in
     .claude-plugin/marketplace.json (listed in its skills, or under its source directory's skills/)
   - every plugin whose source is its own directory has .claude-plugin/plugin.json with the same name,
-    a SKILL.md at its root or under skills/<name>/, no symlinks and no top-level bin/ (claude.ai marketplace sync rejects these)
+    and when version is set it matches the source root SKILL.md metadata.version; plugins also need
+    a SKILL.md at the source root or under skills/<name>/, no symlinks and no top-level bin/
+    (claude.ai marketplace sync rejects these)
   - Python scripts compile, JS scripts pass `node --check` (when node is available)
 
 Usage:  python tools/validate_skills.py            # all skills
@@ -91,6 +93,11 @@ def check_plugins() -> list[str]:
                 data = json.loads(manifest.read_text(encoding="utf-8"))
                 if data.get("name") != name:
                     errs.append(f"{where}: plugin.json name '{data.get('name')}' does not match marketplace name")
+                skill_md = pd / "SKILL.md"
+                if "version" in data and skill_md.exists():
+                    version = (frontmatter(skill_md).get("metadata") or {}).get("version")
+                    if data["version"] != version:
+                        errs.append(f"{where}: plugin.json version {data['version']} != SKILL.md metadata.version {version}")
             except json.JSONDecodeError as e:
                 errs.append(f"{where}: plugin.json is not valid JSON: {e}")
         if not (pd / "SKILL.md").exists() and not list(pd.glob("skills/*/SKILL.md")):

@@ -75,7 +75,7 @@ git tag exam-prep-v2.1.0
 git push origin exam-prep-v2.1.0
 ```
 
-Tag 的版本必須和 SKILL.md 的 `metadata.version` 一致，否則發布會失敗。
+Tag 的版本必須和 SKILL.md 的 `metadata.version` 一致，否則發布會失敗。`plugin.json` 有 `version` 的 skill（目前是 exam-prep）要一起改，`validate_skills.py` 會檢查：Claude Code 只在這個版本號改變時才更新已安裝的 plugin。
 
 **套組**（自成一個 plugin 目錄、底下有多個 skill 的 plugin，例如 `suites/nuts-engineering/`：有自己的 `.claude-plugin/plugin.json`，marketplace.json 的 `source` 指向這個目錄。claude.ai 的市集同步要求 plugin 來源有自己的 manifest，且不能有 symlink）：先在 `suites/<套組名稱>/CHANGELOG.md` 最上方加上新版本的條目，再用上面任一方法發布，名稱填套組名稱，例如 `git tag nuts-engineering-v1.1.0`。Tag 版本必須和該 CHANGELOG 最新的版本一致。Release 會驗證套組裡的每個 skill，並為每個 skill 各附一個 zip。
 
