@@ -6,7 +6,25 @@
 
 ## 試聽
 
-試聽影片準備中。下圖是本機儀表板（用測試引擎產生的畫面，波形不是真的音樂）：
+全部由 ACE-Step 1.5 在 RTX 3050 Laptop 4 GB 上生成，沒有人工修音或壓縮，只剪片段並用純增益調整音量（約 −14 到 −16 LUFS）。
+
+**像素風小鎮・無縫循環**：`rpg-town`，99 BPM D 大調，24 秒，**循環版**：第 12 秒就是循環接縫。caption：`fantasy rpg town theme, acoustic guitar, flute, light hand percussion, warm, cheerful, medieval folk, loopable`
+
+VIDEO_URL_RPG_TOWN
+
+**戰爭安魂曲**：`war-requiem`，64 BPM D 小調，從 60 秒的曲子剪 25 秒，非循環版。caption：`epic sad orchestral, full string orchestra, solo cello lament, brass choir, deep timpani, slow military snare, adagio, tragic, film score`
+
+VIDEO_URL_WAR_REQUIEM
+
+**RPG 戰鬥（指定二胡、古箏）**：`rpg-battle`，155 BPM A 小調，從 50 秒的曲子剪 25 秒，非循環版。caption：`orchestral battle music, harmonic minor, i-bVI-bVII, syncopated accents, fast, ff, erhu, guzheng`
+
+VIDEO_URL_RPG_BATTLE
+
+**讀書背景鋼琴**：`nature-piano`，72 BPM C 大調，從 2 分鐘的循環曲剪 30 秒（這段不含接縫）。caption：`ambient solo soft felt piano, sparse gentle melody, simple repeating motif, warm nostalgic, peaceful, lots of space`
+
+VIDEO_URL_NATURE_PIANO
+
+本機儀表板（用測試引擎產生的畫面，波形不是真的音樂）：
 
 ![Music Studio 儀表板：左邊填描述、選風格與情緒，右邊並排比較兩個版本並顯示自動檢查結果](../../docs/images/music-studio/dashboard.png)
 
