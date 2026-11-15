@@ -16,6 +16,7 @@ PeanutGT（曹萬生）的 Claude Skills 合集，公開於 https://github.com/P
 - **git commit 作者只有使用者**：`PeanutGT <55914825+PeanutGT@users.noreply.github.com>`（GitHub noreply 信箱，2026-11-01 起；不要用 gmail）。不加 `Co-Authored-By`、不加任何 Claude／session 連結的 trailer 行。commit 前確認 `git config user.name` / `user.email`
 - 授權 Apache-2.0；每個 SKILL.md frontmatter 要有 `license: Apache-2.0`
 - 不要在 issue、範例或測試檔中放有版權的課程講義或考卷
+- **branch 名稱要說出目標**：用簡短的英文 kebab-case 描述這個 branch 要做什麼，例如 `exam-prep-plugin-version`、`music-studio-loudness-fix`。不要用 thread 或 session 編號（例如 `claude/project-thread-31g3c9`）；工具規定要加前綴時（例如 `claude/`），前綴後面接目標，例如 `claude/exam-prep-plugin-version`
 
 ## Repo 結構與慣例
 
