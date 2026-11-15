@@ -10,7 +10,8 @@
 - 每個 skill 獨立可用，彼此只用「Related: …」互相指引，不互相 import
 - 參考外部頂尖 skill（mattpocock/skills、obra/superpowers、addyosmani/agent-skills、google/elephant-goldfish-model）時**以自己的話改寫**，不複製原文
 - 每個 skill 都要有 `evals/triggers.json`（3 應觸發／2 不應觸發）與 `evals/behavior/`；宣稱「有幫助」前要跑過沒有 skill 的 baseline
-- 評測結果集中寫在 `skills/nutshell/evals/RESULTS.md`，每輪標日期、受測模型與 n
+- 評測結果集中寫在 `suites/nuts-engineering/skills/nutshell/evals/RESULTS.md`，每輪標日期、受測模型與 n
+- 目錄：套組本身就是 plugin 目錄（`.claude-plugin/plugin.json`＋`skills/<名稱>/`），marketplace 用 `"source": "./suites/nuts-engineering"`。claude.ai 市集同步需要 plugin 有自己的 manifest，不能用 `source: "./"`＋`strict: false`＋`skills` 清單（#29）
 - 發版：各 skill 的 `metadata.version`／CHANGELOG 照常維護，套組版本寫在 `suites/nuts-engineering/CHANGELOG.md`，推 `nuts-engineering-v<版本>` tag 或手動觸發 Release，每個 skill 各一個 zip
 
 ---
@@ -19,10 +20,13 @@
 
 - **最新套組版本：1.1.0**（2026-11-06 已發布 Release `nuts-engineering-v1.1.0`）。各 skill 1.1.0，`simplify`、`fresh-eyes` 為 1.0.0
 - 有效的部分（Sonnet、Opus 都有改善）：design、clarify、ship。debug、verify 對 Opus 沒有額外效果
-- 2026-11-07：新增更難的 code-review 評測題 `skills/code-review/evals/review-cross-file/`（4 個要讀 diff 以外的檔案才看得到的錯誤＋1 個誘答）。每個錯誤都已在 fixture 實際重現，**還沒跑有／無 skill 對照**
+- 2026-11-07：新增更難的 code-review 評測題 `suites/nuts-engineering/skills/code-review/evals/review-cross-file/`（4 個要讀 diff 以外的檔案才看得到的錯誤＋1 個誘答）。每個錯誤都已在 fixture 實際重現，**還沒跑有／無 skill 對照**
+
+- 2026-11-15：#29 改成獨立 plugin 目錄（套組 1.1.1，未發布）。**還沒在 claude.ai「新增市集」實際同步確認**，也還沒在 Claude Code 重裝確認 14 個 skill 都載入
 
 ## 三、待辦（依優先順序）
 
+0. 合併 #29 的 PR 後：claude.ai／桌面版重新同步市集，確認 nuts-engineering 出現、14 個 skill 都在；Claude Code `/plugin marketplace update nutsskills` 後重裝確認；再決定是否發 1.1.1
 1. 跑 `review-cross-file`：Sonnet、Opus 各跑有／無 skill，結果寫進 RESULTS.md
 2. 重跑觸發測試：1.1.0 改寫了 nutshell 與 code-review 的 description，改寫後沒有重跑（上次 nutshell 0/3）
 3. 重跑改版後 debug、verify、code-review 的行為 eval（1.1.0 改版後沒重跑）

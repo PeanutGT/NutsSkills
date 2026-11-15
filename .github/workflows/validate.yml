@@ -49,7 +49,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m unittest discover -s tests -v
-        working-directory: skills/repo-map
+        working-directory: suites/nuts-engineering/skills/repo-map
 
   smoke:
     name: Render smoke test (exam-prep)
