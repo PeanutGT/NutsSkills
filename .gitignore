@@ -6,3 +6,4 @@ Thumbs.db
 *-workspace/
 evals/results/
 dist/
+.venv/

@@ -1,0 +1,9 @@
+{
+  "name": "music-studio",
+  "description": "Generate instrumental music and BGM locally with ACE-Step 1.5 on an NVIDIA GPU: game loops, video scores, study/work background and personal tracks, with customisable defaults, styles, lexicon and a local dashboard.",
+  "author": {
+    "name": "PeanutGT",
+    "url": "https://github.com/PeanutGT"
+  },
+  "license": "Apache-2.0"
+}

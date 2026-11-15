@@ -12,7 +12,7 @@ Checks (errors fail CI):
   - the skill is linked from README.md and README.en.md, and covered by a plugin in
     .claude-plugin/marketplace.json (listed in its skills, or under its source directory's skills/)
   - every plugin whose source is its own directory has .claude-plugin/plugin.json with the same name,
-    at least one skill under skills/, and no symlinks (claude.ai marketplace sync rejects these)
+    a SKILL.md at its root or under skills/<name>/, no symlinks and no top-level bin/ (claude.ai marketplace sync rejects these)
   - Python scripts compile, JS scripts pass `node --check` (when node is available)
 
 Usage:  python tools/validate_skills.py            # all skills
@@ -97,7 +97,9 @@ def check_plugins() -> list[str]:
             errs.append(f"{where}: no SKILL.md or skills/<name>/SKILL.md under the source directory")
         if "skills" in pl or "strict" in pl:
             errs.append(f"{where}: drop 'skills'/'strict'; the plugin's own skills/ folder is used")
-        links = [rel(p) for p in pd.rglob("*") if p.is_symlink()]
+        if (pd / "bin").is_dir():
+            errs.append(f"{where}: top-level bin/ (claude.ai will not install it)")
+        links = [rel(p) for p in pd.rglob("*") if p.is_symlink() and ".git" not in p.relative_to(pd).parts]
         if links:
             errs.append(f"{where}: symlinks are not allowed in a plugin: {links}")
     return errs
@@ -180,6 +182,7 @@ def check_skill(d: Path) -> list[str]:
             if r.returncode:
                 errs.append(f"{name}: {js.relative_to(d)} fails node --check:\n{r.stderr.strip()}")
     return errs
+
 
 
 def main() -> int:

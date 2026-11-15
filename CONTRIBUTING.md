@@ -56,7 +56,7 @@ python tools/build_zip.py exam-prep    # 打包成 dist/exam-prep-<版本>.zip
 
    frontmatter 只能使用 `name`、`description`、`license`、`allowed-tools`、`metadata`、`compatibility`，其他欄位會讓 Claude.ai 上傳失敗。
 3. 加上 `CHANGELOG.md`、`README.md`（可加 `README.en.md`）
-4. 在根目錄 `README.md`、`README.en.md` 的 Skills 表格，以及 `.claude-plugin/marketplace.json` 的 `plugins` 各加一筆（套組裡的 skill 只要放進套組的 `skills/` 就會被 plugin 收進去，不用改 marketplace.json）
+4. 在根目錄 `README.md`、`README.en.md` 的 Skills 表格，以及 `.claude-plugin/marketplace.json` 的 `plugins` 各加一筆。單一 skill 的 plugin 寫 `"source": "./skills/<名稱>"`，並在 `skills/<名稱>/.claude-plugin/plugin.json` 放 manifest（至少 `name`，與市集條目一致），claude.ai 同步市集時需要它。套組裡的 skill 只要放進套組的 `skills/` 就會被 plugin 收進去，不用改 marketplace.json。repo 裡不要有 symlink（例如 `.venv`），plugin 壓縮檔不接受
 5. 建議在 `evals/` 放 2–3 個測試案例（格式見現有 skill）
 6. 執行 `python tools/validate_skills.py`
 

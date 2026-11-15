@@ -1,0 +1,9 @@
+{
+  "name": "exam-prep",
+  "description": "Turn slides, textbooks, handwritten-note photos and past exams into exam-prep PDFs: detailed handouts, pattern cards, Cornell recall notes, layered notes, practice questions with verified answers, and cheat sheets. Traditional Chinese by default.",
+  "author": {
+    "name": "PeanutGT",
+    "url": "https://github.com/PeanutGT"
+  },
+  "license": "Apache-2.0"
+}
