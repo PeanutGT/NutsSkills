@@ -2,7 +2,7 @@
 
 nuts-engineering 套組的版本紀錄。各 skill 自己的版本見 `skills/<name>/CHANGELOG.md`（本目錄底下）。
 
-## 1.1.1 — 未發布
+## 1.1.1 — 2026-11-15
 
 - **修正 claude.ai／Claude 桌面版「新增市集」同步失敗**（#29）：套組改成自己的 plugin 目錄 `suites/nuts-engineering/`，加上 `.claude-plugin/plugin.json`，14 個 skill 搬到 `suites/nuts-engineering/skills/`。marketplace 條目改為 `"source": "./suites/nuts-engineering"`，不再用 `strict: false` 加 `skills` 清單。
 - skill 內容沒有改；Claude Code 已安裝的使用者執行 `/plugin marketplace update nutsskills` 後重新安裝即可。
