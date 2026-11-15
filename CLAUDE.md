@@ -8,7 +8,7 @@ PeanutGT（曹萬生）的 Claude Skills 合集，公開於 https://github.com/P
 |---|---|
 | 任何 exam-prep 的工作 | `skills/exam-prep/progress.md`（現況、決策、待辦） |
 | 任何 music-studio 的工作 | `skills/music-studio/progress.md` |
-| 任何 nuts-engineering 的工作 | `suites/nuts-engineering/progress.md`，評測結果見 `skills/nutshell/evals/RESULTS.md` |
+| 任何 nuts-engineering 的工作 | `suites/nuts-engineering/progress.md`，評測結果見 `suites/nuts-engineering/skills/nutshell/evals/RESULTS.md` |
 | 新增 skill、發版流程 | `CONTRIBUTING.md` |
 
 ## 規則（使用者明確要求）
@@ -19,9 +19,10 @@ PeanutGT（曹萬生）的 Claude Skills 合集，公開於 https://github.com/P
 
 ## Repo 結構與慣例
 
-- `skills/<name>/`：資料夾名＝SKILL.md 的 `name`。frontmatter 只能用 `name`、`description`、`license`、`allowed-tools`、`metadata`、`compatibility`（Claude.ai 上傳限制）；`description` ≤ 1024 字且不可有 `<` `>`
+- `skills/<name>/`（單獨的 skill）或 `suites/<套組>/skills/<name>/`（套組的 skill，例如 nuts-engineering 的 14 個）：資料夾名＝SKILL.md 的 `name`。frontmatter 只能用 `name`、`description`、`license`、`allowed-tools`、`metadata`、`compatibility`（Claude.ai 上傳限制）；`description` ≤ 1024 字且不可有 `<` `>`
 - 版本號在 `metadata.version`（語意化版本），每次改版同時在該 skill 的 `CHANGELOG.md` 最上方加條目
-- 新 skill 要加進 `README.md`、`README.en.md` 的表格與 `.claude-plugin/marketplace.json`
+- 新 skill 要加進 `README.md`、`README.en.md` 的表格與 `.claude-plugin/marketplace.json`（套組的 skill 放進套組 `skills/` 即可）
+- 套組目錄就是 plugin 來源：要有 `.claude-plugin/plugin.json`，marketplace 條目只寫 `"source": "./suites/<套組>"`，不要 `strict`／`skills`；不能有 symlink（claude.ai 市集同步會失敗）
 - `evals/` 是測試案例，不會打包進 Release zip
 - `docs/images/` 放 README 用圖，不打包
 
@@ -41,6 +42,6 @@ smoke test 需要 Node.js、Chromium（Playwright）、poppler、Noto CJK 字型
 - GitHub → Actions → **Release** → Run workflow → 輸入 skill 名稱
 - 或 `git tag exam-prep-v2.2.0 && git push origin exam-prep-v2.2.0`（tag 版本須與 metadata.version 一致）
 
-套組（marketplace.json 裡列出多個 skill 的 plugin，例如 nuts-engineering）：在 `suites/<名稱>/CHANGELOG.md` 最上方加版本條目，再推 `nuts-engineering-v1.1.0` 這樣的 tag。Release 會驗證套組裡每個 skill，並各附一個 zip。各 skill 自己的 `metadata.version` 與 CHANGELOG 照常維護。
+套組（`suites/<名稱>/` 自成 plugin、底下多個 skill，例如 nuts-engineering）：在 `suites/<名稱>/CHANGELOG.md` 最上方加版本條目，再推 `nuts-engineering-v1.1.0` 這樣的 tag。Release 會驗證套組裡每個 skill，並各附一個 zip。各 skill 自己的 `metadata.version` 與 CHANGELOG 照常維護。
 
 CI：`.github/workflows/validate.yml`（每次 push／PR），`release.yml`（建立 Release 並附 zip）。

@@ -3,15 +3,15 @@ name: Release
 # Two ways to release:
 #   1. GitHub → Actions → Release → Run workflow, pick the skill or suite
 #   2. Push a tag named <name>-v<version>, e.g. exam-prep-v2.0.0 or nuts-engineering-v1.1.0
-# A skill releases its own zip at the metadata.version in its SKILL.md. A suite (a marketplace
-# plugin listing several skills) releases one zip per skill at the version in suites/<name>/CHANGELOG.md.
+# A skill releases its own zip at the metadata.version in its SKILL.md. A suite (a
+# plugin directory under suites/ with several skills) releases one zip per skill at the version in suites/<name>/CHANGELOG.md.
 on:
   push:
     tags: ["*-v*.*.*"]
   workflow_dispatch:
     inputs:
       skill:
-        description: "Skill folder under skills/, or a suite name such as nuts-engineering"
+        description: "Skill name (skills/<name>/ or suites/*/skills/<name>/), or a suite name such as nuts-engineering"
         required: true
         default: exam-prep
 
@@ -45,7 +45,7 @@ jobs:
           field() { echo "$INFO" | python -c "import json, sys; v = json.load(sys.stdin)['$1']; print(' '.join(v) if isinstance(v, list) else v)"; }
           DECLARED=$(field version)
           SOURCE=$(field changelog)
-          if [ "$(field kind)" = "skill" ]; then SOURCE="metadata.version in skills/$NAME/SKILL.md"; fi
+          if [ "$(field kind)" = "skill" ]; then SOURCE="metadata.version in $NAME/SKILL.md"; fi
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             VERSION="$DECLARED"
             if git ls-remote --exit-code --tags origin "refs/tags/$NAME-v$VERSION" >/dev/null; then

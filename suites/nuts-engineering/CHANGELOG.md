@@ -1,6 +1,11 @@
 # Changelog
 
-nuts-engineering 套組的版本紀錄。各 skill 自己的版本見 `skills/<name>/CHANGELOG.md`。
+nuts-engineering 套組的版本紀錄。各 skill 自己的版本見 `skills/<name>/CHANGELOG.md`（本目錄底下）。
+
+## 1.1.1 — 未發布
+
+- **修正 claude.ai／Claude 桌面版「新增市集」同步失敗**（#29）：套組改成自己的 plugin 目錄 `suites/nuts-engineering/`，加上 `.claude-plugin/plugin.json`，14 個 skill 搬到 `suites/nuts-engineering/skills/`。marketplace 條目改為 `"source": "./suites/nuts-engineering"`，不再用 `strict: false` 加 `skills` 清單。
+- skill 內容沒有改；Claude Code 已安裝的使用者執行 `/plugin marketplace update nutsskills` 後重新安裝即可。
 
 ## 1.1.0 — 2026-11-06
 
@@ -12,7 +17,7 @@ nuts-engineering 套組的版本紀錄。各 skill 自己的版本見 `skills/<n
 - **code-review**：「是否符合 spec」與「是否符合規範」兩軸分開審，回報前每條發現都要對照程式碼查證。
 - **repo-map 1.1.0**：`--find` 只列出真正提到該名稱的行；能解析同資料夾的 import。
 - **tdd、clarify、spec、plan、design、ship、writing-skills、nutshell**：先決定 seam 與測試反模式、先判斷是否需要提問、builder check、計畫自我檢查等小幅更新。
-- 評測結果（Sonnet 與 Opus 對照、更難的 code-review 題、repo-map token 實測）見 `skills/nutshell/evals/RESULTS.md`。
+- 評測結果（Sonnet 與 Opus 對照、更難的 code-review 題、repo-map token 實測）見 `suites/nuts-engineering/skills/nutshell/evals/RESULTS.md`。
 
 ## 1.0.0 — 2026-11-05
 

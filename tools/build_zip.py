@@ -15,7 +15,9 @@ import sys
 import zipfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from skill_paths import ROOT, find_skill  # noqa: E402
+
 EXCLUDE_DIRS = {"evals", "__pycache__", "node_modules", ".git"}
 EXCLUDE_FILES = {".DS_Store", "Thumbs.db", "progress.md"}  # progress.md: dev notes
 
@@ -26,9 +28,9 @@ def version_of(skill: Path) -> str:
 
 
 def build(name: str, out: Path | None = None) -> Path:
-    skill = ROOT / "skills" / name
-    if not (skill / "SKILL.md").exists():
-        sys.exit(f"skills/{name}/SKILL.md not found")
+    skill = find_skill(name)
+    if skill is None:
+        sys.exit(f"no SKILL.md for '{name}' under skills/ or suites/*/skills/")
     out = out or ROOT / "dist" / f"{name}-{version_of(skill)}.zip"
     out.parent.mkdir(parents=True, exist_ok=True)
     count = 0

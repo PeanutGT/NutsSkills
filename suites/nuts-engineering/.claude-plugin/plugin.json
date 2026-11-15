@@ -1,0 +1,12 @@
+{
+  "name": "nuts-engineering",
+  "description": "Software-engineering workflow skills for coding agents: a nutshell router plus clarify, spec, plan, TDD, debug, verify, code review, design, simplify, ship, writing-skills, fresh-eyes and repo-map.",
+  "author": {
+    "name": "PeanutGT",
+    "url": "https://github.com/PeanutGT"
+  },
+  "homepage": "https://github.com/PeanutGT/NutsSkills",
+  "repository": "https://github.com/PeanutGT/NutsSkills",
+  "license": "Apache-2.0",
+  "keywords": ["software-engineering", "tdd", "code-review", "debugging", "workflow"]
+}

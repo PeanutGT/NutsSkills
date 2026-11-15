@@ -40,7 +40,7 @@ python tools/build_zip.py exam-prep    # 打包成 dist/exam-prep-<版本>.zip
 
 ## 新增 skill
 
-1. 建立 `skills/<skill-name>/`，資料夾名稱必須和 SKILL.md 的 `name` 相同（小寫英文、數字、連字號）
+1. 建立 `skills/<skill-name>/`（屬於套組的 skill 則放在 `suites/<套組名稱>/skills/<skill-name>/`），資料夾名稱必須和 SKILL.md 的 `name` 相同（小寫英文、數字、連字號）
 2. SKILL.md frontmatter 至少包含：
 
    ```yaml
@@ -56,7 +56,7 @@ python tools/build_zip.py exam-prep    # 打包成 dist/exam-prep-<版本>.zip
 
    frontmatter 只能使用 `name`、`description`、`license`、`allowed-tools`、`metadata`、`compatibility`，其他欄位會讓 Claude.ai 上傳失敗。
 3. 加上 `CHANGELOG.md`、`README.md`（可加 `README.en.md`）
-4. 在根目錄 `README.md`、`README.en.md` 的 Skills 表格，以及 `.claude-plugin/marketplace.json` 的 `plugins` 各加一筆
+4. 在根目錄 `README.md`、`README.en.md` 的 Skills 表格，以及 `.claude-plugin/marketplace.json` 的 `plugins` 各加一筆（套組裡的 skill 只要放進套組的 `skills/` 就會被 plugin 收進去，不用改 marketplace.json）
 5. 建議在 `evals/` 放 2–3 個測試案例（格式見現有 skill）
 6. 執行 `python tools/validate_skills.py`
 
@@ -77,7 +77,7 @@ git push origin exam-prep-v2.1.0
 
 Tag 的版本必須和 SKILL.md 的 `metadata.version` 一致，否則發布會失敗。
 
-**套組**（`.claude-plugin/marketplace.json` 裡列出多個 skill 的 plugin，例如 `nuts-engineering`）：先在 `suites/<套組名稱>/CHANGELOG.md` 最上方加上新版本的條目，再用上面任一方法發布，名稱填套組名稱，例如 `git tag nuts-engineering-v1.1.0`。Tag 版本必須和該 CHANGELOG 最新的版本一致。Release 會驗證套組裡的每個 skill，並為每個 skill 各附一個 zip。
+**套組**（自成一個 plugin 目錄、底下有多個 skill 的 plugin，例如 `suites/nuts-engineering/`：有自己的 `.claude-plugin/plugin.json`，marketplace.json 的 `source` 指向這個目錄。claude.ai 的市集同步要求 plugin 來源有自己的 manifest，且不能有 symlink）：先在 `suites/<套組名稱>/CHANGELOG.md` 最上方加上新版本的條目，再用上面任一方法發布，名稱填套組名稱，例如 `git tag nuts-engineering-v1.1.0`。Tag 版本必須和該 CHANGELOG 最新的版本一致。Release 會驗證套組裡的每個 skill，並為每個 skill 各附一個 zip。
 
 ## 授權
 
