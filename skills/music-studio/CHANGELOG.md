@@ -2,6 +2,11 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [3.7.1] - 2026-11-15
+
+### 修正
+- claude.ai／桌面版「新增市集」同步 `PeanutGT/NutsSkills` 失敗：plugin 改以 `skills/music-studio` 為根目錄，並新增 `.claude-plugin/plugin.json`（claude.ai 要求每個 plugin 自帶 manifest）；移除誤 commit 的 `tests/fake_acestep/.venv`（含指向絕對路徑的 symlink，plugin 壓縮檔不接受）。Release zip 不含 `.claude-plugin/`
+
 ## [3.7.0] - 2026-11-09
 
 ### 修正

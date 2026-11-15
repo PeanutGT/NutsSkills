@@ -10,6 +10,8 @@ Checks (errors fail CI):
   - metadata.version is semantic versioning (x.y.z)
   - the version has an entry in skills/<name>/CHANGELOG.md
   - the skill is listed in README.md, README.en.md and .claude-plugin/marketplace.json
+  - every marketplace plugin whose source is its own folder has .claude-plugin/plugin.json with a
+    matching name, and no plugin source holds a symlink or a top-level bin/ (claude.ai sync rejects them)
   - Python scripts compile, JS scripts pass `node --check` (when node is available)
 
 Usage:  python tools/validate_skills.py            # all skills
@@ -108,6 +110,7 @@ def check_skill(d: Path) -> list[str]:
     if mp.exists():
         data = json.loads(mp.read_text(encoding="utf-8"))
         listed = {s.rstrip("/") for pl in data.get("plugins", []) for s in pl.get("skills", [])}
+        listed |= {pl["source"].rstrip("/") for pl in data.get("plugins", []) if isinstance(pl.get("source"), str)}
         if f"./skills/{name}" not in listed:
             errs.append(f"{name}: not listed in .claude-plugin/marketplace.json")
 
@@ -129,6 +132,34 @@ def check_skill(d: Path) -> list[str]:
     return errs
 
 
+def check_marketplace() -> list[str]:
+    """Rules claude.ai applies when it syncs the marketplace (the CLI is more lenient)."""
+    mp = ROOT / ".claude-plugin" / "marketplace.json"
+    if not mp.exists():
+        return []
+    errs: list[str] = []
+    for pl in json.loads(mp.read_text(encoding="utf-8")).get("plugins", []):
+        name, source = pl.get("name"), pl.get("source")
+        if not isinstance(source, str):
+            continue
+        src = (ROOT / source).resolve()
+        if not src.is_dir():
+            errs.append(f"marketplace: {name}: source {source} is not a folder")
+            continue
+        if source.rstrip("/") not in ("", "."):
+            manifest = src / ".claude-plugin" / "plugin.json"
+            if not manifest.exists():
+                errs.append(f"marketplace: {name}: {source}/.claude-plugin/plugin.json not found")
+            elif json.loads(manifest.read_text(encoding="utf-8")).get("name") != name:
+                errs.append(f"marketplace: {name}: plugin.json name does not match the marketplace entry")
+        if (src / "bin").is_dir():
+            errs.append(f"marketplace: {name}: top-level bin/ in {source} (claude.ai will not install it)")
+        for p in src.rglob("*"):
+            if p.is_symlink() and ".git" not in p.relative_to(src).parts:
+                errs.append(f"marketplace: {name}: symlink {p.relative_to(ROOT)} (plugin archives cannot contain symlinks)")
+    return errs
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # ✓ ✗ are not in cp950 (Traditional Chinese Windows)
     only = set(sys.argv[1:])
@@ -141,6 +172,10 @@ def main() -> int:
         errs = check_skill(d)
         print(f"{'✗' if errs else '✓'} {d.name}")
         all_errs += errs
+    if not only:
+        mp_errs = check_marketplace()
+        print(f"{'✗' if mp_errs else '✓'} .claude-plugin/marketplace.json")
+        all_errs += mp_errs
     if all_errs:
         print("\n" + "\n".join(f"  - {e}" for e in all_errs))
         return 1

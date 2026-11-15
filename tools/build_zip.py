@@ -16,7 +16,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-EXCLUDE_DIRS = {"evals", "__pycache__", "node_modules", ".git"}
+EXCLUDE_DIRS = {"evals", "__pycache__", "node_modules", ".git", ".venv", ".claude-plugin"}  # .claude-plugin: marketplace only
 EXCLUDE_FILES = {".DS_Store", "Thumbs.db", "progress.md"}  # progress.md: dev notes
 
 
