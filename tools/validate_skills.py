@@ -68,7 +68,7 @@ def covered_by_marketplace(d: Path) -> bool:
         if f"./{rel(d)}" in {s.rstrip("/") for s in pl.get("skills", [])}:
             return True
         pd = plugin_dir(pl)
-        if pd is not None and d.resolve().parent == pd / "skills":
+        if pd is not None and d.resolve() in (pd, *(pd / "skills").glob("*")):  # single-skill plugin or suite
             return True
     return False
 
@@ -93,8 +93,8 @@ def check_plugins() -> list[str]:
                     errs.append(f"{where}: plugin.json name '{data.get('name')}' does not match marketplace name")
             except json.JSONDecodeError as e:
                 errs.append(f"{where}: plugin.json is not valid JSON: {e}")
-        if not list(pd.glob("skills/*/SKILL.md")):
-            errs.append(f"{where}: no skills/<name>/SKILL.md under the source directory")
+        if not (pd / "SKILL.md").exists() and not list(pd.glob("skills/*/SKILL.md")):
+            errs.append(f"{where}: no SKILL.md or skills/<name>/SKILL.md under the source directory")
         if "skills" in pl or "strict" in pl:
             errs.append(f"{where}: drop 'skills'/'strict'; the plugin's own skills/ folder is used")
         links = [rel(p) for p in pd.rglob("*") if p.is_symlink()]
