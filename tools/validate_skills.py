@@ -11,7 +11,8 @@ Checks (errors fail CI):
   - the version has an entry in skills/<name>/CHANGELOG.md
   - the skill is listed in README.md, README.en.md and .claude-plugin/marketplace.json
   - every marketplace plugin whose source is its own folder has .claude-plugin/plugin.json with a
-    matching name, and no plugin source holds a symlink or a top-level bin/ (claude.ai sync rejects them)
+    matching name (and, when it has a version, the skill's metadata.version), and no plugin source holds a
+    symlink or a top-level bin/ (claude.ai sync rejects them)
   - Python scripts compile, JS scripts pass `node --check` (when node is available)
 
 Usage:  python tools/validate_skills.py            # all skills
@@ -150,8 +151,17 @@ def check_marketplace() -> list[str]:
             manifest = src / ".claude-plugin" / "plugin.json"
             if not manifest.exists():
                 errs.append(f"marketplace: {name}: {source}/.claude-plugin/plugin.json not found")
-            elif json.loads(manifest.read_text(encoding="utf-8")).get("name") != name:
-                errs.append(f"marketplace: {name}: plugin.json name does not match the marketplace entry")
+            else:
+                meta = json.loads(manifest.read_text(encoding="utf-8"))
+                if meta.get("name") != name:
+                    errs.append(f"marketplace: {name}: plugin.json name does not match the marketplace entry")
+                # Claude Code updates an installed plugin only when this version changes, so it must follow the skill
+                skill_md = src / "SKILL.md"
+                if "version" in meta and skill_md.exists():
+                    version = (frontmatter(skill_md).get("metadata") or {}).get("version")
+                    if meta["version"] != version:
+                        errs.append(f"marketplace: {name}: plugin.json version {meta['version']} != "
+                                    f"SKILL.md metadata.version {version}")
         if (src / "bin").is_dir():
             errs.append(f"marketplace: {name}: top-level bin/ in {source} (claude.ai will not install it)")
         for p in src.rglob("*"):

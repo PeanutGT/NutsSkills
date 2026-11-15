@@ -114,7 +114,7 @@ python tools/smoke_test.py --out %TEMP%/smoke           # 三主題渲染＋inge
 - [x] **題目缺圖**（2.4.0，使用者回報：電路學練習題沒有電路圖）：第 2 步問「題目附圖」，`figures.schematic` 畫電路／邏輯閘，`solve_circuit` 從圖解答案，render.mjs 對「如圖」卻沒圖的題目印 `figure missing`，ingest 偵測向量圖。力圖、幾何仍靠模型自己用 matplotlib 畫，沒有對應的驗算
 - [ ] render.mjs 產出的 PDF 沒有書籤；Playwright 的 `page.pdf` 有 `outline`／`tagged` 選項，加了之後講義在 PDF 閱讀器裡有章節側欄
 - [ ] `.ppt`／`.doc` 舊格式：有 LibreOffice 時先轉 PDF 再讀；同名檔案（`.pptx` 與 `.pdf`）在報告中提醒只需讀一份
-- [ ] marketplace.json 的 plugin 條目加 `version`，並寫進發版流程
+- [x] plugin 版本號（2026-11-15，issue #28）：`skills/exam-prep/.claude-plugin/plugin.json` 加 `version`，`validate_skills.py` 檢查它和 `metadata.version` 一致，CONTRIBUTING 的發版流程已寫入。之後 Claude Code 只在發版時更新，不再每個 commit 都更新
 - [ ] **ChatGPT 網頁版相容**（使用者問過，尚未決定要不要做；Codex 已在 2.2.0 支援）：
   - 把 KaTeX、Mermaid 打包進 skill，免網路也能渲染（zip 約 50 KB → 5 MB）
   - 沒有 Chromium 時改輸出自含 HTML，讓使用者用瀏覽器列印成 PDF
