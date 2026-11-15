@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Resolve what a release name refers to: one skill, or a suite of skills.
 
-A skill is a folder skills/<name>/; it releases at the metadata.version in its SKILL.md,
-with notes from skills/<name>/CHANGELOG.md.
-A suite is a plugin in .claude-plugin/marketplace.json that lists several skills; it releases
-every listed skill at the newest version in suites/<name>/CHANGELOG.md, with notes from there.
+A skill is a folder skills/<name>/ or suites/<suite>/skills/<name>/; it releases at the
+metadata.version in its SKILL.md, with notes from its CHANGELOG.md.
+A suite is a plugin in .claude-plugin/marketplace.json with several skills (under its source
+directory's skills/, or listed in its skills array); it releases every skill at the newest version
+in suites/<name>/CHANGELOG.md, with notes from there. The skill named first in the plugin's
+description (the router) is listed first, so the notes can say to upload it first.
 
 Usage:  python tools/release_target.py exam-prep                     -> JSON: kind, name, version, skills
         python tools/release_target.py nuts-engineering --notes 1.1.0  -> release notes for that version
@@ -19,27 +21,34 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_zip import version_of  # noqa: E402
+from skill_paths import ROOT, find_skill, rel  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
 HEADING = re.compile(r"^##\s*\[?(\d+\.\d+\.\d+)\]?", re.M)
 
 
 def suite_skills(name: str) -> list[str] | None:
     data = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
     for plugin in data.get("plugins", []):
-        if plugin.get("name") == name and len(plugin.get("skills", [])) > 1:
-            return [Path(s.rstrip("/")).name for s in plugin["skills"]]
+        if plugin.get("name") != name:
+            continue
+        names = [Path(s.rstrip("/")).name for s in plugin.get("skills", [])]
+        src = str(plugin.get("source", "./")).rstrip("/")
+        if not names and src not in ("", "."):
+            names = sorted(p.parent.name for p in (ROOT / src).glob("skills/*/SKILL.md"))
+            desc = plugin.get("description", "").lower()
+            names.sort(key=lambda n: (m.start() if (m := re.search(rf"\b{re.escape(n)}\b", desc)) else len(desc)))
+        return names if len(names) > 1 else None
     return None
 
 
 def resolve(name: str) -> dict:
-    skill = ROOT / "skills" / name
-    if (skill / "SKILL.md").exists():
+    skill = find_skill(name)
+    if skill is not None:
         return {"kind": "skill", "name": name, "version": version_of(skill), "skills": [name],
-                "changelog": f"skills/{name}/CHANGELOG.md"}
+                "changelog": f"{rel(skill)}/CHANGELOG.md"}
     members = suite_skills(name)
     if members is None:
-        sys.exit(f"'{name}' is neither a folder under skills/ nor a suite in .claude-plugin/marketplace.json")
+        sys.exit(f"'{name}' is neither a skill folder nor a suite in .claude-plugin/marketplace.json")
     changelog = ROOT / "suites" / name / "CHANGELOG.md"
     if not changelog.exists():
         sys.exit(f"suite '{name}' needs suites/{name}/CHANGELOG.md with a '## <version>' entry")
