@@ -2,6 +2,11 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號遵循 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [2.4.2] - 2026-11-15
+
+### 修正
+- claude.ai／桌面版「新增市集」同步 `PeanutGT/NutsSkills` 失敗：plugin 改以 `skills/exam-prep` 為根目錄，並新增 `.claude-plugin/plugin.json`（claude.ai 要求每個 plugin 自帶 manifest）。Release zip 不含 `.claude-plugin/`
+
 ## [2.4.1] - 2026-11-04
 
 修正 2.3.0／2.4.0 程式碼審查找到的問題，每項都加進 smoke test。
